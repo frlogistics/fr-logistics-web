@@ -211,6 +211,7 @@
     }
 
     // ─── BUILD CALCULATOR RATES FROM API RESPONSE ────────────────────────
+    // All rates are plain numbers (D3 eliminated FNSKU tiers — now flat $0.55).
     function buildRatesFromApi(apiRates) {
       // apiRates shape: { "PRP_FNSKU": {rate: 0.55, ...}, "STO_RACK": {rate: 45, ...}, ... }
       const out = { ...FALLBACK_RATES };  // start with fallback
@@ -226,17 +227,6 @@
           out[calcKey] = v;
         }
       }
-      // FNSKU rate function (always flat now — D3 eliminated tiers)
-      const flatFnsku = out.fnsku;
-      out.fnsku = () => flatFnsku;
-      return out;
-    }
-
-    // Convert FALLBACK_RATES to also expose fnsku as function (consistency)
-    function buildFallbackCalcRates() {
-      const out = { ...FALLBACK_RATES };
-      const flatFnsku = out.fnsku;
-      out.fnsku = () => flatFnsku;
       return out;
     }
 
@@ -260,7 +250,7 @@
       } catch (err) {
         // Graceful fallback — calculator stays usable with hardcoded values
         console.warn('[FR-Logistics] Rates API unavailable, using fallback:', err.message);
-        return buildFallbackCalcRates();
+        return { ...FALLBACK_RATES };
       }
     }
 
@@ -310,7 +300,7 @@
       if (service === 'fba') {
         const cartons = Math.max(1, Math.ceil(units / (size === 'small' ? 200 : size === 'standard' ? 100 : 40)));
         const pallets = Math.max(1, Math.ceil(cartons / 20));
-        total += units * RATES.fnsku(units);
+        total += units * RATES.fnsku;
         total += cartons * RATES.receiving;
         total += pallets * RATES.storage * days;
         total += units * RATES.outbound / (size === 'small' ? 10 : size === 'standard' ? 5 : 2);
@@ -384,7 +374,7 @@
 
     // ─── INIT ─ async (load rates first, then compute) ───────────────────
     // Show fallback values immediately so calculator is never empty.
-    RATES = buildFallbackCalcRates();
+    RATES = { ...FALLBACK_RATES };
     updateServiceUI();
 
     // Then fetch live rates and re-compute (instant if cached, ~200ms first load)
