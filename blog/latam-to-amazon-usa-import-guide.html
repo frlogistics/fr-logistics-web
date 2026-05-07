@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LATAM to Amazon USA: A Step-by-Step Import Guide | FR-Logistics Blog</title>
+  <meta name="description" content="A complete guide for Latin American sellers looking to enter the U.S. market via Amazon FBA — from customs to cross-docking to your first sale." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    :root {
+      --black: #0A0A0A; --white: #FFFFFF; --gray-50: #F9F9F9;
+      --gray-100: #F0F0F0; --gray-200: #E0E0E0; --gray-400: #9A9A9A;
+      --gray-600: #555555; --green: #1A7A4A; --green-light: #23A862;
+      --green-pale: #E8F5EE; --max-w: 760px; --nav-h: 64px; --topbar-h: 0px; --topbar-h: 0px;
+      --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { font-family: var(--font-body); color: var(--black); background: var(--white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    nav { position: fixed; top: 0; left: 0; right: 0; height: 64px; background: rgba(255,255,255,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-100); z-index: 100; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+    .nav-logo img { height: 42px !important; width: auto !important; max-width: 140px !important; object-fit: contain !important; display: block !important; }
+    .nav-back { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; color: var(--gray-600); transition: color .2s; }
+    .nav-back:hover { color: var(--green); }
+    .nav-cta { background: var(--black); color: var(--white); padding: 9px 20px; border-radius: 100px; font-size: .82rem; font-weight: 600; transition: background .2s; }
+    .nav-cta:hover { background: var(--green); }
+    .post-hero { overflow: hidden; padding: calc(var(--nav-h) + 56px) 24px 56px; text-align: center; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+    .post-cat { display: inline-flex; align-items: center; gap: 6px; background: var(--green-pale); color: var(--green); font-size: .75rem; font-weight: 700; padding: 5px 14px; border-radius: 100px; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 20px; }
+    .post-hero h1 { overflow-wrap: break-word; word-break: break-word; font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px; line-height: 1.1; max-width: 760px; margin: 0 auto 20px; }
+    .post-meta { display: flex; align-items: center; justify-content: center; gap: 20px; font-size: .82rem; color: var(--gray-400); flex-wrap: wrap; }
+    .post-author { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; }
+    .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; color: var(--green); font-size: .9rem; }
+    .author-name { font-weight: 600; font-size: .88rem; }
+    .author-role { font-size: .75rem; color: var(--gray-400); }
+    .post-content { max-width: var(--max-w); margin: 0 auto; padding: 56px 24px 80px; }
+    .post-content h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin: 48px 0 16px; }
+    .post-content h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin: 32px 0 12px; }
+    .post-content p { font-size: 1.02rem; color: #333; margin-bottom: 20px; font-weight: 300; line-height: 1.8; }
+    .post-content ul, .post-content ol { padding-left: 24px; margin-bottom: 20px; }
+    .post-content li { font-size: 1rem; color: #333; margin-bottom: 10px; font-weight: 300; line-height: 1.7; }
+    .post-content strong { font-weight: 600; color: var(--black); }
+    .callout { background: var(--green-pale); border-left: 4px solid var(--green); border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 32px 0; }
+    .callout p { margin: 0; color: var(--green); font-weight: 500; }
+    .step-block { display: flex; gap: 20px; align-items: flex-start; padding: 24px 0; border-bottom: 1px solid var(--gray-100); }
+    .step-block:last-child { border-bottom: none; }
+    .step-num { width: 40px; height: 40px; border-radius: 12px; background: var(--black); color: var(--white); font-family: var(--font-display); font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-body h4 { font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+    .step-body p { font-size: .92rem; color: var(--gray-600); margin: 0; font-weight: 300; }
+    .post-divider { border: none; border-top: 1px solid var(--gray-200); margin: 40px 0; }
+    .post-cta { background: var(--black); border-radius: 20px; padding: 36px; text-align: center; margin: 56px 0 0; }
+    .post-cta h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+    .post-cta p { color: rgba(255,255,255,.55); font-size: .95rem; margin-bottom: 24px; font-weight: 300; }
+    .post-cta a { background: var(--green); color: var(--white); padding: 13px 28px; border-radius: 100px; font-weight: 700; font-size: .9rem; display: inline-block; transition: background .2s; }
+    .post-cta a:hover { background: var(--green-light); }
+    .back-row { text-align: center; margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--gray-200); }
+    .back-row a { display: inline-flex; align-items: center; gap: 8px; color: var(--gray-600); font-weight: 600; font-size: .9rem; transition: color .2s; }
+    .back-row a:hover { color: var(--green); }
+    @media (max-width: 600px) { .nav-cta { display: none; } }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html">
+      <img src="../Fr-Logistics_Logo_White.jpg" alt="FR-Logistics" style="height:40px;width:auto;max-width:130px;object-fit:contain;display:block;" />
+    </a>
+    <a href="index.html" class="nav-back">← Back to Blog</a>
+    <a href="../index.html#contact" class="nav-cta">Get a Quote</a>
+  </nav>
+
+  <div class="post-hero">
+    <span class="post-cat">🌎 LATAM</span>
+    <h1>LATAM to Amazon USA: A Step-by-Step Import Guide</h1>
+    <div class="post-meta">
+      <span>📅 February 2025</span>
+      <span>⏱ 7 min read</span>
+      <span>🏷 LATAM · Amazon FBA · Import</span>
+    </div>
+    <div class="post-author">
+      <div class="author-avatar">JR</div>
+      <div>
+        <div class="author-name">Jose Fuentes</div>
+        <div class="author-role">Operations Manager, FR-Logistics Miami</div>
+      </div>
+    </div>
+  </div>
+
+  <article class="post-content">
+
+    <p>Latin America is producing world-class products — from Colombian artisan goods to Brazilian health supplements to Mexican home décor. But breaking into the U.S. Amazon marketplace from LATAM involves a logistics chain that stops most sellers before they even get started.</p>
+
+    <p>This guide walks you through every step of the journey, from your factory floor in Latin America to your first sale on Amazon.com. Miami is your key — and we'll show you exactly why.</p>
+
+    <h2>Why Miami Is the Gateway</h2>
+
+    <p>Miami is geographically and commercially the closest major U.S. city to Latin America. PortMiami and Miami International Airport (MIA) handle more cargo from LATAM than any other U.S. port of entry. For Amazon FBA sellers, this means faster transit times, lower freight costs, and proximity to Amazon fulfillment centers in Florida.</p>
+
+    <div class="callout">
+      <p>🌎 Miami handles over <strong>$45 billion</strong> in trade with Latin America annually — making it the natural cross-docking hub for LATAM brands entering the U.S. market.</p>
+    </div>
+
+    <h2>The Complete 8-Step Process</h2>
+
+    <div class="step-block">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Register Your U.S. Business Entity</h4>
+        <p>To sell on Amazon USA, you'll need a U.S. business address and ideally a U.S. LLC or corporation. Florida is a popular choice for LATAM sellers due to its tax structure and proximity. Services like Stripe Atlas or a local attorney can help you register remotely.</p>
+      </div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Open Your Amazon Seller Central Account</h4>
+        <p>Register at sellercentral.amazon.com. You'll need your business documents, a U.S. bank account (or a service like Payoneer/Wise), and a credit card. Choose "Individual" or "Professional" — Professional ($39.99/month) is recommended if you plan to sell more than 40 units/month.</p>
+      </div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Classify Your Products (HTS Codes)</h4>
+        <p>Every product imported into the U.S. needs a Harmonized Tariff Schedule (HTS) code. This determines your import duties. Work with a licensed customs broker to classify your products correctly — misclassification can result in penalties and delays at customs.</p>
+      </div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Ship to Miami (Your Cross-Docking Hub)</h4>
+        <p>Arrange freight from your country of origin to Miami — by air for high-value or time-sensitive goods, by sea for larger, heavier shipments. Your freight forwarder or customs broker handles the import documentation (Commercial Invoice, Packing List, Bill of Lading).</p>
+      </div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Clear U.S. Customs</h4>
+        <p>Your customs broker files an Entry Summary with U.S. Customs and Border Protection (CBP). You pay applicable duties and taxes. For shipments under $2,500, a simplified entry (Section 321) may apply. Your 3PL in Miami receives the cargo once cleared.</p>
+      </div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h4>Receive & Inspect at Your Miami 3PL</h4>
+        <p>Your Miami 3PL (like FR-Logistics) receives, counts, and inspects every unit against your packing list. Any discrepancies or damage from transit are documented immediately with photos — before Amazon ever sees them.</p>
+      </div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <h4>FBA Prep: Label, Bag, Pack</h4>
+        <p>Your 3PL applies FNSKU labels (Amazon's unit-level barcodes), poly-bags products if required, builds cartons per Amazon's specifications, and creates the shipment in Seller Central. This step is what separates successful Amazon launches from rejected shipments.</p>
+      </div>
+    </div>
+
+    <div class="step-block">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <h4>Ship to Amazon's Fulfillment Center</h4>
+        <p>Your 3PL ships the prepped inventory to Amazon's designated fulfillment center (FC). Amazon assigns the FC based on your product category and inventory placement settings. Once received and checked in by Amazon, your listing goes live and you can start selling.</p>
+      </div>
+    </div>
+
+    <hr class="post-divider" />
+
+    <h2>Common Mistakes LATAM Sellers Make</h2>
+
+    <ul>
+      <li><strong>Skipping the U.S. entity</strong> — selling as a foreign entity creates tax and legal exposure</li>
+      <li><strong>Not using a customs broker</strong> — self-filing customs entries is risky without expertise</li>
+      <li><strong>Sending directly to Amazon without a 3PL</strong> — no buffer for inspection or corrections</li>
+      <li><strong>Ignoring FNSKU labeling requirements</strong> — Amazon will reject or sticker your inventory at your cost</li>
+      <li><strong>Underestimating lead times</strong> — from LATAM to Amazon FC typically takes 3–6 weeks total</li>
+    </ul>
+
+    <h2>Estimated Timeline for Your First Shipment</h2>
+
+    <ul>
+      <li><strong>Business registration + Seller Central setup:</strong> 1–2 weeks</li>
+      <li><strong>Freight from LATAM to Miami (air):</strong> 3–7 days</li>
+      <li><strong>Freight from LATAM to Miami (ocean):</strong> 7–21 days</li>
+      <li><strong>Customs clearance:</strong> 1–3 days</li>
+      <li><strong>3PL receiving + FBA prep:</strong> 1–2 days</li>
+      <li><strong>Delivery to Amazon FC:</strong> 1–2 days</li>
+      <li><strong>Amazon check-in:</strong> 1–5 days</li>
+    </ul>
+
+    <div class="callout">
+      <p>📦 Total from LATAM to live on Amazon: <strong>approximately 3–5 weeks</strong> by air, <strong>5–8 weeks</strong> by ocean freight.</p>
+    </div>
+
+    <div class="post-cta">
+      <h3>Ready to bring your LATAM brand to Amazon USA?</h3>
+      <p>FR-Logistics Miami handles steps 4 through 8 for you — cross-docking, customs coordination, FBA prep, and shipping. Bilingual team, Amazon SPN certified.</p>
+      <a href="https://api.whatsapp.com/send?phone=17863001443&text=Hi!%20I%20read%20your%20LATAM%20guide%20and%20want%20to%20import%20to%20Amazon%20USA" target="_blank">💬 Talk to Our LATAM Team</a>
+    </div>
+
+    <div class="back-row">
+      <a href="index.html">← Back to all articles</a>
+    </div>
+
+  </article>
+
+  <!-- Tidio AI Receptionist -->
+  <script src="//code.tidio.co/tixuqiqexi7oilwhbkyvqzhuoovbuz3w.js" async></script>
+</body>
+</html>

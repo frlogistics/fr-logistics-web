@@ -1,0 +1,54 @@
+# FR-Logistics Netlify Redirects
+# EN canonical + ES mirror + legacy B12 redirects
+
+# -----------------------------------------------
+# Portal routes
+# -----------------------------------------------
+/portal.html          /portal                                      301
+/ops-portal           https://apps.fr-logistics.net/portal.html    301
+/wms-client-access    /portal                                      301
+
+# -----------------------------------------------
+# English pretty URLs
+# -----------------------------------------------
+/fba-prep.html         /fba-prep    301
+/ecopack.html          /ecopack     301
+/latam.html            /latam       301
+/pricing.html          /pricing     301
+/about.html            /about       301
+/contact.html          /contact     301
+
+# -----------------------------------------------
+# Spanish pretty URLs (/es/*)
+# -----------------------------------------------
+/es/index.html         /es/               301
+/es/fba-prep.html      /es/fba-prep       301
+/es/ecopack.html       /es/ecopack        301
+/es/latam.html         /es/latam          301
+/es/pricing.html       /es/pricing        301
+/es/about.html         /es/about          301
+/es/contact.html       /es/contact        301
+/es/thank-you.html     /es/thank-you      301
+
+# -----------------------------------------------
+# Legacy B12 URLs → new destinations
+# -----------------------------------------------
+/inventory-management-mastery                  /          301
+/how-it-works                                  /#services 301
+/amazon-spn-partner                            /fba-prep  301
+/catalog                                       /#services 301
+/privacy-policy                                /          301
+/expanded-services                             /#services 301
+/Latin-America                                 /latam     301
+/warehousing                                   /#services 301
+/ecommerce-integration-fulfillment-services    /#services 301
+/shopify_integration_runbook                   https://apps.fr-logistics.net/shopify_integration_runbook.html   301
+/shopify_integration_runbook.html              https://apps.fr-logistics.net/shopify_integration_runbook.html   301
+/kpi-dash                                      https://apps.fr-logistics.net/kpi-dash.html                      301
+/kpi-dash.html                                 https://apps.fr-logistics.net/kpi-dash.html                      301
+
+# -----------------------------------------------
+# Catch-all 404 (Netlify serves /404.html or /es/404.html via fallback)
+# -----------------------------------------------
+/es/*    /es/404.html    404
+/*       /404.html       404

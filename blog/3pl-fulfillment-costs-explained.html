@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3PL Fulfillment Costs Explained | FR-Logistics Blog</title>
+  <meta name="description" content="Monthly fees, per-unit costs, storage rates — we break down every line item so you can evaluate any 3PL quote with confidence." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    :root {
+      --black: #0A0A0A; --white: #FFFFFF; --gray-50: #F9F9F9;
+      --gray-100: #F0F0F0; --gray-200: #E0E0E0; --gray-400: #9A9A9A;
+      --gray-600: #555555; --green: #1A7A4A; --green-light: #23A862;
+      --green-pale: #E8F5EE; --max-w: 760px; --nav-h: 64px; --topbar-h: 0px; --topbar-h: 0px;
+      --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { font-family: var(--font-body); color: var(--black); background: var(--white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    nav { position: fixed; top: 0; left: 0; right: 0; height: 64px; background: rgba(255,255,255,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-100); z-index: 100; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+    .nav-logo img { height: 42px !important; width: auto !important; max-width: 140px !important; object-fit: contain !important; display: block !important; }
+    .nav-back { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; color: var(--gray-600); transition: color .2s; }
+    .nav-back:hover { color: var(--green); }
+    .nav-cta { background: var(--black); color: var(--white); padding: 9px 20px; border-radius: 100px; font-size: .82rem; font-weight: 600; transition: background .2s; }
+    .nav-cta:hover { background: var(--green); }
+    .post-hero { overflow: hidden; padding: calc(var(--nav-h) + 56px) 24px 56px; text-align: center; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+    .post-cat { display: inline-flex; align-items: center; gap: 6px; background: var(--green-pale); color: var(--green); font-size: .75rem; font-weight: 700; padding: 5px 14px; border-radius: 100px; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 20px; }
+    .post-hero h1 { overflow-wrap: break-word; word-break: break-word; font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px; line-height: 1.1; max-width: 760px; margin: 0 auto 20px; }
+    .post-meta { display: flex; align-items: center; justify-content: center; gap: 20px; font-size: .82rem; color: var(--gray-400); flex-wrap: wrap; }
+    .post-author { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; }
+    .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; color: var(--green); font-size: .9rem; }
+    .author-name { font-weight: 600; font-size: .88rem; }
+    .author-role { font-size: .75rem; color: var(--gray-400); }
+    .post-content { max-width: var(--max-w); margin: 0 auto; padding: 56px 24px 80px; }
+    .post-content h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin: 48px 0 16px; }
+    .post-content h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin: 32px 0 12px; }
+    .post-content p { font-size: 1.02rem; color: #333; margin-bottom: 20px; font-weight: 300; line-height: 1.8; }
+    .post-content ul { padding-left: 24px; margin-bottom: 20px; }
+    .post-content li { font-size: 1rem; color: #333; margin-bottom: 10px; font-weight: 300; line-height: 1.7; }
+    .post-content strong { font-weight: 600; color: var(--black); }
+    .callout { background: var(--green-pale); border-left: 4px solid var(--green); border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 32px 0; }
+    .callout p { margin: 0; color: var(--green); font-weight: 500; }
+    .callout.red { background: #FFF0F0; border-left-color: #E53E3E; }
+    .callout.red p { color: #C53030; }
+    /* Pricing table */
+    .price-table { width: 100%; border-collapse: collapse; margin: 24px 0 32px; border-radius: 12px; overflow: hidden; font-size: .92rem; }
+    .price-table th { background: var(--black); color: var(--white); padding: 12px 16px; text-align: left; font-family: var(--font-display); font-size: .82rem; letter-spacing: .3px; }
+    .price-table td { padding: 12px 16px; border-bottom: 1px solid var(--gray-100); color: #333; font-weight: 300; }
+    .price-table tr:last-child td { border-bottom: none; }
+    .price-table tr:nth-child(even) td { background: var(--gray-50); }
+    .price-table .green { color: var(--green); font-weight: 600; }
+    .post-divider { border: none; border-top: 1px solid var(--gray-200); margin: 40px 0; }
+    .post-cta { background: var(--black); border-radius: 20px; padding: 36px; text-align: center; margin: 56px 0 0; }
+    .post-cta h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+    .post-cta p { color: rgba(255,255,255,.55); font-size: .95rem; margin-bottom: 24px; font-weight: 300; }
+    .post-cta a { background: var(--green); color: var(--white); padding: 13px 28px; border-radius: 100px; font-weight: 700; font-size: .9rem; display: inline-block; transition: background .2s; }
+    .post-cta a:hover { background: var(--green-light); }
+    .back-row { text-align: center; margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--gray-200); }
+    .back-row a { display: inline-flex; align-items: center; gap: 8px; color: var(--gray-600); font-weight: 600; font-size: .9rem; transition: color .2s; }
+    .back-row a:hover { color: var(--green); }
+    @media (max-width: 600px) { .nav-cta { display: none; } .price-table { font-size: .8rem; } .price-table td, .price-table th { padding: 10px; } }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html">
+      <img src="../Fr-Logistics_Logo_White.jpg" alt="FR-Logistics" style="height:40px;width:auto;max-width:130px;object-fit:contain;display:block;" />
+    </a>
+    <a href="index.html" class="nav-back">← Back to Blog</a>
+    <a href="../index.html#contact" class="nav-cta">Get a Quote</a>
+  </nav>
+
+  <div class="post-hero">
+    <span class="post-cat">💰 Cost Guide</span>
+    <h1>3PL Fulfillment Costs Explained: What You Should (and Shouldn't) Be Paying</h1>
+    <div class="post-meta">
+      <span>📅 March 2025</span>
+      <span>⏱ 6 min read</span>
+      <span>🏷 Pricing · 3PL · Cost Guide</span>
+    </div>
+    <div class="post-author">
+      <div class="author-avatar">JR</div>
+      <div>
+        <div class="author-name">Jose Fuentes</div>
+        <div class="author-role">Operations Manager, FR-Logistics Miami</div>
+      </div>
+    </div>
+  </div>
+
+  <article class="post-content">
+
+    <p>One of the most common questions we get from Amazon sellers and e-commerce brands is: <em>"Am I paying too much for my 3PL?"</em> The answer is almost always: <em>"It depends — but here's how to find out."</em></p>
+
+    <p>3PL pricing is notoriously opaque. Some providers bundle everything into a monthly fee. Others charge à la carte but sneak in hidden surcharges. This guide breaks down every cost category you'll encounter so you can evaluate any quote with confidence.</p>
+
+    <h2>The 6 Core Cost Categories</h2>
+
+    <h3>1. Receiving Fee</h3>
+    <p>Charged when your inventory arrives at the warehouse. Can be priced per pallet, per carton, or per unit. This covers unloading, counting, and logging your inventory into the WMS.</p>
+
+    <table class="price-table">
+      <tr><th>Pricing Model</th><th>Typical Range</th><th>Watch Out For</th></tr>
+      <tr><td>Per pallet</td><td>$8–$25/pallet</td><td>Minimums per shipment</td></tr>
+      <tr><td>Per carton</td><td>$1–$3/carton</td><td>Fees for over-sized cartons</td></tr>
+      <tr><td>Per unit</td><td>$0.10–$0.25/unit</td><td>Better for small shipments</td></tr>
+    </table>
+
+    <h3>2. Storage Fee</h3>
+    <p>Monthly charge for keeping your inventory in the warehouse. Priced per pallet, per bin/shelf, or per cubic foot. This is where costs can compound quickly if your inventory sits.</p>
+
+    <table class="price-table">
+      <tr><th>Pricing Model</th><th>Typical Range</th><th>Notes</th></tr>
+      <tr><td>Per pallet/month</td><td>$15–$40/pallet</td><td>Most common for B2B</td></tr>
+      <tr><td>Per cubic foot/month</td><td>$0.50–$1.50/cu ft</td><td>Better for mixed SKUs</td></tr>
+      <tr><td>Per bin/shelf</td><td>$5–$20/bin</td><td>Common for small items</td></tr>
+    </table>
+
+    <div class="callout">
+      <p>✅ <strong>FR-Logistics tip:</strong> We offer the first month of storage free for new clients. This gives you time to move inventory before storage costs begin.</p>
+    </div>
+
+    <h3>3. Pick & Pack Fee</h3>
+    <p>Charged per order fulfilled. Covers pulling items from shelves, packing into shipping boxes, and labeling. This is typically your highest variable cost for DTC/Shopify fulfillment.</p>
+
+    <table class="price-table">
+      <tr><th>Order Type</th><th>Typical Range</th><th>Notes</th></tr>
+      <tr><td>Single-item order</td><td>$2.00–$3.50</td><td>Base pick & pack</td></tr>
+      <tr><td>Per additional item</td><td>$0.25–$0.75</td><td>Each SKU beyond first</td></tr>
+      <tr><td>Packaging materials</td><td>$0.50–$2.00</td><td>Boxes, tape, dunnage</td></tr>
+    </table>
+
+    <h3>4. FBA Prep Fees</h3>
+    <p>Specific to Amazon FBA prep work. Charged per unit or per service performed.</p>
+
+    <table class="price-table">
+      <tr><th>Service</th><th>Typical Range</th></tr>
+      <tr><td>FNSKU labeling</td><td>$0.10–$0.25/unit</td></tr>
+      <tr><td>Poly-bagging</td><td>$0.20–$0.50/unit</td></tr>
+      <tr><td>Bubble wrap</td><td>$0.30–$0.75/unit</td></tr>
+      <tr><td>Carton labeling</td><td>$1–$3/carton</td></tr>
+      <tr><td>Pallet building</td><td>$15–$35/pallet</td></tr>
+    </table>
+
+    <h3>5. Outbound Shipping</h3>
+    <p>The cost to ship from the 3PL to Amazon or your customers. This is usually passed through at cost (what the carrier charges) plus a small handling fee. A good 3PL will have negotiated carrier rates that are lower than what you'd get on your own.</p>
+
+    <h3>6. Account / Setup Fees</h3>
+    <p>Some 3PLs charge monthly account fees ($50–$300/month) regardless of your volume. Others charge a one-time setup fee. <strong>At FR-Logistics, we charge neither</strong> — you pay per service, full stop.</p>
+
+    <hr class="post-divider" />
+
+    <h2>Hidden Fees to Watch For</h2>
+
+    <div class="callout red">
+      <p>🚩 These are the charges that inflate your 3PL bill without you realizing it. Ask about every single one before signing.</p>
+    </div>
+
+    <ul>
+      <li><strong>Minimum monthly fees</strong> — you pay even if you ship zero orders</li>
+      <li><strong>Long-term storage surcharges</strong> — extra fees after 90 or 180 days</li>
+      <li><strong>Returns processing fees</strong> — per unit received back, inspection, and restock</li>
+      <li><strong>Account management fees</strong> — for having a dedicated rep</li>
+      <li><strong>Carrier surcharges pass-through</strong> — fuel, residential, dimensional weight</li>
+      <li><strong>Inventory discrepancy fees</strong> — if their count doesn't match yours (should be their cost, not yours)</li>
+      <li><strong>Special project fees</strong> — vague catch-all for anything not on the rate card</li>
+    </ul>
+
+    <h2>How to Compare 3PL Quotes Fairly</h2>
+
+    <p>When evaluating quotes, build a simple monthly cost model using your actual numbers:</p>
+
+    <ul>
+      <li>Average units received per month</li>
+      <li>Average units stored at any given time</li>
+      <li>Average orders shipped per month</li>
+      <li>Average items per order</li>
+    </ul>
+
+    <p>Plug these numbers into each provider's rate card to get a true monthly cost comparison. Don't compare headline rates — compare total monthly cost at your actual volume.</p>
+
+    <div class="callout">
+      <p>📊 Example: A 3PL charging $0.15/unit receiving + $25/pallet storage + $2.50 pick & pack may be cheaper than one charging $0.10 + $20 + $3.00, depending on your order profile.</p>
+    </div>
+
+    <div class="post-cta">
+      <h3>Get a transparent quote with zero hidden fees.</h3>
+      <p>Send us your monthly volume numbers and we'll build you a line-item cost estimate — no fluff, no monthly fees, no surprises.</p>
+      <a href="https://api.whatsapp.com/send?phone=17863001443&text=Hi!%20I%20read%20your%20cost%20guide%20and%20want%20a%20transparent%20quote" target="_blank">💬 Request a Cost Breakdown</a>
+    </div>
+
+    <div class="back-row">
+      <a href="index.html">← Back to all articles</a>
+    </div>
+
+  </article>
+
+  <!-- Tidio AI Receptionist -->
+  <script src="//code.tidio.co/tixuqiqexi7oilwhbkyvqzhuoovbuz3w.js" async></script>
+</body>
+</html>

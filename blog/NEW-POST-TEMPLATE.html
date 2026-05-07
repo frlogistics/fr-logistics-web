@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ✏️ EDIT: Title and description for SEO -->
+  <title>YOUR ARTICLE TITLE HERE | FR-Logistics Blog</title>
+  <meta name="description" content="YOUR META DESCRIPTION HERE (150-160 characters for best SEO)" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    :root {
+      --black: #0A0A0A; --white: #FFFFFF; --gray-50: #F9F9F9;
+      --gray-100: #F0F0F0; --gray-200: #E0E0E0; --gray-400: #9A9A9A;
+      --gray-600: #555555; --green: #1A7A4A; --green-light: #23A862;
+      --green-pale: #E8F5EE; --max-w: 760px; --nav-h: 64px; --topbar-h: 0px;
+      --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { font-family: var(--font-body); color: var(--black); background: var(--white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    nav { position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-100); z-index: 100; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+    .nav-logo img { height: 40px; width: auto; max-width: 140px; object-fit: contain; display: block; }
+    .nav-back { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; color: var(--gray-600); transition: color .2s; }
+    .nav-back:hover { color: var(--green); }
+    .nav-cta { background: var(--black); color: var(--white); padding: 9px 20px; border-radius: 100px; font-size: .82rem; font-weight: 600; transition: background .2s; }
+    .nav-cta:hover { background: var(--green); }
+    .post-hero { padding: calc(var(--nav-h) + 56px) 24px 56px; text-align: center; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+    .post-cat { display: inline-flex; align-items: center; gap: 6px; background: var(--green-pale); color: var(--green); font-size: .75rem; font-weight: 700; padding: 5px 14px; border-radius: 100px; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 20px; }
+    .post-hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px; line-height: 1.1; max-width: 760px; margin: 0 auto 20px; }
+    .post-meta { display: flex; align-items: center; justify-content: center; gap: 20px; font-size: .82rem; color: var(--gray-400); flex-wrap: wrap; }
+    .post-author { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; }
+    .author-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; color: var(--green); font-size: .9rem; }
+    .author-name { font-weight: 600; font-size: .88rem; text-align: left; }
+    .author-role { font-size: .75rem; color: var(--gray-400); }
+    .post-content { max-width: var(--max-w); margin: 0 auto; padding: 56px 24px 80px; }
+    .post-content h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin: 48px 0 16px; color: var(--black); }
+    .post-content h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin: 32px 0 12px; }
+    .post-content p { font-size: 1.02rem; color: #333; margin-bottom: 20px; font-weight: 300; line-height: 1.8; }
+    .post-content ul, .post-content ol { padding-left: 24px; margin-bottom: 20px; }
+    .post-content li { font-size: 1rem; color: #333; margin-bottom: 10px; font-weight: 300; line-height: 1.7; }
+    .post-content strong { font-weight: 600; color: var(--black); }
+    /* Callout box — use for tips, warnings, highlights */
+    .callout { background: var(--green-pale); border-left: 4px solid var(--green); border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 32px 0; }
+    .callout p { margin: 0; color: var(--green); font-weight: 500; }
+    /* Divider */
+    .post-divider { border: none; border-top: 1px solid var(--gray-200); margin: 40px 0; }
+    /* CTA at end of article */
+    .post-cta { background: var(--black); border-radius: 20px; padding: 36px; text-align: center; margin: 56px 0 0; }
+    .post-cta h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+    .post-cta p { color: rgba(255,255,255,.55); font-size: .95rem; margin-bottom: 24px; font-weight: 300; }
+    .post-cta a { background: var(--green); color: var(--white); padding: 13px 28px; border-radius: 100px; font-weight: 700; font-size: .9rem; display: inline-block; transition: background .2s; }
+    .post-cta a:hover { background: var(--green-light); }
+    .back-row { text-align: center; margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--gray-200); }
+    .back-row a { display: inline-flex; align-items: center; gap: 8px; color: var(--gray-600); font-weight: 600; font-size: .9rem; transition: color .2s; }
+    .back-row a:hover { color: var(--green); }
+    @media (max-width: 600px) { .nav-cta { display: none; } }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html">
+      <img src="../Fr-Logistics_Logo_White.jpg" alt="FR-Logistics" />
+    </a>
+    <a href="index.html" class="nav-back">← Back to Blog</a>
+    <a href="../index.html#contact" class="nav-cta">Get a Quote</a>
+  </nav>
+
+  <!-- ============================================================
+       HERO — Edit: emoji, category, title, date, read time
+  ============================================================ -->
+  <div class="post-hero">
+    <span class="post-cat">📦 FBA Prep</span>  <!-- ✏️ Change emoji + category -->
+    <h1>Your Article Title Goes Here</h1>       <!-- ✏️ Your title -->
+    <div class="post-meta">
+      <span>📅 January 2025</span>              <!-- ✏️ Publication date -->
+      <span>⏱ 5 min read</span>                 <!-- ✏️ Estimated read time -->
+      <span>🏷 Tag1 · Tag2</span>               <!-- ✏️ Relevant tags -->
+    </div>
+    <div class="post-author">
+      <div class="author-avatar">JR</div>
+      <div>
+        <div class="author-name">Jose Rodriguez</div>
+        <div class="author-role">Operations Manager, FR-Logistics Miami</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ARTICLE CONTENT — Write your article below
+       Available blocks:
+         <p> — paragraph
+         <h2> — main section heading
+         <h3> — sub-heading
+         <ul><li> — bullet list
+         <ol><li> — numbered list
+         <strong> — bold text
+         <div class="callout"><p> — highlighted tip/warning box
+         <hr class="post-divider"> — horizontal divider line
+  ============================================================ -->
+  <article class="post-content">
+
+    <!-- INTRO -->
+    <p>Write your opening paragraph here. Hook the reader with a relatable problem or surprising fact.</p>
+
+    <p>Second paragraph — expand on the problem and set up why this article matters.</p>
+
+    <!-- SECTION 1 -->
+    <h2>First Main Section Title</h2>
+
+    <p>Write the content for this section here.</p>
+
+    <div class="callout">
+      <p>💡 <strong>Pro tip:</strong> Use callout boxes to highlight key facts, tips, or warnings that you want readers to remember.</p>
+    </div>
+
+    <!-- SECTION 2 -->
+    <h2>Second Main Section Title</h2>
+
+    <h3>Sub-section if needed</h3>
+    <p>Content here...</p>
+
+    <ul>
+      <li>Bullet point one</li>
+      <li>Bullet point two</li>
+      <li>Bullet point three</li>
+    </ul>
+
+    <hr class="post-divider" />
+
+    <!-- SECTION 3 -->
+    <h2>Third Main Section Title</h2>
+
+    <p>More content here...</p>
+
+    <!-- ============================================================
+         CTA — Edit the headline, subtext, and WhatsApp message
+    ============================================================ -->
+    <div class="post-cta">
+      <h3>Your CTA Headline Here</h3>
+      <p>Supporting text that connects the article topic to your service offer.</p>
+      <!-- ✏️ Edit the WhatsApp message text after "text=" -->
+      <a href="https://api.whatsapp.com/send?phone=17863001443&text=Hi!%20I%20read%20your%20blog%20and%20want%20to%20learn%20more" target="_blank">
+        💬 Talk to Us on WhatsApp
+      </a>
+    </div>
+
+    <div class="back-row">
+      <a href="index.html">← Back to all articles</a>
+    </div>
+
+  </article>
+
+  <!-- Tidio AI Receptionist -->
+  <script src="//code.tidio.co/tixuqiqexi7oilwhbkyvqzhuoovbuz3w.js" async></script>
+</body>
+</html>
+
+<!--
+=================================================================
+HOW TO PUBLISH A NEW BLOG POST — Step by Step
+=================================================================
+
+STEP 1: Copy this file
+  Rename it with a descriptive URL-friendly name, e.g.:
+  "shopify-fulfillment-guide.html"
+  "amazon-returns-rma-explained.html"
+  "ecopack-sustainable-packaging.html"
+
+STEP 2: Fill in the content
+  - Update <title> and <meta description> for SEO
+  - Change the post-cat emoji and category label
+  - Write your H1 title
+  - Update date and read time
+  - Write your article using <p>, <h2>, <h3>, <ul>, callout blocks
+  - Customize the CTA at the bottom
+
+STEP 3: Add a card to blog/index.html
+  Copy one of the existing .post-card blocks and update:
+  - The emoji in .post-thumb
+  - The category badge text
+  - The date and read time
+  - The H3 title
+  - The excerpt paragraph
+  - The href link to your new .html file
+
+STEP 4: Add a card to the homepage (index.html)
+  Optional — update one of the 3 blog cards in the Blog section
+  of index.html to point to your newest article.
+
+STEP 5: Upload to Netlify
+  Drag your updated folder to Netlify → Deploys.
+  Your new post is live in 30 seconds.
+
+=================================================================
+GOOD BLOG TOPICS FOR FR-LOGISTICS (SEO value):
+=================================================================
+- "How to Handle Amazon FBA Returns in 2025"
+- "Shopify vs Amazon Fulfillment: Which is Right for Your Brand?"
+- "What is Cross-Docking? A Guide for E-Commerce Sellers"
+- "FBA Prep Requirements Checklist: Complete 2025 Guide"
+- "How to Import from Colombia/Brazil/Mexico to Amazon USA"
+- "EcoPack+: The Future of Sustainable Package Pickup"
+- "Linnworks vs ShipStation: Which WMS for Your 3PL?"
+=================================================================
+-->

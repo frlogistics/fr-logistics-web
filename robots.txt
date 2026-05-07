@@ -1,0 +1,12 @@
+# FR-Logistics Miami · robots.txt
+# Allow all search engines to crawl the public site
+
+User-agent: *
+Allow: /
+
+# Disallow admin/system paths that shouldn't be indexed
+Disallow: /thank-you.html
+Disallow: /404.html
+
+# Sitemap location
+Sitemap: https://fr-logistics.net/sitemap.xml

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog | FR-Logistics Miami — FBA Prep, LATAM & 3PL Insights</title>
+  <meta name="description" content="Practical guides for Amazon sellers, e-commerce brands, and LATAM businesses expanding into the U.S. market." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    :root {
+      --black: #0A0A0A; --white: #FFFFFF; --gray-50: #F9F9F9;
+      --gray-100: #F0F0F0; --gray-200: #E0E0E0; --gray-400: #9A9A9A;
+      --gray-600: #555555; --green: #1A7A4A; --green-light: #23A862;
+      --green-pale: #E8F5EE; --max-w: 1100px; --nav-h: 64px; --topbar-h: 0px;
+      --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    body { font-family: var(--font-body); color: var(--black); background: var(--white); -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h); background: rgba(255,255,255,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-100); z-index: 100; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+    .nav-logo img { height: 40px; width: auto; max-width: 140px; object-fit: contain; display: block; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { font-size: .85rem; font-weight: 500; color: var(--gray-600); transition: color .2s; }
+    .nav-links a:hover { color: var(--black); }
+    .nav-cta { background: var(--black); color: var(--white) !important; padding: 9px 20px; border-radius: 100px; font-weight: 600 !important; transition: background .2s !important; }
+    .nav-cta:hover { background: var(--green) !important; }
+
+    .blog-hero { padding: calc(var(--nav-h) + 64px) 24px 64px; text-align: center; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+    .blog-hero .label { display: inline-flex; align-items: center; gap: 8px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--green); margin-bottom: 16px; }
+    .blog-hero .label::before { content: ''; width: 20px; height: 2px; background: var(--green); border-radius: 2px; }
+    .blog-hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+    .blog-hero p { font-size: 1.05rem; color: var(--gray-600); max-width: 520px; margin: 0 auto; font-weight: 300; line-height: 1.7; }
+
+    /* Filter pills */
+    .blog-filters { display: flex; justify-content: center; gap: 10px; padding: 32px 24px 0; flex-wrap: wrap; }
+    .filter-pill { padding: 7px 18px; border-radius: 100px; border: 1px solid var(--gray-200); font-size: .8rem; font-weight: 600; color: var(--gray-600); cursor: pointer; transition: all .2s; background: var(--white); }
+    .filter-pill:hover, .filter-pill.active { background: var(--black); color: var(--white); border-color: var(--black); }
+
+    .blog-main { max-width: var(--max-w); margin: 0 auto; padding: 56px 24px 96px; }
+
+    /* Featured post */
+    .featured-post { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; background: var(--black); border-radius: 24px; padding: 48px; margin-bottom: 56px; color: var(--white); }
+    .featured-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: var(--white); font-size: .72rem; font-weight: 700; padding: 5px 12px; border-radius: 100px; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 16px; }
+    .featured-post h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 2.5vw, 1.9rem); font-weight: 800; letter-spacing: -.5px; line-height: 1.15; margin-bottom: 14px; }
+    .featured-post p { font-size: .95rem; color: rgba(255,255,255,.55); line-height: 1.7; margin-bottom: 24px; font-weight: 300; }
+    .featured-meta { display: flex; gap: 16px; font-size: .78rem; color: rgba(255,255,255,.4); margin-bottom: 24px; }
+    .read-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--white); color: var(--black); padding: 12px 24px; border-radius: 100px; font-weight: 700; font-size: .88rem; transition: background .2s, transform .15s; }
+    .read-btn:hover { background: var(--green-pale); transform: translateY(-2px); }
+    .featured-visual { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 32px; display: flex; flex-direction: column; gap: 16px; }
+    .feat-stat { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.07); font-size: .85rem; color: rgba(255,255,255,.6); }
+    .feat-stat:last-child { border-bottom: none; }
+    .feat-stat strong { color: var(--green-light); font-family: var(--font-display); font-size: 1rem; }
+
+    /* Post grid */
+    .posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .post-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; overflow: hidden; transition: transform .25s, box-shadow .25s; display: flex; flex-direction: column; }
+    .post-card:hover { transform: translateY(-6px); box-shadow: 0 24px 48px rgba(0,0,0,.1); }
+    .post-thumb { height: 160px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative; overflow: hidden; }
+    .post-thumb-bg { position: absolute; inset: 0; opacity: .06; background-image: linear-gradient(var(--gray-400) 1px, transparent 1px), linear-gradient(90deg, var(--gray-400) 1px, transparent 1px); background-size: 24px 24px; }
+    .post-cat-badge { position: absolute; top: 12px; left: 12px; background: var(--green); color: var(--white); font-size: .68rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; letter-spacing: .4px; text-transform: uppercase; }
+    .post-body { padding: 22px; flex: 1; display: flex; flex-direction: column; }
+    .post-meta-sm { display: flex; gap: 12px; font-size: .72rem; color: var(--gray-400); margin-bottom: 10px; }
+    .post-card h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 700; letter-spacing: -.2px; line-height: 1.35; margin-bottom: 8px; }
+    .post-card p { font-size: .85rem; color: var(--gray-600); line-height: 1.6; font-weight: 300; flex: 1; }
+    .post-read { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--gray-100); font-size: .8rem; font-weight: 600; color: var(--green); transition: gap .2s; }
+    .post-card:hover .post-read { gap: 10px; }
+
+    /* Newsletter */
+    .newsletter { background: var(--green-pale); border: 1px solid rgba(26,122,74,.15); border-radius: 20px; padding: 40px; text-align: center; margin-top: 56px; }
+    .newsletter h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    .newsletter p { font-size: .95rem; color: var(--gray-600); margin-bottom: 24px; font-weight: 300; }
+    .nl-form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+    .nl-form input { flex: 1; min-width: 220px; padding: 12px 18px; border: 1px solid var(--gray-200); border-radius: 100px; font-family: var(--font-body); font-size: .9rem; outline: none; transition: border-color .2s; }
+    .nl-form input:focus { border-color: var(--green); }
+    .nl-form button { background: var(--green); color: var(--white); border: none; padding: 12px 24px; border-radius: 100px; font-family: var(--font-body); font-weight: 700; font-size: .88rem; cursor: pointer; transition: background .2s; white-space: nowrap; }
+    .nl-form button:hover { background: var(--black); }
+
+    footer { background: var(--black); color: rgba(255,255,255,.4); text-align: center; padding: 32px 24px; font-size: .8rem; }
+    footer a { color: rgba(255,255,255,.5); margin: 0 8px; transition: color .2s; }
+    footer a:hover { color: var(--white); }
+
+    @media (max-width: 900px) { .featured-post { grid-template-columns: 1fr; } .featured-visual { display: none; } .posts-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .posts-grid { grid-template-columns: 1fr; } .nav-links { display: none; } }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html">
+      <img src="../Fr-Logistics_Logo_White.jpg" alt="FR-Logistics Miami" style="height:40px;width:auto;max-width:130px;object-fit:contain;display:block;" />
+    </a>
+    <div class="nav-links">
+      <a href="../index.html#services">Services</a>
+      <a href="../index.html#latam">LATAM Hub</a>
+      <a href="../index.html#pricing">Pricing</a>
+      <a href="../index.html#contact" class="nav-cta">Get a Quote</a>
+    </div>
+  </nav>
+
+  <div class="blog-hero">
+    <div class="label">Resources & Insights</div>
+    <h1>The FR-Logistics Blog</h1>
+    <p>Practical guides for Amazon sellers, e-commerce brands, and LATAM businesses expanding into the U.S. market.</p>
+  </div>
+
+  <div class="blog-filters">
+    <button class="filter-pill active">All Posts</button>
+    <button class="filter-pill">FBA Prep</button>
+    <button class="filter-pill">LATAM</button>
+    <button class="filter-pill">Cost Guide</button>
+    <button class="filter-pill">Shopify</button>
+    <button class="filter-pill">Operations</button>
+  </div>
+
+  <main class="blog-main">
+
+    <!-- Featured Post -->
+    <div class="featured-post">
+      <div>
+        <span class="featured-badge">⭐ Featured</span>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:12px;">📅 March 2025 · ⏱ 6 min read</div>
+        <h2>3PL Fulfillment Costs Explained: What You Should (and Shouldn't) Be Paying</h2>
+        <p>Monthly fees, per-unit costs, storage rates — we break down every line item so you can evaluate any 3PL quote with confidence and stop overpaying.</p>
+        <a href="3pl-fulfillment-costs-explained.html" class="read-btn">
+          Read Article
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="featured-visual">
+        <div style="font-size:.8rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Typical 3PL Cost Breakdown</div>
+        <div class="feat-stat"><span>Receiving (per pallet)</span><strong>$8–$25</strong></div>
+        <div class="feat-stat"><span>Storage (per pallet/mo)</span><strong>$15–$40</strong></div>
+        <div class="feat-stat"><span>Pick & Pack (per order)</span><strong>$2.00–$3.50</strong></div>
+        <div class="feat-stat"><span>FNSKU Labeling</span><strong>$0.10–$0.25</strong></div>
+        <div class="feat-stat"><span>Monthly Account Fee</span><strong style="color:#ff6b6b;">$0 at FR-Logistics</strong></div>
+      </div>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="posts-grid" id="postsGrid">
+
+      <!-- Post 4 — EcoPack+ Launch -->
+      <div class="post-card">
+        <div class="post-thumb" style="background:linear-gradient(135deg,#0a1a0f 0%,#1a3a2a 100%);">
+          <div class="post-thumb-bg"></div>
+          <span style="position:relative;z-index:1;">🌿</span>
+          <span class="post-cat-badge" style="background:#00A878;">EcoPack+</span>
+        </div>
+        <div class="post-body">
+          <div class="post-meta-sm"><span>📅 Sep 2026</span><span>⏱ 4 min</span></div>
+          <h3>EcoPack+: Miami's Greenest Package Pickup Service Is Here</h3>
+          <p>Shop online using our Doral warehouse address. We receive, eco-repack & you pick up — zero waste left behind. Free registration.</p>
+          <a href="ecopack-launch-miami-greenest-pickup-service.html" class="post-read">
+            Read Article
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Post 1 -->
+      <div class="post-card">
+        <div class="post-thumb">
+          <div class="post-thumb-bg"></div>
+          <span style="position:relative;z-index:1;">📦</span>
+          <span class="post-cat-badge">FBA Prep</span>
+        </div>
+        <div class="post-body">
+          <div class="post-meta-sm"><span>📅 Jan 2025</span><span>⏱ 5 min</span></div>
+          <h3>How to Choose the Right FBA Prep Center in Miami</h3>
+          <p>A practical 7-point checklist for Amazon sellers evaluating prep centers — including what Amazon actually audits.</p>
+          <a href="how-to-choose-fba-prep-center-miami.html" class="post-read">
+            Read Article
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Post 2 -->
+      <div class="post-card">
+        <div class="post-thumb">
+          <div class="post-thumb-bg"></div>
+          <span style="position:relative;z-index:1;">🌎</span>
+          <span class="post-cat-badge">LATAM</span>
+        </div>
+        <div class="post-body">
+          <div class="post-meta-sm"><span>📅 Feb 2025</span><span>⏱ 7 min</span></div>
+          <h3>LATAM to Amazon USA: A Step-by-Step Import Guide</h3>
+          <p>From your factory in Latin America to your first Amazon sale — every step of the journey explained.</p>
+          <a href="latam-to-amazon-usa-import-guide.html" class="post-read">
+            Read Article
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Post 3 -->
+      <div class="post-card">
+        <div class="post-thumb">
+          <div class="post-thumb-bg"></div>
+          <span style="position:relative;z-index:1;">💰</span>
+          <span class="post-cat-badge">Cost Guide</span>
+        </div>
+        <div class="post-body">
+          <div class="post-meta-sm"><span>📅 Mar 2025</span><span>⏱ 6 min</span></div>
+          <h3>3PL Fulfillment Costs Explained: What You Should (and Shouldn't) Be Paying</h3>
+          <p>Every fee category decoded: receiving, storage, pick & pack, FBA prep, and the hidden charges to watch out for.</p>
+          <a href="3pl-fulfillment-costs-explained.html" class="post-read">
+            Read Article
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /posts-grid -->
+
+    <!-- Newsletter -->
+    <div class="newsletter">
+      <h3>📬 New articles every month</h3>
+      <p>Get practical logistics guides delivered to your inbox. No spam — just actionable content for Amazon sellers and LATAM brands.</p>
+      <div class="nl-form">
+        <input type="email" placeholder="your@email.com" />
+        <button>Subscribe</button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>
+      <a href="../index.html">← Back to FR-Logistics.net</a>
+      <a href="../index.html#contact">Get a Quote</a>
+      <a href="https://www.instagram.com/fr_logistics/" target="_blank">Instagram</a>
+      <a href="https://www.linkedin.com/company/fr-logistics-miami/" target="_blank">LinkedIn</a>
+    </p>
+    <p style="margin-top:12px;">© 2025 FR-Logistics Miami, Inc.</p>
+  </footer>
+
+  <!-- Tidio AI Receptionist -->
+  <script src="//code.tidio.co/tixuqiqexi7oilwhbkyvqzhuoovbuz3w.js" async></script>
+</body>
+</html>
