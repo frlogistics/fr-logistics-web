@@ -133,47 +133,153 @@
     }, 500);
   }
 
-  // -----------------------------------------------------------
-  // Pricing calculator (pricing.html only) — service-aware
-  // Changes cost model based on selected service
-  // -----------------------------------------------------------
+  // ════════════════════════════════════════════════════════════════════════
+  // PRICING CALCULATOR — API-driven (Phase 3.4 refactor 2026-05-07)
+  //
+  // Fetches DEFAULT rates from apps.fr-logistics.net/.netlify/functions/billing-rates
+  // Caches result in localStorage for 1 hour to minimize API calls.
+  // Falls back to hardcoded values if API unreachable (graceful degradation).
+  //
+  // Source of truth: fr_client_rates table in Supabase (DEFAULT row).
+  // To update rates → edit Supabase, NOT this file.
+  //
+  // Fallback values reflect canonical D1-D15 decisions as of 2026-05-07.
+  // If you change rates in fr_client_rates, also update FALLBACK_RATES below
+  // so offline users see current numbers (otherwise they see stale fallbacks).
+  // ════════════════════════════════════════════════════════════════════════
   const calcForm = document.getElementById('pricingCalculator');
   if (calcForm) {
-    const RATES = {
-      fnsku: (units) => {
-        if (units <= 50) return 1.00;
-        if (units <= 100) return 0.90;
-        if (units <= 500) return 0.75;
-        if (units <= 1000) return 0.65;
-        if (units <= 5000) return 0.60;
-        return 0.50;
-      },
-      polybag: 0.50,
-      kitting: 0.75,
-      storage: 0.05,         // per pallet per day
-      receiving: 2.50,       // per carton
-      outbound: 1.00,        // per order
-      bubble: 0.15,
-      sticker: 0.20,
-      dropshipment: 6.00,    // per drop-shipment
-      fulfillment: 3.00,     // per Shopify/DTC order
+
+    // ─── CONFIG ──────────────────────────────────────────────────────────
+    const RATES_API_URL = 'https://apps.fr-logistics.net/.netlify/functions/billing-rates?client=DEFAULT';
+    const CACHE_KEY     = 'fr_public_rates_v1';
+    const CACHE_TTL_MS  = 60 * 60 * 1000;  // 1 hour
+
+    // ─── FALLBACK RATES ──────────────────────────────────────────────────
+    // Used ONLY if API is unreachable. Should mirror canonical DEFAULT rates.
+    // Keys here = legacy calculator names (kept to minimize compute() changes).
+    // Values below reflect Master Spec v3 D1-D15 (2026-05-07).
+    const FALLBACK_RATES = {
+      fnsku:        0.55,   // PRP_FNSKU (D3 — flat, no more tiers)
+      polybag:      0.50,   // PRP_POLY  (D2)
+      kitting:      0.75,   // PRP_KIT
+      storage:      45 / 30, // STO_RACK $45/mo ÷ 30 = $1.50/day per pallet
+      receiving:    2.50,   // INB_CARTON
+      outbound:     2.00,   // FUL_OUT_CART (D7 — was $1, now $2)
+      bubble:       0.80,   // PRP_BUBBLE (was $0.15 in v1, now $0.80)
+      sticker:      0.25,   // PRP_ROL (was $0.20)
+      dropshipment: 6.00,   // FUL_OUT_DROP
+      fulfillment:  3.00,   // FUL_PP1 (D4 — flat, no more tiers)
     };
 
-    const serviceSelect = document.getElementById('calcService');
-    const serviceNote = document.getElementById('calcServiceNote');
-    const unitsSlider = document.getElementById('calcUnits');
-    const unitsValue = document.getElementById('calcUnitsValue');
-    const daysSlider = document.getElementById('calcDays');
-    const daysValue = document.getElementById('calcDaysValue');
-    const sizeSelect = document.getElementById('calcSize');
-    const addons = calcForm.querySelectorAll('.calc-addons input[type="checkbox"]');
-    const totalEl = document.getElementById('calcTotal');
-    const unitsLabel = document.getElementById('calcUnitsLabel');
+    // ─── CANONICAL CODE → CALCULATOR KEY MAPPING ─────────────────────────
+    // Maps API service codes (PRP_FNSKU, PRP_BUBBLE, etc.) to calculator keys
+    // (fnsku, bubble, etc.) so we can preserve compute() logic unchanged.
+    const API_KEY_TO_CALC_KEY = {
+      'PRP_FNSKU':    'fnsku',
+      'PRP_POLY':     'polybag',
+      'PRP_KIT':      'kitting',
+      'PRP_BUBBLE':   'bubble',
+      'PRP_ROL':      'sticker',
+      'STO_RACK':     'storage_monthly',  // we'll convert to per-day below
+      'INB_CARTON':   'receiving',
+      'FUL_OUT_CART': 'outbound',
+      'FUL_OUT_DROP': 'dropshipment',
+      'FUL_PP1':      'fulfillment',
+    };
 
-    // Service-specific configs
+    // ─── RATES STATE — populated by loadRates() at init ──────────────────
+    let RATES = { ...FALLBACK_RATES };  // start with fallback, replaced after fetch
+
+    // ─── CACHE HELPERS ───────────────────────────────────────────────────
+    function readCache() {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || !obj.ts || !obj.rates) return null;
+        if (Date.now() - obj.ts > CACHE_TTL_MS) return null;
+        return obj.rates;
+      } catch (e) {
+        return null;
+      }
+    }
+    function writeCache(rates) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rates }));
+      } catch (e) { /* localStorage full or blocked — silent fail */ }
+    }
+
+    // ─── BUILD CALCULATOR RATES FROM API RESPONSE ────────────────────────
+    function buildRatesFromApi(apiRates) {
+      // apiRates shape: { "PRP_FNSKU": {rate: 0.55, ...}, "STO_RACK": {rate: 45, ...}, ... }
+      const out = { ...FALLBACK_RATES };  // start with fallback
+      for (const code in API_KEY_TO_CALC_KEY) {
+        const calcKey = API_KEY_TO_CALC_KEY[code];
+        const entry   = apiRates[code];
+        if (!entry || entry.rate == null) continue;
+
+        const v = parseFloat(entry.rate);
+        if (calcKey === 'storage_monthly') {
+          out.storage = v / 30;  // STO_RACK is monthly; calculator uses per-day
+        } else {
+          out[calcKey] = v;
+        }
+      }
+      // FNSKU rate function (always flat now — D3 eliminated tiers)
+      const flatFnsku = out.fnsku;
+      out.fnsku = () => flatFnsku;
+      return out;
+    }
+
+    // Convert FALLBACK_RATES to also expose fnsku as function (consistency)
+    function buildFallbackCalcRates() {
+      const out = { ...FALLBACK_RATES };
+      const flatFnsku = out.fnsku;
+      out.fnsku = () => flatFnsku;
+      return out;
+    }
+
+    // ─── LOAD RATES ─ async ──────────────────────────────────────────────
+    async function loadRates() {
+      // Try cache first
+      const cached = readCache();
+      if (cached) {
+        return cached;
+      }
+
+      // Cache miss — fetch from API
+      try {
+        const resp = await fetch(RATES_API_URL, { method: 'GET' });
+        if (!resp.ok) throw new Error('API ' + resp.status);
+        const data = await resp.json();
+        if (!data || !data.rates) throw new Error('Empty rates response');
+        const built = buildRatesFromApi(data.rates);
+        writeCache(built);
+        return built;
+      } catch (err) {
+        // Graceful fallback — calculator stays usable with hardcoded values
+        console.warn('[FR-Logistics] Rates API unavailable, using fallback:', err.message);
+        return buildFallbackCalcRates();
+      }
+    }
+
+    // ─── DOM REFS ────────────────────────────────────────────────────────
+    const serviceSelect = document.getElementById('calcService');
+    const serviceNote   = document.getElementById('calcServiceNote');
+    const unitsSlider   = document.getElementById('calcUnits');
+    const unitsValue    = document.getElementById('calcUnitsValue');
+    const daysSlider    = document.getElementById('calcDays');
+    const daysValue     = document.getElementById('calcDaysValue');
+    const sizeSelect    = document.getElementById('calcSize');
+    const addons        = calcForm.querySelectorAll('.calc-addons input[type="checkbox"]');
+    const totalEl       = document.getElementById('calcTotal');
+    const unitsLabel    = document.getElementById('calcUnitsLabel');
+
+    // ─── SERVICE CONFIGS ─────────────────────────────────────────────────
     const SERVICE_CONFIGS = {
       fba: {
-        noteText: 'FBA Prep: FNSKU labeling + inbound receiving + storage + shipment prep. Volume tiers applied automatically.',
+        noteText: 'FBA Prep: FNSKU labeling + inbound receiving + storage + shipment prep. All rates flat per current rate card.',
         unitLabel: 'Units per month',
         showSize: true,
         showAddons: true,
@@ -192,11 +298,12 @@
       },
     };
 
+    // ─── COMPUTE ─────────────────────────────────────────────────────────
     function compute() {
       const service = serviceSelect ? serviceSelect.value : 'fba';
       const units = parseInt(unitsSlider.value, 10) || 0;
-      const days = parseInt(daysSlider.value, 10) || 0;
-      const size = sizeSelect ? sizeSelect.value : 'standard';
+      const days  = parseInt(daysSlider.value, 10) || 0;
+      const size  = sizeSelect ? sizeSelect.value : 'standard';
 
       let total = 0;
 
@@ -275,8 +382,16 @@
     addons.forEach(box => box.addEventListener('change', compute));
     if (serviceSelect) serviceSelect.addEventListener('change', updateServiceUI);
 
-    // Initial setup
+    // ─── INIT ─ async (load rates first, then compute) ───────────────────
+    // Show fallback values immediately so calculator is never empty.
+    RATES = buildFallbackCalcRates();
     updateServiceUI();
+
+    // Then fetch live rates and re-compute (instant if cached, ~200ms first load)
+    loadRates().then(loaded => {
+      RATES = loaded;
+      compute();  // recalculate with live rates
+    });
   }
 
 })();
