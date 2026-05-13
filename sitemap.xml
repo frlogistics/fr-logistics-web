@@ -143,4 +143,23 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://fr-logistics.net/traceability</loc>
+    <lastmod>2026-05-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fr-logistics.net/traceability"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://fr-logistics.net/es/traceability"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fr-logistics.net/traceability"/>
+  </url>
+  <url>
+    <loc>https://fr-logistics.net/es/traceability</loc>
+    <lastmod>2026-05-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fr-logistics.net/traceability"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://fr-logistics.net/es/traceability"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fr-logistics.net/traceability"/>
+  </url>
+
 </urlset>
