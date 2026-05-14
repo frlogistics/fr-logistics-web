@@ -824,6 +824,11 @@ section { position: relative; }
 }
 .latam-features svg { width: 14px; height: 10px; margin-top: 6px; flex-shrink: 0; }
 
+/* Traceability teaser reuses .latam-features on a LIGHT bg — override white text */
+#traceability-teaser .latam-features li { color: var(--text-secondary); }
+#traceability-teaser .latam-features li strong { color: var(--text-primary); }
+
+
 /* ================================================================
    PRICING
    ================================================================ */
