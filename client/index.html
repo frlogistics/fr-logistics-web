@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>FR-Logistics | Client Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#f1f5f9; --surface:#ffffff; --panel:#f8fafc;
+    --border:#e2e8f0; --border-strong:#cbd5e1;
+    --text:#0f172a; --muted:#64748b; --hint:#94a3b8;
+    --green:#0ea55f;
+    --amber-tx:#92400e;
+    --blue-bg:#dbeafe; --blue-tx:#1e40af;
+    --green-tx:#166534;
+    --red-bg:#fee2e2; --red-tx:#991b1b;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'DM Sans',system-ui,sans-serif;
+    background:var(--bg); color:var(--text);
+    min-height:100vh; display:flex; flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  .topbar{
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:14px 24px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{display:flex; align-items:center; gap:10px}
+  .brand-mark{
+    width:36px; height:36px; border-radius:9px; background:var(--green);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-weight:800; font-size:14px;
+  }
+  .brand-text{font-family:'Syne',sans-serif; font-weight:700; font-size:16px}
+  .brand-sub{font-size:11px; color:var(--muted); letter-spacing:.04em; text-transform:uppercase}
+  .signout{
+    font-size:13px; color:var(--muted); background:none; border:1px solid var(--border);
+    border-radius:8px; padding:7px 14px; cursor:pointer; font-family:inherit;
+  }
+  .signout:hover{background:var(--panel); color:var(--text)}
+
+  .wrap{flex:1; width:100%; max-width:1100px; margin:0 auto; padding:32px 24px}
+
+  .login-shell{flex:1; display:flex; align-items:center; justify-content:center; padding:24px}
+  .login-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:36px 32px; width:100%; max-width:400px;
+  }
+  .login-card h1{font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px}
+  .login-card .sub{font-size:14px; color:var(--muted); margin-bottom:24px}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px}
+  .field label{font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+  .field input{
+    font-family:inherit; font-size:16px; padding:11px 12px;
+    border:1px solid var(--border-strong); border-radius:9px; background:var(--panel);
+    min-height:46px; color:var(--text);
+  }
+  .field input:focus{outline:none; border-color:var(--green); background:var(--surface)}
+  .btn{
+    font-family:inherit; font-size:15px; font-weight:600; width:100%;
+    background:var(--green); color:#fff; border:none; border-radius:9px;
+    padding:12px; min-height:46px; cursor:pointer;
+  }
+  .btn:hover{background:#0c8f52}
+  .btn:disabled{opacity:.55; cursor:not-allowed}
+  .msg{font-size:13px; margin-top:14px; padding:10px 12px; border-radius:8px; display:none}
+  .msg.error{display:block; background:var(--red-bg); color:var(--red-tx)}
+  .msg.info{display:block; background:var(--blue-bg); color:var(--blue-tx)}
+
+  .hidden{display:none !important}
+  .greeting{font-family:'Syne',sans-serif; font-size:24px; font-weight:700; margin-bottom:4px}
+  .greeting-sub{font-size:14px; color:var(--muted); margin-bottom:24px}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px}
+  .kpi{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px 18px; box-shadow:var(--shadow);
+  }
+  .kpi-label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px}
+  .kpi-value{font-family:'Syne',sans-serif; font-size:30px; font-weight:700}
+  .kpi.pending .kpi-value{color:var(--amber-tx)}
+  .kpi.processing .kpi-value{color:var(--blue-tx)}
+  .kpi.exported .kpi-value{color:var(--green-tx)}
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px 22px; box-shadow:var(--shadow);
+  }
+  .card h2{font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:6px}
+  .card p{font-size:14px; color:var(--muted); line-height:1.6}
+  .loading{padding:60px 20px; text-align:center; color:var(--hint); font-size:14px}
+
+  @media(max-width:680px){
+    .kpis{grid-template-columns:1fr 1fr}
+    .wrap{padding:20px 16px}
+  }
+</style>
+</head>
+<body>
+
+<div id="loginView" class="login-shell">
+  <div class="login-card">
+    <h1>Client Portal</h1>
+    <p class="sub">Sign in to access your FR-Logistics account.</p>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="email" placeholder="you@company.com" />
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" placeholder="••••••••" />
+    </div>
+    <button class="btn" id="loginBtn">Sign in</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<div id="appView" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">FR</div>
+      <div>
+        <div class="brand-text">Client Portal</div>
+        <div class="brand-sub" id="brandSub">FR-Logistics</div>
+      </div>
+    </div>
+    <button class="signout" id="signoutBtn">Sign out</button>
+  </div>
+
+  <div class="wrap">
+    <div id="dashLoading" class="loading">Loading your dashboard&hellip;</div>
+
+    <div id="dashContent" class="hidden">
+      <div class="greeting" id="greeting">Hello</div>
+      <div class="greeting-sub" id="greetingSub"></div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kpi-label">Total orders</div>
+          <div class="kpi-value" id="kpiTotal">0</div>
+        </div>
+        <div class="kpi pending">
+          <div class="kpi-label">Pending</div>
+          <div class="kpi-value" id="kpiPending">0</div>
+        </div>
+        <div class="kpi processing">
+          <div class="kpi-label">Processing</div>
+          <div class="kpi-value" id="kpiProcessing">0</div>
+        </div>
+        <div class="kpi exported">
+          <div class="kpi-label">Exported</div>
+          <div class="kpi-value" id="kpiExported">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>More coming soon</h2>
+        <p>This is the first version of your portal. Inventory, order submission and
+           billing tabs will appear here as they are rolled out.</p>
+      </div>
+    </div>
+
+    <div id="dashError" class="msg error hidden"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  var SUPABASE_URL = 'https://rijbschnchjiuggrhfrx.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_2iAxAlUmL5mzL_CXFDR4Mw_bSARmU90';
+  var DASHBOARD_FN = 'https://apps.fr-logistics.net/.netlify/functions/portal-dashboard';
+
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var loginView   = document.getElementById('loginView');
+  var appView     = document.getElementById('appView');
+  var loginBtn    = document.getElementById('loginBtn');
+  var loginMsg    = document.getElementById('loginMsg');
+  var emailEl     = document.getElementById('email');
+  var passEl      = document.getElementById('password');
+  var signoutBtn  = document.getElementById('signoutBtn');
+  var dashLoading = document.getElementById('dashLoading');
+  var dashContent = document.getElementById('dashContent');
+  var dashError   = document.getElementById('dashError');
+
+  function showMsg(text, type){
+    loginMsg.textContent = text;
+    loginMsg.className = 'msg ' + type;
+  }
+  function clearMsg(){ loginMsg.className = 'msg'; loginMsg.textContent = ''; }
+
+  async function doLogin(){
+    clearMsg();
+    var email = emailEl.value.trim();
+    var password = passEl.value;
+    if(!email || !password){ showMsg('Enter your email and password.', 'error'); return; }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in…';
+    var res = await sb.auth.signInWithPassword({ email: email, password: password });
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Sign in';
+
+    if(res.error){ showMsg(res.error.message || 'Sign in failed.', 'error'); return; }
+    enterApp();
+  }
+  loginBtn.addEventListener('click', doLogin);
+  passEl.addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+
+  signoutBtn.addEventListener('click', async function(){
+    await sb.auth.signOut();
+    appView.classList.add('hidden');
+    loginView.classList.remove('hidden');
+    emailEl.value = ''; passEl.value = '';
+    clearMsg();
+  });
+
+  async function enterApp(){
+    loginView.classList.add('hidden');
+    appView.classList.remove('hidden');
+    dashContent.classList.add('hidden');
+    dashError.classList.add('hidden');
+    dashLoading.classList.remove('hidden');
+
+    var userRes = await sb.auth.getUser();
+    var user = userRes.data ? userRes.data.user : null;
+    if(!user){ showDashError('Session expired. Please sign in again.'); return; }
+
+    try{
+      var url = DASHBOARD_FN + '?portal_user=' + encodeURIComponent(user.email);
+      var resp = await fetch(url);
+      var data = await resp.json();
+
+      if(!resp.ok){
+        showDashError(data.error || 'Could not load your dashboard.');
+        return;
+      }
+
+      var c = data.client;
+      var o = data.orders;
+      document.getElementById('greeting').textContent =
+        'Hello, ' + (c.name || c.company || 'there');
+      document.getElementById('greetingSub').textContent =
+        (c.company ? c.company + ' · ' : '') + 'Client portal';
+      document.getElementById('brandSub').textContent = c.name || 'FR-Logistics';
+      document.getElementById('kpiTotal').textContent      = o.total;
+      document.getElementById('kpiPending').textContent    = o.pending;
+      document.getElementById('kpiProcessing').textContent = o.processing;
+      document.getElementById('kpiExported').textContent   = o.exported;
+
+      dashLoading.classList.add('hidden');
+      dashContent.classList.remove('hidden');
+    }catch(err){
+      showDashError('Network error: ' + (err.message || err));
+    }
+  }
+
+  function showDashError(text){
+    dashLoading.classList.add('hidden');
+    dashContent.classList.add('hidden');
+    dashError.textContent = text;
+    dashError.classList.remove('hidden');
+  }
+
+  (async function(){
+    var sessionRes = await sb.auth.getSession();
+    if(sessionRes.data && sessionRes.data.session) enterApp();
+  })();
+</script>
+</body>
+</html>
