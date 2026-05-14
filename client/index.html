@@ -328,12 +328,19 @@
 </div>
 
 <script>
+(function () {
+  'use strict';
+
+  console.log('[FR Portal] script start');
+
   // ---------- Config ----------
   const SUPABASE_URL = 'https://rijbschnchjiuggrhfrx.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_2iAxAlUmL5mzL_CXFDR4Mw_bSARmU90';
   const API_BASE = 'https://apps.fr-logistics.net/.netlify/functions';
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  // window.supabase is the SDK global. Use a distinct name for the client
+  // instance to avoid colliding with it.
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
   // ---------- State ----------
   let portalUser = null;
@@ -357,7 +364,7 @@
     }
     const btn = document.getElementById('login-btn');
     btn.disabled = true; btn.textContent = 'Signing in…';
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     btn.disabled = false; btn.textContent = 'Sign In';
     if (error) {
       loginError.textContent = error.message || 'Sign in failed.';
@@ -369,7 +376,7 @@
   });
 
   document.getElementById('logout-btn').addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     portalUser = null; clientName = null; ordersCache = [];
     appView.classList.add('hidden');
     loginView.classList.remove('hidden');
@@ -379,12 +386,14 @@
 
   // Restore session on load
   (async () => {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await sb.auth.getSession();
     if (data.session && data.session.user) {
       portalUser = data.session.user.email;
       await startApp();
     }
   })();
+
+  console.log('[FR Portal] listeners registered');
 
   async function startApp() {
     loginView.classList.add('hidden');
@@ -598,6 +607,8 @@
       btn.disabled = false; btn.textContent = 'Submit Order';
     }
   });
+
+})();
 </script>
 </body>
 </html>
