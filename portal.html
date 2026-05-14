@@ -1020,26 +1020,28 @@
     submitBtn.disabled = true;
     submitBtn.textContent = '⏳ Scheduling…';
 
+    // Payload matches backend ecopack.js schema EXACTLY:
+    // { action, client_name, wa_number, email, pickup_date, pickup_time, package_count, notes }
+    // IMPORTANT: action goes IN THE BODY, not as a query string — backend reads body.action
     const payload = {
-      client_name: `${state.first} ${state.last}`,
-      first_name: state.first,
-      last_name: state.last,
+      action: 'book',
+      client_name: `${state.first} ${state.last}`.trim(),
       wa_number: state.phone,
-      email: state.email,
-      package_count: state.count,
+      email: state.email || '',
       pickup_date: fmtDateISO(state.date),
       pickup_time: state.time,
-      source: 'fr-logistics.net/portal',
+      package_count: parseInt(state.count, 10) || 1,
+      notes: 'Booked via fr-logistics.net/portal',
     };
 
     try {
-      const res = await fetch(`${API_BASE}?action=book`, {
+      const res = await fetch(API_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Booking failed');
+      if (!res.ok || data.error) throw new Error(data.error || `Booking failed (status ${res.status})`);
       document.getElementById('success-msg').textContent = `You'll receive a WhatsApp confirmation at ${state.phone} in a few seconds. See you ${formatDateFull(state.date)} at ${formatTime(state.time)}!`;
       pfGoTo('success');
     } catch (err) {
