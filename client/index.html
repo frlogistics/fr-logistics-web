@@ -3,272 +3,601 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="robots" content="noindex, nofollow" />
 <title>FR-Logistics | Client Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root{
-    --bg:#f1f5f9; --surface:#ffffff; --panel:#f8fafc;
-    --border:#e2e8f0; --border-strong:#cbd5e1;
-    --text:#0f172a; --muted:#64748b; --hint:#94a3b8;
-    --green:#0ea55f;
-    --amber-tx:#92400e;
-    --blue-bg:#dbeafe; --blue-tx:#1e40af;
-    --green-tx:#166534;
-    --red-bg:#fee2e2; --red-tx:#991b1b;
-    --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-    --radius:12px;
+  :root {
+    --fr-green: #16a34a;
+    --fr-dark: #1f2937;
+    --fr-gray: #6b7280;
+    --fr-bg: #f1f5f9;
+    --fr-border: #e5e7eb;
+    --fr-red: #b91c1c;
+    --fr-red-bg: #fde8e8;
+    --fr-orange: #b45309;
+    --fr-blue: #1d4ed8;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'DM Sans',system-ui,sans-serif;
-    background:var(--bg); color:var(--text);
-    min-height:100vh; display:flex; flex-direction:column;
-    -webkit-font-smoothing:antialiased;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--fr-bg);
+    color: var(--fr-dark);
+    min-height: 100vh;
   }
-  .topbar{
-    background:var(--surface); border-bottom:1px solid var(--border);
-    padding:14px 24px; display:flex; align-items:center; justify-content:space-between;
+  /* ---- Header ---- */
+  header {
+    background: #fff;
+    border-bottom: 1px solid var(--fr-border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
-  .brand{display:flex; align-items:center; gap:10px}
-  .brand-mark{
-    width:36px; height:36px; border-radius:9px; background:var(--green);
-    color:#fff; display:flex; align-items:center; justify-content:center;
-    font-family:'Syne',sans-serif; font-weight:800; font-size:14px;
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 40px; height: 40px;
+    background: var(--fr-green);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 14px; letter-spacing: -0.5px;
   }
-  .brand-text{font-family:'Syne',sans-serif; font-weight:700; font-size:16px}
-  .brand-sub{font-size:11px; color:var(--muted); letter-spacing:.04em; text-transform:uppercase}
-  .signout{
-    font-size:13px; color:var(--muted); background:none; border:1px solid var(--border);
-    border-radius:8px; padding:7px 14px; cursor:pointer; font-family:inherit;
+  .brand-text h1 { font-size: 18px; font-weight: 700; }
+  .brand-text p { font-size: 11px; color: var(--fr-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+  .logout-btn {
+    background: none; border: 1px solid var(--fr-border);
+    color: var(--fr-gray); padding: 8px 16px; border-radius: 6px;
+    font-size: 13px; cursor: pointer;
   }
-  .signout:hover{background:var(--panel); color:var(--text)}
-
-  .wrap{flex:1; width:100%; max-width:1100px; margin:0 auto; padding:32px 24px}
-
-  .login-shell{flex:1; display:flex; align-items:center; justify-content:center; padding:24px}
-  .login-card{
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    box-shadow:var(--shadow); padding:36px 32px; width:100%; max-width:400px;
+  .logout-btn:hover { background: var(--fr-bg); }
+  /* ---- Layout ---- */
+  main { max-width: 1100px; margin: 0 auto; padding: 32px; }
+  /* ---- Login ---- */
+  .login-card {
+    max-width: 380px; margin: 80px auto; background: #fff;
+    border: 1px solid var(--fr-border); border-radius: 12px; padding: 32px;
   }
-  .login-card h1{font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px}
-  .login-card .sub{font-size:14px; color:var(--muted); margin-bottom:24px}
-  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px}
-  .field label{font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
-  .field input{
-    font-family:inherit; font-size:16px; padding:11px 12px;
-    border:1px solid var(--border-strong); border-radius:9px; background:var(--panel);
-    min-height:46px; color:var(--text);
+  .login-card h2 { font-size: 20px; margin-bottom: 6px; }
+  .login-card p.sub { font-size: 13px; color: var(--fr-gray); margin-bottom: 24px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--fr-gray); margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--fr-border);
+    border-radius: 6px; font-size: 14px; font-family: inherit; margin-bottom: 16px;
   }
-  .field input:focus{outline:none; border-color:var(--green); background:var(--surface)}
-  .btn{
-    font-family:inherit; font-size:15px; font-weight:600; width:100%;
-    background:var(--green); color:#fff; border:none; border-radius:9px;
-    padding:12px; min-height:46px; cursor:pointer;
+  textarea { resize: vertical; min-height: 60px; }
+  .btn-primary {
+    width: 100%; background: var(--fr-green); color: #fff; border: none;
+    padding: 11px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
   }
-  .btn:hover{background:#0c8f52}
-  .btn:disabled{opacity:.55; cursor:not-allowed}
-  .msg{font-size:13px; margin-top:14px; padding:10px 12px; border-radius:8px; display:none}
-  .msg.error{display:block; background:var(--red-bg); color:var(--red-tx)}
-  .msg.info{display:block; background:var(--blue-bg); color:var(--blue-tx)}
-
-  .hidden{display:none !important}
-  .greeting{font-family:'Syne',sans-serif; font-size:24px; font-weight:700; margin-bottom:4px}
-  .greeting-sub{font-size:14px; color:var(--muted); margin-bottom:24px}
-  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px}
-  .kpi{
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:16px 18px; box-shadow:var(--shadow);
+  .btn-primary:hover { background: #15803d; }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  /* ---- Tabs ---- */
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--fr-border); }
+  .tab {
+    background: none; border: none; padding: 12px 20px; font-size: 14px;
+    font-weight: 600; color: var(--fr-gray); cursor: pointer;
+    border-bottom: 2px solid transparent;
   }
-  .kpi-label{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px}
-  .kpi-value{font-family:'Syne',sans-serif; font-size:30px; font-weight:700}
-  .kpi.pending .kpi-value{color:var(--amber-tx)}
-  .kpi.processing .kpi-value{color:var(--blue-tx)}
-  .kpi.exported .kpi-value{color:var(--green-tx)}
-  .card{
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-    padding:20px 22px; box-shadow:var(--shadow);
+  .tab.active { color: var(--fr-green); border-bottom-color: var(--fr-green); }
+  .tab:hover:not(.active) { color: var(--fr-dark); }
+  /* ---- Headings ---- */
+  .page-title { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--fr-gray); margin-bottom: 24px; }
+  /* ---- KPI cards ---- */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: #fff; border: 1px solid var(--fr-border);
+    border-radius: 10px; padding: 20px;
   }
-  .card h2{font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:6px}
-  .card p{font-size:14px; color:var(--muted); line-height:1.6}
-  .loading{padding:60px 20px; text-align:center; color:var(--hint); font-size:14px}
-
-  @media(max-width:680px){
-    .kpis{grid-template-columns:1fr 1fr}
-    .wrap{padding:20px 16px}
+  .kpi-card .kpi-label {
+    font-size: 11px; font-weight: 600; color: var(--fr-gray);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .kpi-card .kpi-value { font-size: 28px; font-weight: 800; }
+  .kpi-card.pending .kpi-value { color: var(--fr-orange); }
+  .kpi-card.processing .kpi-value { color: var(--fr-blue); }
+  .kpi-card.exported .kpi-value { color: var(--fr-green); }
+  /* ---- Panels ---- */
+  .panel {
+    background: #fff; border: 1px solid var(--fr-border);
+    border-radius: 10px; padding: 24px; margin-bottom: 16px;
+  }
+  .panel h3 { font-size: 16px; margin-bottom: 6px; }
+  .panel p.muted { font-size: 13px; color: var(--fr-gray); }
+  /* ---- Table ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--fr-gray); padding: 10px 12px;
+    border-bottom: 1px solid var(--fr-border);
+  }
+  td { padding: 12px; border-bottom: 1px solid var(--fr-border); }
+  tr:last-child td { border-bottom: none; }
+  .status-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; text-transform: capitalize;
+  }
+  .status-badge.pending { background: #fef3c7; color: var(--fr-orange); }
+  .status-badge.processing { background: #dbeafe; color: var(--fr-blue); }
+  .status-badge.exported { background: #dcfce7; color: var(--fr-green); }
+  .order-row { cursor: pointer; }
+  .order-row:hover { background: var(--fr-bg); }
+  .item-detail { background: #f9fafb; }
+  .item-detail td { padding: 0; }
+  .item-detail-inner { padding: 12px 24px; }
+  .item-detail-inner table { font-size: 12px; }
+  .item-detail-inner th, .item-detail-inner td { padding: 6px 10px; }
+  /* ---- Toolbar ---- */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+  .toolbar select { width: auto; margin-bottom: 0; }
+  .btn-secondary {
+    background: var(--fr-green); color: #fff; border: none;
+    padding: 9px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .btn-secondary:hover { background: #15803d; }
+  /* ---- Messages ---- */
+  .error-box {
+    background: var(--fr-red-bg); color: var(--fr-red);
+    padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;
+  }
+  .success-box {
+    background: #dcfce7; color: var(--fr-green);
+    padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;
+  }
+  .empty-state { text-align: center; padding: 40px; color: var(--fr-gray); font-size: 14px; }
+  /* ---- Modal ---- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 16px; overflow-y: auto; z-index: 100;
+  }
+  .modal {
+    background: #fff; border-radius: 12px; padding: 28px;
+    max-width: 560px; width: 100%;
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 4px; }
+  .modal p.sub { font-size: 13px; color: var(--fr-gray); margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .section-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--fr-dark); margin: 16px 0 10px;
+  }
+  .item-line { display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: 8px; align-items: start; }
+  .item-line input { margin-bottom: 8px; }
+  .remove-item {
+    background: none; border: 1px solid var(--fr-border); color: var(--fr-red);
+    border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 13px; height: 38px;
+  }
+  .add-item-btn {
+    background: none; border: 1px dashed var(--fr-border); color: var(--fr-gray);
+    width: 100%; padding: 9px; border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 16px;
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .modal-actions button { flex: 1; }
+  .btn-cancel {
+    background: none; border: 1px solid var(--fr-border); color: var(--fr-gray);
+    padding: 11px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .hidden { display: none; }
+  @media (max-width: 720px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    main, header { padding: 16px; }
   }
 </style>
 </head>
 <body>
 
-<div id="loginView" class="login-shell">
+<!-- ============ LOGIN VIEW ============ -->
+<div id="login-view">
   <div class="login-card">
-    <h1>Client Portal</h1>
+    <h2>Client Portal</h2>
     <p class="sub">Sign in to access your FR-Logistics account.</p>
-    <div class="field">
-      <label for="email">Email</label>
-      <input type="email" id="email" autocomplete="email" placeholder="you@company.com" />
-    </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input type="password" id="password" autocomplete="current-password" placeholder="••••••••" />
-    </div>
-    <button class="btn" id="loginBtn">Sign in</button>
-    <div class="msg" id="loginMsg"></div>
+    <div id="login-error" class="error-box hidden"></div>
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="you@company.com" autocomplete="username" />
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+    <button class="btn-primary" id="login-btn">Sign In</button>
   </div>
 </div>
 
-<div id="appView" class="hidden" style="flex:1; display:flex; flex-direction:column;">
-  <div class="topbar">
+<!-- ============ APP VIEW ============ -->
+<div id="app-view" class="hidden">
+  <header>
     <div class="brand">
-      <div class="brand-mark">FR</div>
+      <div class="logo">FR</div>
+      <div class="brand-text">
+        <h1>Client Portal</h1>
+        <p id="header-client">—</p>
+      </div>
+    </div>
+    <button class="logout-btn" id="logout-btn">Sign Out</button>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="orders">Orders</button>
+    </div>
+
+    <!-- ---- DASHBOARD TAB ---- -->
+    <section id="tab-dashboard">
+      <h2 class="page-title" id="dash-greeting">Hello</h2>
+      <p class="page-sub" id="dash-sub">Client portal</p>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="kpi-total">0</div></div>
+        <div class="kpi-card pending"><div class="kpi-label">Pending</div><div class="kpi-value" id="kpi-pending">0</div></div>
+        <div class="kpi-card processing"><div class="kpi-label">Processing</div><div class="kpi-value" id="kpi-processing">0</div></div>
+        <div class="kpi-card exported"><div class="kpi-label">Exported</div><div class="kpi-value" id="kpi-exported">0</div></div>
+      </div>
+      <div class="panel">
+        <h3>More coming soon</h3>
+        <p class="muted">This is the first version of your portal. Inventory and billing tabs will appear here as they are rolled out.</p>
+      </div>
+    </section>
+
+    <!-- ---- ORDERS TAB ---- -->
+    <section id="tab-orders" class="hidden">
+      <h2 class="page-title">Orders</h2>
+      <p class="page-sub">View your orders and submit new ones.</p>
+      <div id="orders-msg"></div>
+      <div class="toolbar">
+        <select id="status-filter">
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="exported">Exported</option>
+        </select>
+        <button class="btn-secondary" id="new-order-btn">+ New Order</button>
+      </div>
+      <div class="panel" style="padding: 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Order #</th><th>Status</th><th>Recipient</th>
+              <th>Destination</th><th>Items</th><th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody">
+            <tr><td colspan="6" class="empty-state">Loading orders…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ NEW ORDER MODAL ============ -->
+<div id="order-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>New Order</h3>
+    <p class="sub">Submit a new order for fulfillment. It will be created with status “pending”.</p>
+    <div id="modal-error" class="error-box hidden"></div>
+
+    <div class="section-label">Recipient</div>
+    <label>Recipient name *</label>
+    <input type="text" id="f-recipient_name" />
+    <div class="form-row">
       <div>
-        <div class="brand-text">Client Portal</div>
-        <div class="brand-sub" id="brandSub">FR-Logistics</div>
+        <label>Phone</label>
+        <input type="text" id="f-recipient_phone" />
       </div>
-    </div>
-    <button class="signout" id="signoutBtn">Sign out</button>
-  </div>
-
-  <div class="wrap">
-    <div id="dashLoading" class="loading">Loading your dashboard&hellip;</div>
-
-    <div id="dashContent" class="hidden">
-      <div class="greeting" id="greeting">Hello</div>
-      <div class="greeting-sub" id="greetingSub"></div>
-
-      <div class="kpis">
-        <div class="kpi">
-          <div class="kpi-label">Total orders</div>
-          <div class="kpi-value" id="kpiTotal">0</div>
-        </div>
-        <div class="kpi pending">
-          <div class="kpi-label">Pending</div>
-          <div class="kpi-value" id="kpiPending">0</div>
-        </div>
-        <div class="kpi processing">
-          <div class="kpi-label">Processing</div>
-          <div class="kpi-value" id="kpiProcessing">0</div>
-        </div>
-        <div class="kpi exported">
-          <div class="kpi-label">Exported</div>
-          <div class="kpi-value" id="kpiExported">0</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>More coming soon</h2>
-        <p>This is the first version of your portal. Inventory, order submission and
-           billing tabs will appear here as they are rolled out.</p>
+      <div>
+        <label>Shipping service</label>
+        <input type="text" id="f-shipping_service" placeholder="e.g. USPS Priority" />
       </div>
     </div>
 
-    <div id="dashError" class="msg error hidden"></div>
+    <div class="section-label">Shipping Address</div>
+    <label>Address line 1 *</label>
+    <input type="text" id="f-address_line1" />
+    <label>Address line 2</label>
+    <input type="text" id="f-address_line2" />
+    <div class="form-row">
+      <div>
+        <label>City *</label>
+        <input type="text" id="f-city" />
+      </div>
+      <div>
+        <label>State *</label>
+        <input type="text" id="f-state" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Postal code *</label>
+        <input type="text" id="f-postal_code" />
+      </div>
+      <div>
+        <label>Country code *</label>
+        <input type="text" id="f-country_code" placeholder="US" value="US" />
+      </div>
+    </div>
+    <label>Notes to buyer</label>
+    <textarea id="f-notes_to_buyer"></textarea>
+
+    <div class="section-label">Items</div>
+    <div id="items-container"></div>
+    <button class="add-item-btn" id="add-item-btn">+ Add another item</button>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">Cancel</button>
+      <button class="btn-primary" id="modal-submit" style="width:auto;">Submit Order</button>
+    </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  var SUPABASE_URL = 'https://rijbschnchjiuggrhfrx.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_2iAxAlUmL5mzL_CXFDR4Mw_bSARmU90';
-  var DASHBOARD_FN = 'https://apps.fr-logistics.net/.netlify/functions/portal-dashboard';
+  // ---------- Config ----------
+  const SUPABASE_URL = 'https://rijbschnchjiuggrhfrx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_2iAxAlUmL5mzL_CXFDR4Mw_bSARmU90';
+  const API_BASE = 'https://apps.fr-logistics.net/.netlify/functions';
 
-  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-  var loginView   = document.getElementById('loginView');
-  var appView     = document.getElementById('appView');
-  var loginBtn    = document.getElementById('loginBtn');
-  var loginMsg    = document.getElementById('loginMsg');
-  var emailEl     = document.getElementById('email');
-  var passEl      = document.getElementById('password');
-  var signoutBtn  = document.getElementById('signoutBtn');
-  var dashLoading = document.getElementById('dashLoading');
-  var dashContent = document.getElementById('dashContent');
-  var dashError   = document.getElementById('dashError');
+  // ---------- State ----------
+  let portalUser = null;
+  let clientName = null;
+  let ordersCache = [];
 
-  function showMsg(text, type){
-    loginMsg.textContent = text;
-    loginMsg.className = 'msg ' + type;
-  }
-  function clearMsg(){ loginMsg.className = 'msg'; loginMsg.textContent = ''; }
+  // ---------- Elements ----------
+  const loginView = document.getElementById('login-view');
+  const appView = document.getElementById('app-view');
+  const loginError = document.getElementById('login-error');
 
-  async function doLogin(){
-    clearMsg();
-    var email = emailEl.value.trim();
-    var password = passEl.value;
-    if(!email || !password){ showMsg('Enter your email and password.', 'error'); return; }
-
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Signing in…';
-    var res = await sb.auth.signInWithPassword({ email: email, password: password });
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'Sign in';
-
-    if(res.error){ showMsg(res.error.message || 'Sign in failed.', 'error'); return; }
-    enterApp();
-  }
-  loginBtn.addEventListener('click', doLogin);
-  passEl.addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
-
-  signoutBtn.addEventListener('click', async function(){
-    await sb.auth.signOut();
-    appView.classList.add('hidden');
-    loginView.classList.remove('hidden');
-    emailEl.value = ''; passEl.value = '';
-    clearMsg();
+  // ---------- Auth ----------
+  document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    loginError.classList.add('hidden');
+    if (!email || !password) {
+      loginError.textContent = 'Enter your email and password.';
+      loginError.classList.remove('hidden');
+      return;
+    }
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = 'Sign In';
+    if (error) {
+      loginError.textContent = error.message || 'Sign in failed.';
+      loginError.classList.remove('hidden');
+      return;
+    }
+    portalUser = data.user.email;
+    await startApp();
   });
 
-  async function enterApp(){
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    portalUser = null; clientName = null; ordersCache = [];
+    appView.classList.add('hidden');
+    loginView.classList.remove('hidden');
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+  });
+
+  // Restore session on load
+  (async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session && data.session.user) {
+      portalUser = data.session.user.email;
+      await startApp();
+    }
+  })();
+
+  async function startApp() {
     loginView.classList.add('hidden');
     appView.classList.remove('hidden');
-    dashContent.classList.add('hidden');
-    dashError.classList.add('hidden');
-    dashLoading.classList.remove('hidden');
+    await loadDashboard();
+    await loadOrders();
+  }
 
-    var userRes = await sb.auth.getUser();
-    var user = userRes.data ? userRes.data.user : null;
-    if(!user){ showDashError('Session expired. Please sign in again.'); return; }
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      document.getElementById('tab-dashboard').classList.toggle('hidden', target !== 'dashboard');
+      document.getElementById('tab-orders').classList.toggle('hidden', target !== 'orders');
+    });
+  });
 
-    try{
-      var url = DASHBOARD_FN + '?portal_user=' + encodeURIComponent(user.email);
-      var resp = await fetch(url);
-      var data = await resp.json();
-
-      if(!resp.ok){
-        showDashError(data.error || 'Could not load your dashboard.');
-        return;
-      }
-
-      var c = data.client;
-      var o = data.orders;
-      document.getElementById('greeting').textContent =
-        'Hello, ' + (c.name || c.company || 'there');
-      document.getElementById('greetingSub').textContent =
-        (c.company ? c.company + ' · ' : '') + 'Client portal';
-      document.getElementById('brandSub').textContent = c.name || 'FR-Logistics';
-      document.getElementById('kpiTotal').textContent      = o.total;
-      document.getElementById('kpiPending').textContent    = o.pending;
-      document.getElementById('kpiProcessing').textContent = o.processing;
-      document.getElementById('kpiExported').textContent   = o.exported;
-
-      dashLoading.classList.add('hidden');
-      dashContent.classList.remove('hidden');
-    }catch(err){
-      showDashError('Network error: ' + (err.message || err));
+  // ---------- Dashboard ----------
+  async function loadDashboard() {
+    try {
+      const res = await fetch(`${API_BASE}/portal-dashboard?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load dashboard');
+      clientName = json.client_name || json.client?.name || 'Client';
+      document.getElementById('header-client').textContent = clientName.toUpperCase();
+      document.getElementById('dash-greeting').textContent = `Hello, ${clientName}`;
+      document.getElementById('dash-sub').textContent = `${clientName} · Client portal`;
+      const counts = json.counts || {};
+      document.getElementById('kpi-total').textContent = json.total_orders ?? counts.total ?? 0;
+      document.getElementById('kpi-pending').textContent = counts.pending ?? 0;
+      document.getElementById('kpi-processing').textContent = counts.processing ?? 0;
+      document.getElementById('kpi-exported').textContent = counts.exported ?? 0;
+    } catch (err) {
+      document.getElementById('dash-greeting').textContent = 'Hello';
+      document.getElementById('dash-sub').textContent = err.message;
     }
   }
 
-  function showDashError(text){
-    dashLoading.classList.add('hidden');
-    dashContent.classList.add('hidden');
-    dashError.textContent = text;
-    dashError.classList.remove('hidden');
+  // ---------- Orders ----------
+  document.getElementById('status-filter').addEventListener('change', renderOrders);
+
+  async function loadOrders() {
+    const tbody = document.getElementById('orders-tbody');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading orders…</td></tr>';
+    try {
+      const res = await fetch(`${API_BASE}/portal-orders-list?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load orders');
+      ordersCache = json.orders || [];
+      renderOrders();
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${err.message}</td></tr>`;
+    }
   }
 
-  (async function(){
-    var sessionRes = await sb.auth.getSession();
-    if(sessionRes.data && sessionRes.data.session) enterApp();
-  })();
+  function renderOrders() {
+    const tbody = document.getElementById('orders-tbody');
+    const filter = document.getElementById('status-filter').value;
+    const rows = filter === 'all' ? ordersCache : ordersCache.filter((o) => o.status === filter);
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No orders to show.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    rows.forEach((o) => {
+      const items = o.client_order_items || [];
+      const itemCount = items.reduce((s, it) => s + (it.item_quantity || 0), 0);
+      const created = o.created_at ? new Date(o.created_at).toLocaleDateString() : '—';
+      const dest = [o.city, o.state, o.country_code].filter(Boolean).join(', ');
+
+      const tr = document.createElement('tr');
+      tr.className = 'order-row';
+      tr.innerHTML = `
+        <td><strong>${esc(o.order_number)}</strong></td>
+        <td><span class="status-badge ${o.status}">${esc(o.status)}</span></td>
+        <td>${esc(o.recipient_name)}</td>
+        <td>${esc(dest)}</td>
+        <td>${itemCount} (${items.length} SKU${items.length === 1 ? '' : 's'})</td>
+        <td>${created}</td>
+      `;
+      const detail = document.createElement('tr');
+      detail.className = 'item-detail hidden';
+      detail.innerHTML = `<td colspan="6"><div class="item-detail-inner">${itemsTable(items, o)}</div></td>`;
+      tr.addEventListener('click', () => detail.classList.toggle('hidden'));
+      tbody.appendChild(tr);
+      tbody.appendChild(detail);
+    });
+  }
+
+  function itemsTable(items, order) {
+    const addr = [order.address_line1, order.address_line2, `${order.city}, ${order.state} ${order.postal_code}`, order.country_code]
+      .filter(Boolean).join(' · ');
+    let html = `<p style="font-size:12px;color:var(--fr-gray);margin-bottom:10px;">Ship to: ${esc(addr)}`;
+    if (order.shipping_service) html += ` &nbsp;|&nbsp; ${esc(order.shipping_service)}`;
+    html += `</p>`;
+    if (items.length === 0) return html + '<p style="font-size:12px;color:var(--fr-gray);">No items.</p>';
+    html += '<table><thead><tr><th>SKU</th><th>Name</th><th>Qty</th><th>Unit Price</th><th>Validated</th></tr></thead><tbody>';
+    items.forEach((it) => {
+      html += `<tr>
+        <td>${esc(it.item_sku)}</td>
+        <td>${esc(it.item_name || '—')}</td>
+        <td>${it.item_quantity}</td>
+        <td>${it.item_unit_price != null ? '$' + Number(it.item_unit_price).toFixed(2) : '—'}</td>
+        <td>${it.sku_validated ? 'Yes' : 'No'}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  // ---------- New Order Modal ----------
+  const modal = document.getElementById('order-modal');
+  const itemsContainer = document.getElementById('items-container');
+
+  function addItemLine() {
+    const div = document.createElement('div');
+    div.className = 'item-line';
+    div.innerHTML = `
+      <input type="text" placeholder="SKU *" class="item-sku" />
+      <input type="text" placeholder="Item name" class="item-name" />
+      <input type="number" placeholder="Qty *" class="item-qty" min="1" value="1" />
+      <button class="remove-item" type="button">✕</button>
+    `;
+    div.querySelector('.remove-item').addEventListener('click', () => {
+      if (itemsContainer.children.length > 1) div.remove();
+    });
+    itemsContainer.appendChild(div);
+  }
+
+  document.getElementById('add-item-btn').addEventListener('click', addItemLine);
+
+  document.getElementById('new-order-btn').addEventListener('click', () => {
+    document.getElementById('modal-error').classList.add('hidden');
+    ['recipient_name','recipient_phone','shipping_service','address_line1','address_line2','city','state','postal_code','notes_to_buyer']
+      .forEach((f) => { document.getElementById('f-' + f).value = ''; });
+    document.getElementById('f-country_code').value = 'US';
+    itemsContainer.innerHTML = '';
+    addItemLine();
+    modal.classList.remove('hidden');
+  });
+
+  document.getElementById('modal-cancel').addEventListener('click', () => modal.classList.add('hidden'));
+
+  document.getElementById('modal-submit').addEventListener('click', async () => {
+    const modalError = document.getElementById('modal-error');
+    modalError.classList.add('hidden');
+
+    const order = {};
+    ['recipient_name','recipient_phone','shipping_service','address_line1','address_line2','city','state','postal_code','country_code','notes_to_buyer']
+      .forEach((f) => { order[f] = document.getElementById('f-' + f).value.trim(); });
+
+    const required = ['recipient_name','address_line1','city','state','postal_code','country_code'];
+    for (const f of required) {
+      if (!order[f]) {
+        modalError.textContent = `Please fill in: ${f.replace(/_/g, ' ')}`;
+        modalError.classList.remove('hidden');
+        return;
+      }
+    }
+
+    const items = [];
+    let itemError = null;
+    itemsContainer.querySelectorAll('.item-line').forEach((line) => {
+      const sku = line.querySelector('.item-sku').value.trim();
+      const name = line.querySelector('.item-name').value.trim();
+      const qty = parseInt(line.querySelector('.item-qty').value, 10);
+      if (!sku && !name && !line.querySelector('.item-qty').value) return; // skip empty line
+      if (!sku) { itemError = 'Every item needs a SKU.'; return; }
+      if (!Number.isInteger(qty) || qty < 1) { itemError = 'Every item needs a quantity of 1 or more.'; return; }
+      items.push({ item_sku: sku, item_name: name, item_quantity: qty });
+    });
+    if (itemError) {
+      modalError.textContent = itemError;
+      modalError.classList.remove('hidden');
+      return;
+    }
+    if (items.length === 0) {
+      modalError.textContent = 'Add at least one item.';
+      modalError.classList.remove('hidden');
+      return;
+    }
+
+    const btn = document.getElementById('modal-submit');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const res = await fetch(`${API_BASE}/portal-order-create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ portal_user: portalUser, order, items }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to create order');
+      modal.classList.add('hidden');
+      const msg = document.getElementById('orders-msg');
+      msg.innerHTML = `<div class="success-box">Order ${esc(json.order.order_number)} submitted successfully.</div>`;
+      setTimeout(() => { msg.innerHTML = ''; }, 6000);
+      await loadOrders();
+      await loadDashboard();
+    } catch (err) {
+      modalError.textContent = err.message;
+      modalError.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit Order';
+    }
+  });
 </script>
 </body>
 </html>
