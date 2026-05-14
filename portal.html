@@ -974,7 +974,7 @@
     for (let h = startH; h < endH; h++) {
       for (let m = 0; m < 60; m += 15) {
         const time = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-        slots.push({ time, available: true });
+        slots.push({ value: time, label: formatTime(time), available: true });
       }
     }
     return slots;
@@ -982,7 +982,7 @@
 
   function renderSlots(slots) {
     const grid = document.getElementById('slots-grid');
-    if (!slots.length) {
+    if (!slots || !slots.length) {
       grid.innerHTML = '<div class="slots-empty">No slots available this day. Try another date.</div>';
       return;
     }
@@ -991,12 +991,17 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'slot-btn';
-      btn.textContent = formatTime(s.time);
-      if (s.available === false || s.taken === true) {
+      // Backend ecopack.js returns: {value: "09:00", label: "9:00 AM", available: true}
+      // Accept legacy shapes too (time / start_time) so the modal never renders "—"
+      const value = s.value || s.time || s.start_time || '';
+      const label = s.label || formatTime(value);
+      btn.textContent = label;
+      btn.dataset.value = value;
+      if (s.available === false || s.taken === true || !value) {
         btn.classList.add('taken');
         btn.disabled = true;
       } else {
-        btn.onclick = () => selectSlot(s.time, btn);
+        btn.onclick = () => selectSlot(value, btn);
       }
       grid.appendChild(btn);
     });
