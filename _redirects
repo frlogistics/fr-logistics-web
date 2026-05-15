@@ -8,13 +8,10 @@
 /ops-portal           https://apps.fr-logistics.net/portal.html    301
 /wms-client-access    /portal                                      301
 
-# NEW: legacy /client URL → unified /portal/ (login)
-/client               /portal/   301
-/client/              /portal/   301
-/client/*             /portal/   301
-
-# NEW: /portal/ with slash → portal with login (rewrite, keeps URL clean)
-/portal/              /portal/index.html   200
+# NEW: legacy /client URL → unified /app (portal with login)
+/client               /app   301
+/client/              /app   301
+/client/*             /app   301
 
 # -----------------------------------------------
 # English pretty URLs
