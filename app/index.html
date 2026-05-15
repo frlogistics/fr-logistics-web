@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FR-Logistics | Client Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --fr-green: #16a34a;
+    --fr-dark: #1f2937;
+    --fr-gray: #6b7280;
+    --fr-bg: #f1f5f9;
+    --fr-border: #e5e7eb;
+    --fr-red: #b91c1c;
+    --fr-red-bg: #fde8e8;
+    --fr-orange: #b45309;
+    --fr-blue: #1d4ed8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--fr-bg);
+    color: var(--fr-dark);
+    min-height: 100vh;
+  }
+  /* ---- Header ---- */
+  header {
+    background: #fff;
+    border-bottom: 1px solid var(--fr-border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 40px; height: 40px;
+    background: var(--fr-green);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 14px; letter-spacing: -0.5px;
+  }
+  .brand-text h1 { font-size: 18px; font-weight: 700; }
+  .brand-text p { font-size: 11px; color: var(--fr-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+  .logout-btn {
+    background: none; border: 1px solid var(--fr-border);
+    color: var(--fr-gray); padding: 8px 16px; border-radius: 6px;
+    font-size: 13px; cursor: pointer;
+  }
+  .logout-btn:hover { background: var(--fr-bg); }
+  /* ---- Layout ---- */
+  main { max-width: 1100px; margin: 0 auto; padding: 32px; }
+  /* ---- Login ---- */
+  .login-card {
+    max-width: 380px; margin: 80px auto; background: #fff;
+    border: 1px solid var(--fr-border); border-radius: 12px; padding: 32px;
+  }
+  .login-card h2 { font-size: 20px; margin-bottom: 6px; }
+  .login-card p.sub { font-size: 13px; color: var(--fr-gray); margin-bottom: 24px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--fr-gray); margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--fr-border);
+    border-radius: 6px; font-size: 14px; font-family: inherit; margin-bottom: 16px;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .btn-primary {
+    width: 100%; background: var(--fr-green); color: #fff; border: none;
+    padding: 11px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .btn-primary:hover { background: #15803d; }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  /* ---- Tabs ---- */
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--fr-border); }
+  .tab {
+    background: none; border: none; padding: 12px 20px; font-size: 14px;
+    font-weight: 600; color: var(--fr-gray); cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active { color: var(--fr-green); border-bottom-color: var(--fr-green); }
+  .tab:hover:not(.active) { color: var(--fr-dark); }
+  /* ---- Headings ---- */
+  .page-title { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--fr-gray); margin-bottom: 24px; }
+  /* ---- KPI cards ---- */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: #fff; border: 1px solid var(--fr-border);
+    border-radius: 10px; padding: 20px;
+  }
+  .kpi-card .kpi-label {
+    font-size: 11px; font-weight: 600; color: var(--fr-gray);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .kpi-card .kpi-value { font-size: 28px; font-weight: 800; }
+  .kpi-card.pending .kpi-value { color: var(--fr-orange); }
+  .kpi-card.processing .kpi-value { color: var(--fr-blue); }
+  .kpi-card.exported .kpi-value { color: var(--fr-green); }
+  /* ---- Panels ---- */
+  .panel {
+    background: #fff; border: 1px solid var(--fr-border);
+    border-radius: 10px; padding: 24px; margin-bottom: 16px;
+  }
+  .panel h3 { font-size: 16px; margin-bottom: 6px; }
+  .panel p.muted { font-size: 13px; color: var(--fr-gray); }
+  /* ---- Table ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--fr-gray); padding: 10px 12px;
+    border-bottom: 1px solid var(--fr-border);
+  }
+  td { padding: 12px; border-bottom: 1px solid var(--fr-border); }
+  tr:last-child td { border-bottom: none; }
+  .status-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; text-transform: capitalize;
+  }
+  .status-badge.pending { background: #fef3c7; color: var(--fr-orange); }
+  .status-badge.processing { background: #dbeafe; color: var(--fr-blue); }
+  .status-badge.exported { background: #dcfce7; color: var(--fr-green); }
+  .order-row { cursor: pointer; }
+  .order-row:hover { background: var(--fr-bg); }
+  .item-detail { background: #f9fafb; }
+  .item-detail td { padding: 0; }
+  .item-detail-inner { padding: 12px 24px; }
+  .item-detail-inner table { font-size: 12px; }
+  .item-detail-inner th, .item-detail-inner td { padding: 6px 10px; }
+  /* ---- Toolbar ---- */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+  .toolbar select { width: auto; margin-bottom: 0; }
+  .btn-secondary {
+    background: var(--fr-green); color: #fff; border: none;
+    padding: 9px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .btn-secondary:hover { background: #15803d; }
+  /* ---- Messages ---- */
+  .error-box {
+    background: var(--fr-red-bg); color: var(--fr-red);
+    padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;
+  }
+  .success-box {
+    background: #dcfce7; color: var(--fr-green);
+    padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;
+  }
+  .empty-state { text-align: center; padding: 40px; color: var(--fr-gray); font-size: 14px; }
+  /* ---- Modal ---- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 16px; overflow-y: auto; z-index: 100;
+  }
+  .modal {
+    background: #fff; border-radius: 12px; padding: 28px;
+    max-width: 560px; width: 100%;
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 4px; }
+  .modal p.sub { font-size: 13px; color: var(--fr-gray); margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .section-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--fr-dark); margin: 16px 0 10px;
+  }
+  .item-line { display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: 8px; align-items: start; }
+  .item-line input { margin-bottom: 8px; }
+  .remove-item {
+    background: none; border: 1px solid var(--fr-border); color: var(--fr-red);
+    border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 13px; height: 38px;
+  }
+  .add-item-btn {
+    background: none; border: 1px dashed var(--fr-border); color: var(--fr-gray);
+    width: 100%; padding: 9px; border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 16px;
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .modal-actions button { flex: 1; }
+  .btn-cancel {
+    background: none; border: 1px solid var(--fr-border); color: var(--fr-gray);
+    padding: 11px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .hidden { display: none; }
+  /* ---- Bulk Upload ---- */
+  .drop-zone {
+    border: 2px dashed var(--fr-border); border-radius: 8px;
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .drop-zone:hover { background: var(--fr-bg); border-color: var(--fr-green); }
+  .drop-zone.dragover { background: #ecfdf5; border-color: var(--fr-green); }
+  #preview-table th { white-space: nowrap; }
+  #preview-table td { white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  #preview-table tr.row-error { background: #fef2f2; }
+  #preview-table tr.row-error td:first-child { color: var(--fr-red); font-weight: 600; }
+  #preview-table tr.row-ok td:first-child { color: var(--fr-green); font-weight: 600; }
+  .row-error-detail {
+    font-size: 11px; color: var(--fr-red); padding: 4px 12px 8px;
+    background: #fef2f2; border-bottom: 1px solid var(--fr-border);
+  }
+  .result-row { padding: 8px 0; border-bottom: 1px solid var(--fr-border); font-size: 13px; }
+  .result-row:last-child { border-bottom: none; }
+  @media (max-width: 720px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    main, header { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN VIEW ============ -->
+<div id="login-view">
+  <div class="login-card">
+    <h2>Client Portal</h2>
+    <p class="sub">Sign in to access your FR-Logistics account.</p>
+    <div id="login-error" class="error-box hidden"></div>
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="you@company.com" autocomplete="username" />
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+    <button class="btn-primary" id="login-btn">Sign In</button>
+  </div>
+</div>
+
+<!-- ============ APP VIEW ============ -->
+<div id="app-view" class="hidden">
+  <header>
+    <div class="brand">
+      <div class="logo">FR</div>
+      <div class="brand-text">
+        <h1>Client Portal</h1>
+        <p id="header-client">—</p>
+      </div>
+    </div>
+    <button class="logout-btn" id="logout-btn">Sign Out</button>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="orders">Orders</button>
+      <button class="tab" data-tab="bulk">Bulk Upload</button>
+    </div>
+
+    <!-- ---- DASHBOARD TAB ---- -->
+    <section id="tab-dashboard">
+      <h2 class="page-title" id="dash-greeting">Hello</h2>
+      <p class="page-sub" id="dash-sub">Client portal</p>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="kpi-total">0</div></div>
+        <div class="kpi-card pending"><div class="kpi-label">Pending</div><div class="kpi-value" id="kpi-pending">0</div></div>
+        <div class="kpi-card processing"><div class="kpi-label">Processing</div><div class="kpi-value" id="kpi-processing">0</div></div>
+        <div class="kpi-card exported"><div class="kpi-label">Exported</div><div class="kpi-value" id="kpi-exported">0</div></div>
+      </div>
+      <div class="panel">
+        <h3>More coming soon</h3>
+        <p class="muted">This is the first version of your portal. Inventory and billing tabs will appear here as they are rolled out.</p>
+      </div>
+    </section>
+
+    <!-- ---- ORDERS TAB ---- -->
+    <section id="tab-orders" class="hidden">
+      <h2 class="page-title">Orders</h2>
+      <p class="page-sub">View your orders and submit new ones.</p>
+      <div id="orders-msg"></div>
+      <div class="toolbar">
+        <select id="status-filter">
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="exported">Exported</option>
+        </select>
+        <button class="btn-secondary" id="new-order-btn">+ New Order</button>
+      </div>
+      <div class="panel" style="padding: 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Order #</th><th>Status</th><th>Recipient</th>
+              <th>Destination</th><th>Items</th><th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody">
+            <tr><td colspan="6" class="empty-state">Loading orders…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---- BULK UPLOAD TAB ---- -->
+    <section id="tab-bulk" class="hidden">
+      <h2 class="page-title">Bulk Upload</h2>
+      <p class="page-sub">Upload multiple orders at once from a CSV file. Each row is one item — orders with several SKUs use one row per SKU sharing the same order number.</p>
+
+      <div id="bulk-msg"></div>
+
+      <div class="panel">
+        <h3>1. Download the template</h3>
+        <p class="muted" style="margin-bottom: 12px;">Use this template to format your file. UTF-8, comma-separated, maximum 500 rows per upload.</p>
+        <button class="btn-secondary" id="download-template-btn" type="button">Download CSV template</button>
+        <details style="margin-top: 16px;">
+          <summary style="cursor:pointer;font-size:13px;color:var(--fr-gray);">Show column reference</summary>
+          <div style="margin-top: 10px; font-size: 12px; color: var(--fr-gray);">
+            <p style="margin-bottom: 8px;"><strong>Required:</strong> order_number, recipient_name, address_line1, city, state, postal_code, country_code, item_sku, item_quantity</p>
+            <p style="margin-bottom: 8px;"><strong>Optional:</strong> recipient_phone, address_line2, shipping_service, notes_to_buyer, item_name, item_unit_price</p>
+            <p><strong>Notes:</strong> country_code must be 2 letters (US, CA, MX…). item_quantity must be 1 or more. For an order with multiple items, repeat the order_number on each row with different item_sku.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="panel">
+        <h3>2. Upload your CSV</h3>
+        <p class="muted" style="margin-bottom: 12px;">Drop your file below or click to choose.</p>
+        <div id="drop-zone" class="drop-zone">
+          <input type="file" id="csv-file" accept=".csv,text/csv" style="display:none;" />
+          <p style="font-size: 14px; margin-bottom: 4px;"><strong>Drop CSV here</strong> or click to choose</p>
+          <p style="font-size: 12px; color: var(--fr-gray);">UTF-8, comma-separated, max 500 rows</p>
+        </div>
+        <div id="file-info" class="hidden" style="margin-top: 12px; font-size: 13px; color: var(--fr-gray);"></div>
+      </div>
+
+      <div class="panel hidden" id="preview-panel">
+        <h3>3. Review</h3>
+        <div id="preview-summary" style="margin-bottom: 12px; font-size: 13px;"></div>
+        <div style="overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid var(--fr-border); border-radius: 6px;">
+          <table id="preview-table" style="font-size: 12px;">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button class="btn-cancel" id="bulk-cancel-btn" type="button">Cancel</button>
+          <button class="btn-primary" id="bulk-submit-btn" type="button" style="width:auto;">Submit valid rows</button>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="result-panel">
+        <h3>Upload result</h3>
+        <div id="result-content"></div>
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button class="btn-secondary" id="bulk-done-btn" type="button" style="width:auto;">Done</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ NEW ORDER MODAL ============ -->
+<div id="order-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>New Order</h3>
+    <p class="sub">Submit a new order for fulfillment. It will be created with status “pending”.</p>
+    <div id="modal-error" class="error-box hidden"></div>
+
+    <div class="section-label">Recipient</div>
+    <label>Recipient name *</label>
+    <input type="text" id="f-recipient_name" />
+    <div class="form-row">
+      <div>
+        <label>Phone</label>
+        <input type="text" id="f-recipient_phone" />
+      </div>
+      <div>
+        <label>Shipping service</label>
+        <input type="text" id="f-shipping_service" placeholder="e.g. USPS Priority" />
+      </div>
+    </div>
+
+    <div class="section-label">Shipping Address</div>
+    <label>Address line 1 *</label>
+    <input type="text" id="f-address_line1" />
+    <label>Address line 2</label>
+    <input type="text" id="f-address_line2" />
+    <div class="form-row">
+      <div>
+        <label>City *</label>
+        <input type="text" id="f-city" />
+      </div>
+      <div>
+        <label>State *</label>
+        <input type="text" id="f-state" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Postal code *</label>
+        <input type="text" id="f-postal_code" />
+      </div>
+      <div>
+        <label>Country code *</label>
+        <input type="text" id="f-country_code" placeholder="US" value="US" />
+      </div>
+    </div>
+    <label>Notes to buyer</label>
+    <textarea id="f-notes_to_buyer"></textarea>
+
+    <div class="section-label">Items</div>
+    <div id="items-container"></div>
+    <button class="add-item-btn" id="add-item-btn">+ Add another item</button>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">Cancel</button>
+      <button class="btn-primary" id="modal-submit" style="width:auto;">Submit Order</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  console.log('[FR Portal] script start');
+
+  // ---------- Config ----------
+  const SUPABASE_URL = 'https://rijbschnchjiuggrhfrx.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_2iAxAlUmL5mzL_CXFDR4Mw_bSARmU90';
+  const API_BASE = 'https://apps.fr-logistics.net/.netlify/functions';
+
+  // window.supabase is the SDK global. Use a distinct name for the client
+  // instance to avoid colliding with it.
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  // ---------- State ----------
+  let portalUser = null;
+  let clientName = null;
+  let ordersCache = [];
+
+  // ---------- Elements ----------
+  const loginView = document.getElementById('login-view');
+  const appView = document.getElementById('app-view');
+  const loginError = document.getElementById('login-error');
+
+  // ---------- Auth ----------
+  document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    loginError.classList.add('hidden');
+    if (!email || !password) {
+      loginError.textContent = 'Enter your email and password.';
+      loginError.classList.remove('hidden');
+      return;
+    }
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = 'Sign In';
+    if (error) {
+      loginError.textContent = error.message || 'Sign in failed.';
+      loginError.classList.remove('hidden');
+      return;
+    }
+    portalUser = data.user.email;
+    await startApp();
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    portalUser = null; clientName = null; ordersCache = [];
+    appView.classList.add('hidden');
+    loginView.classList.remove('hidden');
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+  });
+
+  // Restore session on load
+  (async () => {
+    const { data } = await sb.auth.getSession();
+    if (data.session && data.session.user) {
+      portalUser = data.session.user.email;
+      await startApp();
+    }
+  })();
+
+  console.log('[FR Portal] listeners registered');
+
+  async function startApp() {
+    loginView.classList.add('hidden');
+    appView.classList.remove('hidden');
+    await loadDashboard();
+    await loadOrders();
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      document.getElementById('tab-dashboard').classList.toggle('hidden', target !== 'dashboard');
+      document.getElementById('tab-orders').classList.toggle('hidden', target !== 'orders');
+      document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
+    });
+  });
+
+  // ---------- Dashboard ----------
+  async function loadDashboard() {
+    try {
+      const res = await fetch(`${API_BASE}/portal-dashboard?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load dashboard');
+      // portal-dashboard returns: { client: {id,name,...}, orders: {total,pending,processing,exported} }
+      clientName = (json.client && json.client.name) || 'Client';
+      document.getElementById('header-client').textContent = clientName.toUpperCase();
+      document.getElementById('dash-greeting').textContent = `Hello, ${clientName}`;
+      document.getElementById('dash-sub').textContent = `${clientName} · Client portal`;
+      const counts = json.orders || {};
+      document.getElementById('kpi-total').textContent = counts.total ?? 0;
+      document.getElementById('kpi-pending').textContent = counts.pending ?? 0;
+      document.getElementById('kpi-processing').textContent = counts.processing ?? 0;
+      document.getElementById('kpi-exported').textContent = counts.exported ?? 0;
+    } catch (err) {
+      document.getElementById('dash-greeting').textContent = 'Hello';
+      document.getElementById('dash-sub').textContent = err.message;
+    }
+  }
+
+  // ---------- Orders ----------
+  document.getElementById('status-filter').addEventListener('change', renderOrders);
+
+  async function loadOrders() {
+    const tbody = document.getElementById('orders-tbody');
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading orders…</td></tr>';
+    try {
+      const res = await fetch(`${API_BASE}/portal-orders-list?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load orders');
+      ordersCache = json.orders || [];
+      renderOrders();
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${err.message}</td></tr>`;
+    }
+  }
+
+  function renderOrders() {
+    const tbody = document.getElementById('orders-tbody');
+    const filter = document.getElementById('status-filter').value;
+    const rows = filter === 'all' ? ordersCache : ordersCache.filter((o) => o.status === filter);
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No orders to show.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    rows.forEach((o) => {
+      const items = o.client_order_items || [];
+      const itemCount = items.reduce((s, it) => s + (it.item_quantity || 0), 0);
+      const created = o.created_at ? new Date(o.created_at).toLocaleDateString() : '—';
+      const dest = [o.city, o.state, o.country_code].filter(Boolean).join(', ');
+
+      const tr = document.createElement('tr');
+      tr.className = 'order-row';
+      tr.innerHTML = `
+        <td><strong>${esc(o.order_number)}</strong></td>
+        <td><span class="status-badge ${o.status}">${esc(o.status)}</span></td>
+        <td>${esc(o.recipient_name)}</td>
+        <td>${esc(dest)}</td>
+        <td>${itemCount} (${items.length} SKU${items.length === 1 ? '' : 's'})</td>
+        <td>${created}</td>
+      `;
+      const detail = document.createElement('tr');
+      detail.className = 'item-detail hidden';
+      detail.innerHTML = `<td colspan="6"><div class="item-detail-inner">${itemsTable(items, o)}</div></td>`;
+      tr.addEventListener('click', () => detail.classList.toggle('hidden'));
+      tbody.appendChild(tr);
+      tbody.appendChild(detail);
+    });
+  }
+
+  function itemsTable(items, order) {
+    const addr = [order.address_line1, order.address_line2, `${order.city}, ${order.state} ${order.postal_code}`, order.country_code]
+      .filter(Boolean).join(' · ');
+    let html = `<p style="font-size:12px;color:var(--fr-gray);margin-bottom:10px;">Ship to: ${esc(addr)}`;
+    if (order.shipping_service) html += ` &nbsp;|&nbsp; ${esc(order.shipping_service)}`;
+    html += `</p>`;
+    if (items.length === 0) return html + '<p style="font-size:12px;color:var(--fr-gray);">No items.</p>';
+    html += '<table><thead><tr><th>SKU</th><th>Name</th><th>Qty</th><th>Unit Price</th><th>Validated</th></tr></thead><tbody>';
+    items.forEach((it) => {
+      html += `<tr>
+        <td>${esc(it.item_sku)}</td>
+        <td>${esc(it.item_name || '—')}</td>
+        <td>${it.item_quantity}</td>
+        <td>${it.item_unit_price != null ? '$' + Number(it.item_unit_price).toFixed(2) : '—'}</td>
+        <td>${it.sku_validated ? 'Yes' : 'No'}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  // ---------- New Order Modal ----------
+  const modal = document.getElementById('order-modal');
+  const itemsContainer = document.getElementById('items-container');
+
+  function addItemLine() {
+    const div = document.createElement('div');
+    div.className = 'item-line';
+    div.innerHTML = `
+      <input type="text" placeholder="SKU *" class="item-sku" />
+      <input type="text" placeholder="Item name" class="item-name" />
+      <input type="number" placeholder="Qty *" class="item-qty" min="1" value="1" />
+      <button class="remove-item" type="button">✕</button>
+    `;
+    div.querySelector('.remove-item').addEventListener('click', () => {
+      if (itemsContainer.children.length > 1) div.remove();
+    });
+    itemsContainer.appendChild(div);
+  }
+
+  document.getElementById('add-item-btn').addEventListener('click', addItemLine);
+
+  document.getElementById('new-order-btn').addEventListener('click', () => {
+    document.getElementById('modal-error').classList.add('hidden');
+    ['recipient_name','recipient_phone','shipping_service','address_line1','address_line2','city','state','postal_code','notes_to_buyer']
+      .forEach((f) => { document.getElementById('f-' + f).value = ''; });
+    document.getElementById('f-country_code').value = 'US';
+    itemsContainer.innerHTML = '';
+    addItemLine();
+    modal.classList.remove('hidden');
+  });
+
+  document.getElementById('modal-cancel').addEventListener('click', () => modal.classList.add('hidden'));
+
+  document.getElementById('modal-submit').addEventListener('click', async () => {
+    const modalError = document.getElementById('modal-error');
+    modalError.classList.add('hidden');
+
+    const order = {};
+    ['recipient_name','recipient_phone','shipping_service','address_line1','address_line2','city','state','postal_code','country_code','notes_to_buyer']
+      .forEach((f) => { order[f] = document.getElementById('f-' + f).value.trim(); });
+
+    const required = ['recipient_name','address_line1','city','state','postal_code','country_code'];
+    for (const f of required) {
+      if (!order[f]) {
+        modalError.textContent = `Please fill in: ${f.replace(/_/g, ' ')}`;
+        modalError.classList.remove('hidden');
+        return;
+      }
+    }
+
+    const items = [];
+    let itemError = null;
+    itemsContainer.querySelectorAll('.item-line').forEach((line) => {
+      const sku = line.querySelector('.item-sku').value.trim();
+      const name = line.querySelector('.item-name').value.trim();
+      const qty = parseInt(line.querySelector('.item-qty').value, 10);
+      if (!sku && !name && !line.querySelector('.item-qty').value) return; // skip empty line
+      if (!sku) { itemError = 'Every item needs a SKU.'; return; }
+      if (!Number.isInteger(qty) || qty < 1) { itemError = 'Every item needs a quantity of 1 or more.'; return; }
+      items.push({ item_sku: sku, item_name: name, item_quantity: qty });
+    });
+    if (itemError) {
+      modalError.textContent = itemError;
+      modalError.classList.remove('hidden');
+      return;
+    }
+    if (items.length === 0) {
+      modalError.textContent = 'Add at least one item.';
+      modalError.classList.remove('hidden');
+      return;
+    }
+
+    const btn = document.getElementById('modal-submit');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const res = await fetch(`${API_BASE}/portal-order-create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ portal_user: portalUser, order, items }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to create order');
+      modal.classList.add('hidden');
+      const msg = document.getElementById('orders-msg');
+      msg.innerHTML = `<div class="success-box">Order ${esc(json.order.order_number)} submitted successfully.</div>`;
+      setTimeout(() => { msg.innerHTML = ''; }, 6000);
+      await loadOrders();
+      await loadDashboard();
+    } catch (err) {
+      modalError.textContent = err.message;
+      modalError.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit Order';
+    }
+  });
+
+  // ---------- Bulk Upload ----------
+  const TEMPLATE_HEADERS = [
+    'order_number','recipient_name','recipient_phone',
+    'address_line1','address_line2','city','state','postal_code','country_code',
+    'shipping_service','notes_to_buyer',
+    'item_sku','item_name','item_quantity','item_unit_price',
+  ];
+  const REQUIRED_FIELDS = [
+    'order_number','recipient_name','address_line1','city','state',
+    'postal_code','country_code','item_sku','item_quantity',
+  ];
+  const MAX_ROWS = 500;
+
+  let parsedRows = [];   // [{row:{}, row_index:N, errors:[]}]
+
+  function csvCell(v) {
+    if (v === null || v === undefined) return '';
+    const s = String(v);
+    if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  // Minimal CSV parser: handles quoted fields, escaped quotes, CRLF/LF.
+  function parseCSV(text) {
+    // Strip BOM if present
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    const rows = [];
+    let field = '';
+    let row = [];
+    let inQuotes = false;
+    let i = 0;
+    while (i < text.length) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+      if (ch === '"') { inQuotes = true; i++; continue; }
+      if (ch === ',') { row.push(field); field = ''; i++; continue; }
+      if (ch === '\r') { i++; continue; }
+      if (ch === '\n') { row.push(field); rows.push(row); field = ''; row = []; i++; continue; }
+      field += ch; i++;
+    }
+    // Flush last field/row if any content remains
+    if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }
+    // Drop trailing empty rows (common in Excel exports)
+    while (rows.length > 0 && rows[rows.length - 1].every((c) => c.trim() === '')) rows.pop();
+    return rows;
+  }
+
+  function validateRowClient(row, rowIndex) {
+    const errors = [];
+    for (const f of REQUIRED_FIELDS) {
+      if (row[f] === undefined || row[f] === null || String(row[f]).trim() === '') {
+        errors.push('Missing: ' + f);
+      }
+    }
+    if (row.country_code && String(row.country_code).trim().length !== 2) {
+      errors.push('country_code must be 2 letters');
+    }
+    if (row.item_quantity && String(row.item_quantity).trim() !== '') {
+      const qty = parseInt(row.item_quantity, 10);
+      if (!Number.isInteger(qty) || qty < 1) errors.push('item_quantity must be >= 1');
+    }
+    if (row.item_unit_price && String(row.item_unit_price).trim() !== '') {
+      const p = parseFloat(row.item_unit_price);
+      if (Number.isNaN(p) || p < 0) errors.push('item_unit_price must be a non-negative number');
+    }
+    return errors;
+  }
+
+  // Template download
+  document.getElementById('download-template-btn').addEventListener('click', () => {
+    const sample = {
+      order_number: 'EXAMPLE-001',
+      recipient_name: 'Jane Smith',
+      recipient_phone: '305-555-0100',
+      address_line1: '123 Main St',
+      address_line2: 'Apt 2',
+      city: 'Miami',
+      state: 'FL',
+      postal_code: '33131',
+      country_code: 'US',
+      shipping_service: 'USPS Priority',
+      notes_to_buyer: 'Thanks for your order!',
+      item_sku: 'SKU-EXAMPLE-001',
+      item_name: 'Example product',
+      item_quantity: '1',
+      item_unit_price: '9.99',
+    };
+    const lines = [
+      TEMPLATE_HEADERS.join(','),
+      TEMPLATE_HEADERS.map((h) => csvCell(sample[h])).join(','),
+    ];
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'fr-logistics-orders-template.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Drop zone
+  const dropZone = document.getElementById('drop-zone');
+  const csvFileInput = document.getElementById('csv-file');
+  const fileInfo = document.getElementById('file-info');
+  const previewPanel = document.getElementById('preview-panel');
+  const resultPanel = document.getElementById('result-panel');
+  const bulkMsg = document.getElementById('bulk-msg');
+
+  dropZone.addEventListener('click', () => csvFileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  csvFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) handleFile(e.target.files[0]);
+  });
+
+  function showBulkMsg(text, kind) {
+    bulkMsg.innerHTML = `<div class="${kind === 'error' ? 'error-box' : kind === 'success' ? 'success-box' : 'error-box'}">${text}</div>`;
+  }
+  function clearBulkMsg() { bulkMsg.innerHTML = ''; }
+
+  function handleFile(file) {
+    clearBulkMsg();
+    resultPanel.classList.add('hidden');
+    previewPanel.classList.add('hidden');
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      showBulkMsg('File must be a .csv', 'error');
+      return;
+    }
+    fileInfo.classList.remove('hidden');
+    fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = String(reader.result || '');
+        const grid = parseCSV(text);
+        if (grid.length < 2) {
+          showBulkMsg('CSV is empty or has no data rows.', 'error');
+          return;
+        }
+        const headers = grid[0].map((h) => h.trim());
+        const dataRows = grid.slice(1).filter((r) => r.some((c) => c.trim() !== ''));
+        if (dataRows.length === 0) {
+          showBulkMsg('CSV has no data rows (only a header).', 'error');
+          return;
+        }
+        if (dataRows.length > MAX_ROWS) {
+          showBulkMsg(`CSV has ${dataRows.length} rows. Maximum allowed is ${MAX_ROWS}.`, 'error');
+          return;
+        }
+        // Check that all required headers are present
+        const missingHeaders = REQUIRED_FIELDS.filter((f) => !headers.includes(f));
+        if (missingHeaders.length) {
+          showBulkMsg(`CSV is missing required columns: ${missingHeaders.join(', ')}. Download the template for the correct format.`, 'error');
+          return;
+        }
+
+        parsedRows = dataRows.map((cells, i) => {
+          const row = {};
+          headers.forEach((h, idx) => { row[h] = (cells[idx] !== undefined ? cells[idx] : '').trim(); });
+          const errors = validateRowClient(row, i + 1);
+          return { row, row_index: i + 1, errors };
+        });
+
+        renderPreview(headers);
+      } catch (err) {
+        showBulkMsg('Could not read CSV: ' + err.message, 'error');
+      }
+    };
+    reader.onerror = () => showBulkMsg('Could not read file.', 'error');
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function renderPreview(headers) {
+    const thead = document.querySelector('#preview-table thead');
+    const tbody = document.querySelector('#preview-table tbody');
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+
+    const validCount = parsedRows.filter((r) => r.errors.length === 0).length;
+    const errorCount = parsedRows.length - validCount;
+    document.getElementById('preview-summary').innerHTML =
+      `<strong>${parsedRows.length}</strong> rows parsed · ` +
+      `<span style="color:var(--fr-green);"><strong>${validCount}</strong> valid</span> · ` +
+      `<span style="color:var(--fr-red);"><strong>${errorCount}</strong> with errors</span>`;
+
+    // Header row
+    const headerHtml = '<tr><th>#</th>' + headers.map((h) => `<th>${esc(h)}</th>`).join('') + '</tr>';
+    thead.innerHTML = headerHtml;
+
+    // Data rows
+    parsedRows.forEach((pr) => {
+      const tr = document.createElement('tr');
+      tr.className = pr.errors.length ? 'row-error' : 'row-ok';
+      tr.innerHTML = `<td>${pr.errors.length ? '✗ ' : '✓ '}${pr.row_index}</td>` +
+        headers.map((h) => `<td>${esc(pr.row[h] || '')}</td>`).join('');
+      tbody.appendChild(tr);
+      if (pr.errors.length) {
+        const errTr = document.createElement('tr');
+        errTr.innerHTML = `<td></td><td colspan="${headers.length}"><div class="row-error-detail">${pr.errors.map(esc).join(' · ')}</div></td>`;
+        tbody.appendChild(errTr);
+      }
+    });
+
+    previewPanel.classList.remove('hidden');
+    document.getElementById('bulk-submit-btn').disabled = validCount === 0;
+    document.getElementById('bulk-submit-btn').textContent =
+      validCount === 0 ? 'No valid rows' : `Submit ${validCount} valid row${validCount === 1 ? '' : 's'}`;
+  }
+
+  // Cancel
+  document.getElementById('bulk-cancel-btn').addEventListener('click', () => {
+    parsedRows = [];
+    previewPanel.classList.add('hidden');
+    fileInfo.classList.add('hidden');
+    csvFileInput.value = '';
+    clearBulkMsg();
+  });
+
+  // Submit
+  document.getElementById('bulk-submit-btn').addEventListener('click', async () => {
+    const validRows = parsedRows.filter((r) => r.errors.length === 0).map((r) => r.row);
+    if (validRows.length === 0) return;
+    const btn = document.getElementById('bulk-submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    clearBulkMsg();
+
+    try {
+      const res = await fetch(`${API_BASE}/portal-orders-bulk-create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ portal_user: portalUser, rows: validRows }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Bulk upload failed');
+      renderResult(json);
+      // Refresh dashboard + orders so the new ones show up.
+      await loadDashboard();
+      await loadOrders();
+    } catch (err) {
+      showBulkMsg(esc(err.message), 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = `Submit ${validRows.length} valid row${validRows.length === 1 ? '' : 's'}`;
+    }
+  });
+
+  function renderResult(json) {
+    previewPanel.classList.add('hidden');
+    fileInfo.classList.add('hidden');
+    const c = json.created_orders || [];
+    const f = json.failed_orders || [];
+    const re = json.row_errors || [];
+
+    let html = '';
+    if (c.length) {
+      html += `<div class="success-box">Created <strong>${c.length}</strong> order${c.length === 1 ? '' : 's'} successfully.</div>`;
+      html += '<div style="margin-top:12px;"><strong>Created:</strong></div>';
+      c.forEach((o) => {
+        html += `<div class="result-row">✓ ${esc(o.order_number)} — ${o.item_count} item${o.item_count === 1 ? '' : 's'} (rows ${o.row_indices.join(', ')})</div>`;
+      });
+    }
+    if (f.length) {
+      html += '<div style="margin-top:16px;color:var(--fr-red);"><strong>Failed:</strong></div>';
+      f.forEach((o) => {
+        html += `<div class="result-row" style="color:var(--fr-red);">✗ ${esc(o.order_number)} (rows ${o.row_indices.join(', ')}) — ${esc(o.error)}</div>`;
+      });
+    }
+    if (re.length) {
+      html += '<div style="margin-top:16px;color:var(--fr-red);"><strong>Skipped rows (validation failed):</strong></div>';
+      re.forEach((r) => {
+        html += `<div class="result-row" style="color:var(--fr-red);">✗ Row ${r.row_index}${r.order_number ? ' · ' + esc(r.order_number) : ''} — ${r.errors.map(esc).join('; ')}</div>`;
+      });
+    }
+    if (!c.length && !f.length && !re.length) {
+      html = '<div class="error-box">No rows were processed.</div>';
+    }
+    document.getElementById('result-content').innerHTML = html;
+    resultPanel.classList.remove('hidden');
+  }
+
+  document.getElementById('bulk-done-btn').addEventListener('click', () => {
+    parsedRows = [];
+    resultPanel.classList.add('hidden');
+    csvFileInput.value = '';
+    clearBulkMsg();
+    // Jump user to Orders tab to see their new entries.
+    document.querySelector('.tab[data-tab="orders"]').click();
+  });
+
+})();
+</script>
+</body>
+</html>
