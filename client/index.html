@@ -178,6 +178,25 @@
     padding: 11px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
   }
   .hidden { display: none; }
+  /* ---- Bulk Upload ---- */
+  .drop-zone {
+    border: 2px dashed var(--fr-border); border-radius: 8px;
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .drop-zone:hover { background: var(--fr-bg); border-color: var(--fr-green); }
+  .drop-zone.dragover { background: #ecfdf5; border-color: var(--fr-green); }
+  #preview-table th { white-space: nowrap; }
+  #preview-table td { white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  #preview-table tr.row-error { background: #fef2f2; }
+  #preview-table tr.row-error td:first-child { color: var(--fr-red); font-weight: 600; }
+  #preview-table tr.row-ok td:first-child { color: var(--fr-green); font-weight: 600; }
+  .row-error-detail {
+    font-size: 11px; color: var(--fr-red); padding: 4px 12px 8px;
+    background: #fef2f2; border-bottom: 1px solid var(--fr-border);
+  }
+  .result-row { padding: 8px 0; border-bottom: 1px solid var(--fr-border); font-size: 13px; }
+  .result-row:last-child { border-bottom: none; }
   @media (max-width: 720px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .form-row { grid-template-columns: 1fr; }
@@ -218,6 +237,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="dashboard">Dashboard</button>
       <button class="tab" data-tab="orders">Orders</button>
+      <button class="tab" data-tab="bulk">Bulk Upload</button>
     </div>
 
     <!-- ---- DASHBOARD TAB ---- -->
@@ -262,6 +282,62 @@
             <tr><td colspan="6" class="empty-state">Loading orders…</td></tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- ---- BULK UPLOAD TAB ---- -->
+    <section id="tab-bulk" class="hidden">
+      <h2 class="page-title">Bulk Upload</h2>
+      <p class="page-sub">Upload multiple orders at once from a CSV file. Each row is one item — orders with several SKUs use one row per SKU sharing the same order number.</p>
+
+      <div id="bulk-msg"></div>
+
+      <div class="panel">
+        <h3>1. Download the template</h3>
+        <p class="muted" style="margin-bottom: 12px;">Use this template to format your file. UTF-8, comma-separated, maximum 500 rows per upload.</p>
+        <button class="btn-secondary" id="download-template-btn" type="button">Download CSV template</button>
+        <details style="margin-top: 16px;">
+          <summary style="cursor:pointer;font-size:13px;color:var(--fr-gray);">Show column reference</summary>
+          <div style="margin-top: 10px; font-size: 12px; color: var(--fr-gray);">
+            <p style="margin-bottom: 8px;"><strong>Required:</strong> order_number, recipient_name, address_line1, city, state, postal_code, country_code, item_sku, item_quantity</p>
+            <p style="margin-bottom: 8px;"><strong>Optional:</strong> recipient_phone, address_line2, shipping_service, notes_to_buyer, item_name, item_unit_price</p>
+            <p><strong>Notes:</strong> country_code must be 2 letters (US, CA, MX…). item_quantity must be 1 or more. For an order with multiple items, repeat the order_number on each row with different item_sku.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="panel">
+        <h3>2. Upload your CSV</h3>
+        <p class="muted" style="margin-bottom: 12px;">Drop your file below or click to choose.</p>
+        <div id="drop-zone" class="drop-zone">
+          <input type="file" id="csv-file" accept=".csv,text/csv" style="display:none;" />
+          <p style="font-size: 14px; margin-bottom: 4px;"><strong>Drop CSV here</strong> or click to choose</p>
+          <p style="font-size: 12px; color: var(--fr-gray);">UTF-8, comma-separated, max 500 rows</p>
+        </div>
+        <div id="file-info" class="hidden" style="margin-top: 12px; font-size: 13px; color: var(--fr-gray);"></div>
+      </div>
+
+      <div class="panel hidden" id="preview-panel">
+        <h3>3. Review</h3>
+        <div id="preview-summary" style="margin-bottom: 12px; font-size: 13px;"></div>
+        <div style="overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid var(--fr-border); border-radius: 6px;">
+          <table id="preview-table" style="font-size: 12px;">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button class="btn-cancel" id="bulk-cancel-btn" type="button">Cancel</button>
+          <button class="btn-primary" id="bulk-submit-btn" type="button" style="width:auto;">Submit valid rows</button>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="result-panel">
+        <h3>Upload result</h3>
+        <div id="result-content"></div>
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button class="btn-secondary" id="bulk-done-btn" type="button" style="width:auto;">Done</button>
+        </div>
       </div>
     </section>
   </main>
@@ -410,6 +486,7 @@
       const target = tab.dataset.tab;
       document.getElementById('tab-dashboard').classList.toggle('hidden', target !== 'dashboard');
       document.getElementById('tab-orders').classList.toggle('hidden', target !== 'orders');
+      document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
     });
   });
 
@@ -419,12 +496,13 @@
       const res = await fetch(`${API_BASE}/portal-dashboard?portal_user=${encodeURIComponent(portalUser)}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to load dashboard');
-      clientName = json.client_name || json.client?.name || 'Client';
+      // portal-dashboard returns: { client: {id,name,...}, orders: {total,pending,processing,exported} }
+      clientName = (json.client && json.client.name) || 'Client';
       document.getElementById('header-client').textContent = clientName.toUpperCase();
       document.getElementById('dash-greeting').textContent = `Hello, ${clientName}`;
       document.getElementById('dash-sub').textContent = `${clientName} · Client portal`;
-      const counts = json.counts || {};
-      document.getElementById('kpi-total').textContent = json.total_orders ?? counts.total ?? 0;
+      const counts = json.orders || {};
+      document.getElementById('kpi-total').textContent = counts.total ?? 0;
       document.getElementById('kpi-pending').textContent = counts.pending ?? 0;
       document.getElementById('kpi-processing').textContent = counts.processing ?? 0;
       document.getElementById('kpi-exported').textContent = counts.exported ?? 0;
@@ -606,6 +684,308 @@
     } finally {
       btn.disabled = false; btn.textContent = 'Submit Order';
     }
+  });
+
+  // ---------- Bulk Upload ----------
+  const TEMPLATE_HEADERS = [
+    'order_number','recipient_name','recipient_phone',
+    'address_line1','address_line2','city','state','postal_code','country_code',
+    'shipping_service','notes_to_buyer',
+    'item_sku','item_name','item_quantity','item_unit_price',
+  ];
+  const REQUIRED_FIELDS = [
+    'order_number','recipient_name','address_line1','city','state',
+    'postal_code','country_code','item_sku','item_quantity',
+  ];
+  const MAX_ROWS = 500;
+
+  let parsedRows = [];   // [{row:{}, row_index:N, errors:[]}]
+
+  function csvCell(v) {
+    if (v === null || v === undefined) return '';
+    const s = String(v);
+    if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  // Minimal CSV parser: handles quoted fields, escaped quotes, CRLF/LF.
+  function parseCSV(text) {
+    // Strip BOM if present
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    const rows = [];
+    let field = '';
+    let row = [];
+    let inQuotes = false;
+    let i = 0;
+    while (i < text.length) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+      if (ch === '"') { inQuotes = true; i++; continue; }
+      if (ch === ',') { row.push(field); field = ''; i++; continue; }
+      if (ch === '\r') { i++; continue; }
+      if (ch === '\n') { row.push(field); rows.push(row); field = ''; row = []; i++; continue; }
+      field += ch; i++;
+    }
+    // Flush last field/row if any content remains
+    if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }
+    // Drop trailing empty rows (common in Excel exports)
+    while (rows.length > 0 && rows[rows.length - 1].every((c) => c.trim() === '')) rows.pop();
+    return rows;
+  }
+
+  function validateRowClient(row, rowIndex) {
+    const errors = [];
+    for (const f of REQUIRED_FIELDS) {
+      if (row[f] === undefined || row[f] === null || String(row[f]).trim() === '') {
+        errors.push('Missing: ' + f);
+      }
+    }
+    if (row.country_code && String(row.country_code).trim().length !== 2) {
+      errors.push('country_code must be 2 letters');
+    }
+    if (row.item_quantity && String(row.item_quantity).trim() !== '') {
+      const qty = parseInt(row.item_quantity, 10);
+      if (!Number.isInteger(qty) || qty < 1) errors.push('item_quantity must be >= 1');
+    }
+    if (row.item_unit_price && String(row.item_unit_price).trim() !== '') {
+      const p = parseFloat(row.item_unit_price);
+      if (Number.isNaN(p) || p < 0) errors.push('item_unit_price must be a non-negative number');
+    }
+    return errors;
+  }
+
+  // Template download
+  document.getElementById('download-template-btn').addEventListener('click', () => {
+    const sample = {
+      order_number: 'EXAMPLE-001',
+      recipient_name: 'Jane Smith',
+      recipient_phone: '305-555-0100',
+      address_line1: '123 Main St',
+      address_line2: 'Apt 2',
+      city: 'Miami',
+      state: 'FL',
+      postal_code: '33131',
+      country_code: 'US',
+      shipping_service: 'USPS Priority',
+      notes_to_buyer: 'Thanks for your order!',
+      item_sku: 'SKU-EXAMPLE-001',
+      item_name: 'Example product',
+      item_quantity: '1',
+      item_unit_price: '9.99',
+    };
+    const lines = [
+      TEMPLATE_HEADERS.join(','),
+      TEMPLATE_HEADERS.map((h) => csvCell(sample[h])).join(','),
+    ];
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'fr-logistics-orders-template.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Drop zone
+  const dropZone = document.getElementById('drop-zone');
+  const csvFileInput = document.getElementById('csv-file');
+  const fileInfo = document.getElementById('file-info');
+  const previewPanel = document.getElementById('preview-panel');
+  const resultPanel = document.getElementById('result-panel');
+  const bulkMsg = document.getElementById('bulk-msg');
+
+  dropZone.addEventListener('click', () => csvFileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  csvFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) handleFile(e.target.files[0]);
+  });
+
+  function showBulkMsg(text, kind) {
+    bulkMsg.innerHTML = `<div class="${kind === 'error' ? 'error-box' : kind === 'success' ? 'success-box' : 'error-box'}">${text}</div>`;
+  }
+  function clearBulkMsg() { bulkMsg.innerHTML = ''; }
+
+  function handleFile(file) {
+    clearBulkMsg();
+    resultPanel.classList.add('hidden');
+    previewPanel.classList.add('hidden');
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      showBulkMsg('File must be a .csv', 'error');
+      return;
+    }
+    fileInfo.classList.remove('hidden');
+    fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = String(reader.result || '');
+        const grid = parseCSV(text);
+        if (grid.length < 2) {
+          showBulkMsg('CSV is empty or has no data rows.', 'error');
+          return;
+        }
+        const headers = grid[0].map((h) => h.trim());
+        const dataRows = grid.slice(1).filter((r) => r.some((c) => c.trim() !== ''));
+        if (dataRows.length === 0) {
+          showBulkMsg('CSV has no data rows (only a header).', 'error');
+          return;
+        }
+        if (dataRows.length > MAX_ROWS) {
+          showBulkMsg(`CSV has ${dataRows.length} rows. Maximum allowed is ${MAX_ROWS}.`, 'error');
+          return;
+        }
+        // Check that all required headers are present
+        const missingHeaders = REQUIRED_FIELDS.filter((f) => !headers.includes(f));
+        if (missingHeaders.length) {
+          showBulkMsg(`CSV is missing required columns: ${missingHeaders.join(', ')}. Download the template for the correct format.`, 'error');
+          return;
+        }
+
+        parsedRows = dataRows.map((cells, i) => {
+          const row = {};
+          headers.forEach((h, idx) => { row[h] = (cells[idx] !== undefined ? cells[idx] : '').trim(); });
+          const errors = validateRowClient(row, i + 1);
+          return { row, row_index: i + 1, errors };
+        });
+
+        renderPreview(headers);
+      } catch (err) {
+        showBulkMsg('Could not read CSV: ' + err.message, 'error');
+      }
+    };
+    reader.onerror = () => showBulkMsg('Could not read file.', 'error');
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function renderPreview(headers) {
+    const thead = document.querySelector('#preview-table thead');
+    const tbody = document.querySelector('#preview-table tbody');
+    thead.innerHTML = '';
+    tbody.innerHTML = '';
+
+    const validCount = parsedRows.filter((r) => r.errors.length === 0).length;
+    const errorCount = parsedRows.length - validCount;
+    document.getElementById('preview-summary').innerHTML =
+      `<strong>${parsedRows.length}</strong> rows parsed · ` +
+      `<span style="color:var(--fr-green);"><strong>${validCount}</strong> valid</span> · ` +
+      `<span style="color:var(--fr-red);"><strong>${errorCount}</strong> with errors</span>`;
+
+    // Header row
+    const headerHtml = '<tr><th>#</th>' + headers.map((h) => `<th>${esc(h)}</th>`).join('') + '</tr>';
+    thead.innerHTML = headerHtml;
+
+    // Data rows
+    parsedRows.forEach((pr) => {
+      const tr = document.createElement('tr');
+      tr.className = pr.errors.length ? 'row-error' : 'row-ok';
+      tr.innerHTML = `<td>${pr.errors.length ? '✗ ' : '✓ '}${pr.row_index}</td>` +
+        headers.map((h) => `<td>${esc(pr.row[h] || '')}</td>`).join('');
+      tbody.appendChild(tr);
+      if (pr.errors.length) {
+        const errTr = document.createElement('tr');
+        errTr.innerHTML = `<td></td><td colspan="${headers.length}"><div class="row-error-detail">${pr.errors.map(esc).join(' · ')}</div></td>`;
+        tbody.appendChild(errTr);
+      }
+    });
+
+    previewPanel.classList.remove('hidden');
+    document.getElementById('bulk-submit-btn').disabled = validCount === 0;
+    document.getElementById('bulk-submit-btn').textContent =
+      validCount === 0 ? 'No valid rows' : `Submit ${validCount} valid row${validCount === 1 ? '' : 's'}`;
+  }
+
+  // Cancel
+  document.getElementById('bulk-cancel-btn').addEventListener('click', () => {
+    parsedRows = [];
+    previewPanel.classList.add('hidden');
+    fileInfo.classList.add('hidden');
+    csvFileInput.value = '';
+    clearBulkMsg();
+  });
+
+  // Submit
+  document.getElementById('bulk-submit-btn').addEventListener('click', async () => {
+    const validRows = parsedRows.filter((r) => r.errors.length === 0).map((r) => r.row);
+    if (validRows.length === 0) return;
+    const btn = document.getElementById('bulk-submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    clearBulkMsg();
+
+    try {
+      const res = await fetch(`${API_BASE}/portal-orders-bulk-create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ portal_user: portalUser, rows: validRows }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Bulk upload failed');
+      renderResult(json);
+      // Refresh dashboard + orders so the new ones show up.
+      await loadDashboard();
+      await loadOrders();
+    } catch (err) {
+      showBulkMsg(esc(err.message), 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = `Submit ${validRows.length} valid row${validRows.length === 1 ? '' : 's'}`;
+    }
+  });
+
+  function renderResult(json) {
+    previewPanel.classList.add('hidden');
+    fileInfo.classList.add('hidden');
+    const c = json.created_orders || [];
+    const f = json.failed_orders || [];
+    const re = json.row_errors || [];
+
+    let html = '';
+    if (c.length) {
+      html += `<div class="success-box">Created <strong>${c.length}</strong> order${c.length === 1 ? '' : 's'} successfully.</div>`;
+      html += '<div style="margin-top:12px;"><strong>Created:</strong></div>';
+      c.forEach((o) => {
+        html += `<div class="result-row">✓ ${esc(o.order_number)} — ${o.item_count} item${o.item_count === 1 ? '' : 's'} (rows ${o.row_indices.join(', ')})</div>`;
+      });
+    }
+    if (f.length) {
+      html += '<div style="margin-top:16px;color:var(--fr-red);"><strong>Failed:</strong></div>';
+      f.forEach((o) => {
+        html += `<div class="result-row" style="color:var(--fr-red);">✗ ${esc(o.order_number)} (rows ${o.row_indices.join(', ')}) — ${esc(o.error)}</div>`;
+      });
+    }
+    if (re.length) {
+      html += '<div style="margin-top:16px;color:var(--fr-red);"><strong>Skipped rows (validation failed):</strong></div>';
+      re.forEach((r) => {
+        html += `<div class="result-row" style="color:var(--fr-red);">✗ Row ${r.row_index}${r.order_number ? ' · ' + esc(r.order_number) : ''} — ${r.errors.map(esc).join('; ')}</div>`;
+      });
+    }
+    if (!c.length && !f.length && !re.length) {
+      html = '<div class="error-box">No rows were processed.</div>';
+    }
+    document.getElementById('result-content').innerHTML = html;
+    resultPanel.classList.remove('hidden');
+  }
+
+  document.getElementById('bulk-done-btn').addEventListener('click', () => {
+    parsedRows = [];
+    resultPanel.classList.add('hidden');
+    csvFileInput.value = '';
+    clearBulkMsg();
+    // Jump user to Orders tab to see their new entries.
+    document.querySelector('.tab[data-tab="orders"]').click();
   });
 
 })();
