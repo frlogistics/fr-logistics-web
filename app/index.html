@@ -244,6 +244,7 @@
       <button class="tab" data-tab="orders">Orders</button>
       <button class="tab" data-tab="bulk">Bulk Upload</button>
       <button class="tab" data-tab="inventory">Inventory</button>
+      <button class="tab" data-tab="tracking">Tracking</button>
     </div>
 
     <!-- ---- DASHBOARD TAB ---- -->
@@ -393,6 +394,48 @@
         </table>
       </div>
     </section>
+
+    <!-- ---- TRACKING TAB ---- -->
+    <section id="tab-tracking" class="hidden">
+      <h2 class="page-title">Tracking</h2>
+      <p class="page-sub">Live shipment status from ShipStation. Last 30 days, shipped orders only.</p>
+
+      <div id="trk-msg"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Shipments</div><div class="kpi-value" id="trk-kpi-total">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Carriers Used</div><div class="kpi-value" id="trk-kpi-carriers">—</div></div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="trk-search" placeholder="Search order #, recipient, tracking…" style="margin-bottom: 0; max-width: 320px;" />
+        <select id="trk-carrier-filter" style="margin-bottom: 0;">
+          <option value="all">All carriers</option>
+        </select>
+        <button class="btn-refresh" id="trk-refresh-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Refresh</button>
+        <span style="margin-left: auto; font-size: 12px; color: var(--fr-gray);" id="trk-last-sync">—</span>
+      </div>
+
+      <div class="panel" style="padding: 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Order Date</th>
+              <th>Recipient</th>
+              <th>Destination</th>
+              <th>Carrier</th>
+              <th>Tracking #</th>
+              <th>Status</th>
+              <th>Ship Date</th>
+            </tr>
+          </thead>
+          <tbody id="trk-tbody">
+            <tr><td colspan="8" class="empty-state">Loading shipments…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -477,6 +520,8 @@
   let ordersCache = [];
   let inventoryCache = null;
   let inventoryLoaded = false;
+  let trackingCache = null;
+  let trackingLoaded = false;
 
   // ---------- Elements ----------
   const loginView = document.getElementById('login-view');
@@ -543,8 +588,10 @@
       document.getElementById('tab-orders').classList.toggle('hidden', target !== 'orders');
       document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
       document.getElementById('tab-inventory').classList.toggle('hidden', target !== 'inventory');
-      // Load inventory on first visit to that tab.
+      document.getElementById('tab-tracking').classList.toggle('hidden', target !== 'tracking');
+      // Lazy load on first visit.
       if (target === 'inventory' && !inventoryLoaded) loadInventory();
+      if (target === 'tracking' && !trackingLoaded) loadTracking();
     });
   });
 
@@ -1132,6 +1179,116 @@
   invSearch.addEventListener('input', renderInventory);
   invStatusFilter.addEventListener('change', renderInventory);
   document.getElementById('inv-refresh-btn').addEventListener('click', loadInventory);
+
+  // ---------- Tracking ----------
+  const trkTbody = document.getElementById('trk-tbody');
+  const trkSearch = document.getElementById('trk-search');
+  const trkCarrierFilter = document.getElementById('trk-carrier-filter');
+  const trkMsg = document.getElementById('trk-msg');
+
+  function showTrkMsg(text, kind) {
+    trkMsg.innerHTML = `<div class="${kind === 'error' ? 'error-box' : 'success-box'}">${text}</div>`;
+  }
+  function clearTrkMsg() { trkMsg.innerHTML = ''; }
+
+  function fmtTrkDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    // YYYY-MM-DD for tabular consistency.
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function loadTracking() {
+    trkTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading shipments…</td></tr>';
+    clearTrkMsg();
+    try {
+      const res = await fetch(`${API_BASE}/portal-tracking?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load tracking');
+      trackingCache = json;
+      trackingLoaded = true;
+
+      // Handle the "portal" mode — show a feature-coming-soon message rather
+      // than an empty table that looks like a bug.
+      if (json.mode === 'unsupported_portal') {
+        document.getElementById('trk-kpi-total').textContent = '—';
+        document.getElementById('trk-kpi-carriers').textContent = '—';
+        document.getElementById('trk-last-sync').textContent = '';
+        trkTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Tracking will be available once your orders integrate with ShipStation. Coming soon.</td></tr>';
+        return;
+      }
+
+      // KPIs
+      const k = json.kpis || {};
+      document.getElementById('trk-kpi-total').textContent = k.totalShipments ?? 0;
+      document.getElementById('trk-kpi-carriers').textContent = k.carriers ?? 0;
+
+      // Last sync
+      if (json.lastSync) {
+        const d = new Date(json.lastSync);
+        document.getElementById('trk-last-sync').textContent = `Last sync: ${d.toLocaleTimeString()}`;
+      }
+
+      // Populate carrier filter dynamically.
+      const carriers = [...new Set((json.shipments || []).map((s) => s.carrier).filter(Boolean))].sort();
+      trkCarrierFilter.innerHTML = '<option value="all">All carriers</option>' +
+        carriers.map((c) => `<option value="${esc(c)}">${esc(c.toUpperCase())}</option>`).join('');
+
+      renderTracking();
+    } catch (err) {
+      trkTbody.innerHTML = `<tr><td colspan="8" class="empty-state">${esc(err.message)}</td></tr>`;
+      document.getElementById('trk-kpi-total').textContent = '—';
+      document.getElementById('trk-kpi-carriers').textContent = '—';
+    }
+  }
+
+  function renderTracking() {
+    if (!trackingCache || trackingCache.mode === 'unsupported_portal') return;
+    const search = trkSearch.value.trim().toLowerCase();
+    const carrierFilter = trkCarrierFilter.value;
+    let rows = trackingCache.shipments || [];
+
+    if (carrierFilter !== 'all') {
+      rows = rows.filter((s) => s.carrier === carrierFilter);
+    }
+    if (search) {
+      rows = rows.filter((s) =>
+        (s.orderNumber || '').toLowerCase().includes(search) ||
+        (s.recipient || '').toLowerCase().includes(search) ||
+        (s.trackingNumber || '').toLowerCase().includes(search)
+      );
+    }
+
+    if (rows.length === 0) {
+      trkTbody.innerHTML = '<tr><td colspan="8" class="empty-state">No matching shipments.</td></tr>';
+      return;
+    }
+
+    trkTbody.innerHTML = '';
+    rows.forEach((s) => {
+      const tr = document.createElement('tr');
+      const trackingCell = s.trackingUrl
+        ? `<a href="${esc(s.trackingUrl)}" target="_blank" rel="noopener" style="color: var(--fr-green); text-decoration: underline;">${esc(s.trackingNumber)}</a>`
+        : esc(s.trackingNumber);
+      const destination = [s.destination, s.country].filter((x) => x && x !== 'US').join(', ') || s.destination || '—';
+      tr.innerHTML = `
+        <td><strong>${esc(s.orderNumber || '—')}</strong></td>
+        <td>${fmtTrkDate(s.orderDate)}</td>
+        <td>${esc(s.recipient || '—')}</td>
+        <td>${esc(destination)}</td>
+        <td>${esc((s.carrier || '—').toUpperCase())}</td>
+        <td>${trackingCell}</td>
+        <td><span class="status-badge exported">${esc(s.status)}</span></td>
+        <td>${fmtTrkDate(s.shipDate)}</td>
+      `;
+      trkTbody.appendChild(tr);
+    });
+  }
+
+  trkSearch.addEventListener('input', renderTracking);
+  trkCarrierFilter.addEventListener('change', renderTracking);
+  document.getElementById('trk-refresh-btn').addEventListener('click', loadTracking);
 
 })();
 </script>
