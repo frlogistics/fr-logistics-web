@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="FR-Logistics Client Portal. Access your SkuVault inventory, ShipStation order tracking, and schedule EcoPack+ pickups. All in one place.">
+<meta name="description" content="FR-Logistics Client Portal. Submit orders, access your SkuVault inventory, track shipments, and schedule EcoPack+ pickups. All in one place.">
 <meta name="theme-color" content="#0F172A">
-<title>Client Portal · FR-Logistics Miami · Inventory, Tracking &amp; EcoPack+ Pickup</title>
+<title>Client Portal · FR-Logistics Miami · Order Inbox, Inventory, Tracking &amp; EcoPack+ Pickup</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -153,12 +153,32 @@
     <div class="section-header">
       <span class="eyebrow"><svg><use href="#chev"/></svg> 🔐 Private area for FR-Logistics clients</span>
       <h1>Client <span class="accent">Portal</span></h1>
-      <p class="lead">Everything you need to manage your inventory, track your orders, and schedule EcoPack+ pickups — all in one place.</p>
+      <p class="lead">Submit your orders, manage your inventory, track every shipment, and schedule EcoPack+ pickups — all in one place.</p>
     </div>
 
     <div class="portal-cards-grid">
 
-      <!-- CARD 1: SKUVAULT -->
+      <!-- CARD 1: ORDER INBOX (FR Client Portal — manual + bulk CSV) -->
+      <article class="portal-card portal-card-featured">
+        <div class="portal-card-badge">📥 Order Inbox</div>
+        <div class="portal-card-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13l3-9h12l3 9" stroke="#10B981" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13v6a2 2 0 002 2h14a2 2 0 002-2v-6" stroke="#10B981" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13h5l1 2h6l1-2h5" stroke="#10B981" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <h3>Order Inbox</h3>
+        <p class="portal-card-desc">Submit orders one by one or upload up to 500 at a time with a CSV. Each order is validated, queued for fulfillment, and tracked through to export.</p>
+        <ul class="portal-card-features">
+          <li><svg class="chev-bullet"><use href="#chev"/></svg> Manual order form (single orders)</li>
+          <li><svg class="chev-bullet"><use href="#chev"/></svg> Bulk CSV upload with validation</li>
+          <li><svg class="chev-bullet"><use href="#chev"/></svg> Live status: pending → exported</li>
+        </ul>
+        <div class="portal-card-actions">
+          <a href="/portal/" class="btn btn-primary">
+            🔐 Sign in to Portal
+            <svg><use href="#chev-white"/></svg>
+          </a>
+          <a href="mailto:info@fr-logistics.net?subject=Client%20Portal%20Access%20Request" class="btn btn-outline btn-sm">Request access</a>
+        </div>
+      </article>
+
+      <!-- CARD 2: SKUVAULT -->
       <article class="portal-card">
         <div class="portal-card-badge">📦 Inventory</div>
         <div class="portal-card-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke="#0EA5E9" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke="#0EA5E9" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 11v10" stroke="#0EA5E9" stroke-width="1.6"/></svg></div>
@@ -170,15 +190,15 @@
           <li><svg class="chev-bullet"><use href="#chev"/></svg> Read-only access per client</li>
         </ul>
         <div class="portal-card-actions">
-          <a href="https://app.skuvault.com/signin" target="_blank" rel="noopener" class="btn btn-primary">
-            🔑 Login to SkuVault
+          <a href="/portal/" class="btn btn-primary">
+            🔐 Sign in to Portal
             <svg><use href="#chev-white"/></svg>
           </a>
           <a href="mailto:info@fr-logistics.net?subject=SkuVault%20Access%20Request" class="btn btn-outline btn-sm">Request access</a>
         </div>
       </article>
 
-      <!-- CARD 2: SHIPSTATION -->
+      <!-- CARD 3: SHIPSTATION -->
       <article class="portal-card">
         <div class="portal-card-badge">🚚 Order Tracking</div>
         <div class="portal-card-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7h12v8H3z" stroke="#14B8A6" stroke-width="1.6" stroke-linejoin="round"/><path d="M15 10h4l2 3v2h-6" stroke="#14B8A6" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="17" r="2" stroke="#14B8A6" stroke-width="1.6"/><circle cx="17" cy="17" r="2" stroke="#14B8A6" stroke-width="1.6"/></svg></div>
@@ -190,15 +210,15 @@
           <li><svg class="chev-bullet"><use href="#chev"/></svg> Order history &amp; exports</li>
         </ul>
         <div class="portal-card-actions">
-          <a href="https://ship.shipstation.com/" target="_blank" rel="noopener" class="btn btn-primary">
-            📬 Track my orders
+          <a href="/portal/" class="btn btn-primary">
+            🔐 Sign in to Portal
             <svg><use href="#chev-white"/></svg>
           </a>
           <a href="mailto:info@fr-logistics.net?subject=ShipStation%20Access%20Request" class="btn btn-outline btn-sm">Request access</a>
         </div>
       </article>
 
-      <!-- CARD 3: ECOPACK+ SCHEDULE PICKUP -->
+      <!-- CARD 4: ECOPACK+ SCHEDULE PICKUP -->
       <article class="portal-card portal-card-eco">
         <div class="portal-card-badge" style="background: rgba(124,185,40,0.15); color: var(--eco-lime);">🌿 EcoPack+</div>
         <div class="portal-card-icon" style="background: linear-gradient(135deg, rgba(124,185,40,0.15), rgba(163,230,53,0.18));"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#7CB928" stroke-width="1.6"/><path d="M3 9h18M8 3v4M16 3v4" stroke="#7CB928" stroke-width="1.6"/><circle cx="12" cy="15" r="2" fill="#7CB928"/></svg></div>
@@ -431,12 +451,13 @@
 <style>
 .portal-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 48px auto 0;
 }
-@media (max-width: 900px) { .portal-cards-grid { grid-template-columns: 1fr; max-width: 480px; } }
+@media (max-width: 1100px) { .portal-cards-grid { grid-template-columns: repeat(2, 1fr); max-width: 760px; } }
+@media (max-width: 600px) { .portal-cards-grid { grid-template-columns: 1fr; max-width: 480px; } }
 
 .portal-card {
   background: white;
@@ -467,6 +488,8 @@
 .portal-card:hover::before { opacity: 1; }
 .portal-card.portal-card-eco::before { background: linear-gradient(90deg, var(--eco-lime), var(--eco-lime-light)); }
 .portal-card.portal-card-eco:hover { border-color: var(--eco-lime); box-shadow: 0 12px 28px rgba(124, 185, 40, 0.15); }
+.portal-card.portal-card-featured::before { opacity: 1; }
+.portal-card.portal-card-featured { border-color: rgba(16, 185, 129, 0.25); }
 
 .portal-card-badge {
   display: inline-block;
