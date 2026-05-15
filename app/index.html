@@ -119,6 +119,11 @@
   .status-badge.pending { background: #fef3c7; color: var(--fr-orange); }
   .status-badge.processing { background: #dbeafe; color: var(--fr-blue); }
   .status-badge.exported { background: #dcfce7; color: var(--fr-green); }
+  /* ---- Inventory statuses ---- */
+  .status-badge.ok { background: #dcfce7; color: var(--fr-green); }
+  .status-badge.low { background: #fef3c7; color: var(--fr-orange); }
+  .status-badge.out { background: #fee2e2; color: var(--fr-red); }
+  .muted { color: var(--fr-gray); }
   .order-row { cursor: pointer; }
   .order-row:hover { background: var(--fr-bg); }
   .item-detail { background: #f9fafb; }
@@ -238,6 +243,7 @@
       <button class="tab active" data-tab="dashboard">Dashboard</button>
       <button class="tab" data-tab="orders">Orders</button>
       <button class="tab" data-tab="bulk">Bulk Upload</button>
+      <button class="tab" data-tab="inventory">Inventory</button>
     </div>
 
     <!-- ---- DASHBOARD TAB ---- -->
@@ -340,6 +346,53 @@
         </div>
       </div>
     </section>
+
+    <!-- ---- INVENTORY TAB ---- -->
+    <section id="tab-inventory" class="hidden">
+      <h2 class="page-title">Inventory</h2>
+      <p class="page-sub">Live stock levels from SkuVault. Updated every 5 minutes.</p>
+
+      <div id="inv-msg"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total SKUs</div><div class="kpi-value" id="inv-kpi-skus">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Units</div><div class="kpi-value" id="inv-kpi-units">—</div></div>
+        <div class="kpi-card pending"><div class="kpi-label">Low Stock</div><div class="kpi-value" id="inv-kpi-low" style="color: var(--fr-orange);">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Out of Stock</div><div class="kpi-value" id="inv-kpi-out" style="color: var(--fr-red);">—</div></div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="inv-search" placeholder="Search SKU, name or brand…" style="margin-bottom: 0; max-width: 320px;" />
+        <select id="inv-status-filter" style="margin-bottom: 0;">
+          <option value="all">All statuses</option>
+          <option value="out">Out of stock</option>
+          <option value="low">Low stock</option>
+          <option value="ok">In stock</option>
+        </select>
+        <button class="btn-refresh" id="inv-refresh-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Refresh</button>
+        <span style="margin-left: auto; font-size: 12px; color: var(--fr-gray);" id="inv-last-sync">—</span>
+      </div>
+
+      <div class="panel" style="padding: 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Name</th>
+              <th>Brand</th>
+              <th style="text-align:right;">On Hand</th>
+              <th style="text-align:right;">Allocated</th>
+              <th style="text-align:right;">Available</th>
+              <th>Status</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody id="inv-tbody">
+            <tr><td colspan="8" class="empty-state">Loading inventory…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -422,6 +475,8 @@
   let portalUser = null;
   let clientName = null;
   let ordersCache = [];
+  let inventoryCache = null;
+  let inventoryLoaded = false;
 
   // ---------- Elements ----------
   const loginView = document.getElementById('login-view');
@@ -487,6 +542,9 @@
       document.getElementById('tab-dashboard').classList.toggle('hidden', target !== 'dashboard');
       document.getElementById('tab-orders').classList.toggle('hidden', target !== 'orders');
       document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
+      document.getElementById('tab-inventory').classList.toggle('hidden', target !== 'inventory');
+      // Load inventory on first visit to that tab.
+      if (target === 'inventory' && !inventoryLoaded) loadInventory();
     });
   });
 
@@ -987,6 +1045,93 @@
     // Jump user to Orders tab to see their new entries.
     document.querySelector('.tab[data-tab="orders"]').click();
   });
+
+  // ---------- Inventory ----------
+  const invTbody = document.getElementById('inv-tbody');
+  const invSearch = document.getElementById('inv-search');
+  const invStatusFilter = document.getElementById('inv-status-filter');
+  const invMsg = document.getElementById('inv-msg');
+
+  function showInvMsg(text, kind) {
+    invMsg.innerHTML = `<div class="${kind === 'error' ? 'error-box' : 'success-box'}">${text}</div>`;
+  }
+  function clearInvMsg() { invMsg.innerHTML = ''; }
+
+  async function loadInventory() {
+    invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading inventory…</td></tr>';
+    clearInvMsg();
+    try {
+      const res = await fetch(`${API_BASE}/portal-inventory?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load inventory');
+      inventoryCache = json;
+      inventoryLoaded = true;
+      // KPIs
+      const k = json.kpis || {};
+      document.getElementById('inv-kpi-skus').textContent = k.totalSKUs ?? 0;
+      document.getElementById('inv-kpi-units').textContent = (k.totalUnits ?? 0).toLocaleString();
+      document.getElementById('inv-kpi-low').textContent = k.lowStock ?? 0;
+      document.getElementById('inv-kpi-out').textContent = k.outOfStock ?? 0;
+      // Last sync
+      if (json.lastSync) {
+        const d = new Date(json.lastSync);
+        document.getElementById('inv-last-sync').textContent = `Last sync: ${d.toLocaleTimeString()}`;
+      }
+      renderInventory();
+    } catch (err) {
+      invTbody.innerHTML = `<tr><td colspan="8" class="empty-state">${esc(err.message)}</td></tr>`;
+      document.getElementById('inv-kpi-skus').textContent = '—';
+      document.getElementById('inv-kpi-units').textContent = '—';
+      document.getElementById('inv-kpi-low').textContent = '—';
+      document.getElementById('inv-kpi-out').textContent = '—';
+    }
+  }
+
+  function renderInventory() {
+    if (!inventoryCache) return;
+    const search = invSearch.value.trim().toLowerCase();
+    const statusFilter = invStatusFilter.value;
+    let rows = inventoryCache.skus || [];
+
+    if (statusFilter !== 'all') {
+      rows = rows.filter((s) => s.status === statusFilter);
+    }
+    if (search) {
+      rows = rows.filter((s) =>
+        (s.sku || '').toLowerCase().includes(search) ||
+        (s.title || '').toLowerCase().includes(search) ||
+        (s.brand || '').toLowerCase().includes(search)
+      );
+    }
+
+    if (rows.length === 0) {
+      invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">No matching SKUs.</td></tr>';
+      return;
+    }
+
+    invTbody.innerHTML = '';
+    rows.forEach((s) => {
+      const tr = document.createElement('tr');
+      const locText = (s.locations && s.locations.length)
+        ? s.locations.join(', ')
+        : '<span class="muted">—</span>';
+      tr.innerHTML = `
+        <td><strong>${esc(s.sku)}</strong></td>
+        <td>${esc(s.title || '—')}</td>
+        <td>${esc(s.brand || '—')}</td>
+        <td style="text-align:right;">${(s.onHand || 0).toLocaleString()}</td>
+        <td style="text-align:right;">${(s.allocated || 0).toLocaleString()}</td>
+        <td style="text-align:right;"><strong>${(s.available || 0).toLocaleString()}</strong></td>
+        <td><span class="status-badge ${s.status}">${esc(s.status)}</span></td>
+        <td>${locText}</td>
+      `;
+      invTbody.appendChild(tr);
+    });
+  }
+
+  invSearch.addEventListener('input', renderInventory);
+  invStatusFilter.addEventListener('change', renderInventory);
+  document.getElementById('inv-refresh-btn').addEventListener('click', loadInventory);
 
 })();
 </script>
