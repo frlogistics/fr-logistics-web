@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Logística desde Miami para sellers LATAM. Cross-dock 24-48h, drop-shipment $6/paquete, FBA prep para Amazon US, almacenamiento. 9 países, equipo bilingüe.">
+<meta name="theme-color" content="#0F172A">
+<meta name="robots" content="noindex,nofollow">
+<title>Logística Miami → LATAM · FR-Logistics · Cross-Dock + FBA Prep + Dropshipment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+<link rel="icon" type="image/jpeg" href="/assets/Fr-Logistics_Logo.jpg">
+<link rel="canonical" href="https://fr-logistics.net/lp/latam-logistics">
+
+<!-- TRACKING-PLACEHOLDER · Day 2: GA4 + Clarity + Google Ads tag here -->
+
+<style>
+  /* Inherits from /assets/styles.css. LATAM-specific overrides below. */
+  body { background: var(--bg); }
+
+  .lp-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 40px);
+    border-bottom: 1px solid var(--border); background: var(--white);
+  }
+  .lp-nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .lp-nav-brand img { height: 36px; width: auto; }
+  .lp-nav-brand-text {
+    font-family: var(--font-display); font-weight: 700; color: var(--text-primary);
+    font-size: 17px; letter-spacing: -0.01em;
+  }
+  .lp-nav-trust { display: flex; align-items: center; gap: 14px;
+    font-family: var(--font-body); font-size: 13px; color: var(--text-secondary); }
+  .lp-nav-trust img { height: 22px; }
+  @media (max-width: 640px) { .lp-nav-trust { display: none; } }
+
+  .lp-hero {
+    background:
+      radial-gradient(900px 380px at 0% 0%, rgba(14,165,233,0.10), transparent 60%),
+      radial-gradient(900px 380px at 100% 100%, rgba(16,185,129,0.08), transparent 60%),
+      var(--bg);
+    padding: clamp(60px, 8vw, 100px) clamp(20px, 5vw, 40px) clamp(40px, 6vw, 80px);
+  }
+  .lp-hero-inner { max-width: 980px; margin: 0 auto; text-align: center; }
+  .lp-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; background: rgba(14,165,233,0.10);
+    border: 1px solid rgba(14,165,233,0.30); border-radius: 999px;
+    color: var(--brand-cyan); font-family: var(--font-body);
+    font-weight: 700; font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .lp-eyebrow::before {
+    content: "🌎"; font-size: 14px;
+  }
+  .lp-hero h1 {
+    font-family: var(--font-display); font-size: clamp(36px, 5.5vw, 62px);
+    font-weight: 700; line-height: 1.05; letter-spacing: -0.025em;
+    color: var(--text-primary); margin: 0 0 22px;
+  }
+  .lp-hero h1 .accent {
+    background: var(--gradient-brand); -webkit-background-clip: text;
+    background-clip: text; color: transparent;
+  }
+  .lp-hero p.lead {
+    font-family: var(--font-body); font-size: clamp(17px, 2vw, 21px);
+    line-height: 1.55; color: var(--text-secondary);
+    max-width: 720px; margin: 0 auto 36px;
+  }
+  .lp-cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .lp-cta-row .btn { min-height: 56px; padding: 16px 28px; font-size: 15px; }
+
+  /* LATAM flags strip */
+  .lp-flags {
+    display: flex; justify-content: center; gap: clamp(14px, 2vw, 28px);
+    flex-wrap: wrap; margin-top: 36px;
+    padding: 20px clamp(20px, 5vw, 40px);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .lp-flags .flag {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 6px;
+    font-family: var(--font-body); font-size: 11px; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  }
+  .lp-flags .flag img {
+    height: 28px; width: 40px; object-fit: cover; border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(15,23,42,0.08);
+  }
+
+  /* 3 services for LATAM */
+  .lp-services {
+    padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px);
+    background: var(--bg-soft);
+  }
+  .lp-services-header { text-align: center; max-width: 720px; margin: 0 auto 48px; }
+  .lp-services-header h2 {
+    font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700; letter-spacing: -0.02em; margin: 0 0 12px;
+  }
+  .lp-services-header p {
+    font-family: var(--font-body); font-size: 17px; color: var(--text-secondary); margin: 0;
+  }
+  .lp-services-grid {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;
+  }
+  .lp-service {
+    background: white; padding: 32px 28px; border-radius: 16px;
+    border: 1px solid var(--border); position: relative;
+    transition: all 0.2s ease;
+  }
+  .lp-service:hover {
+    border-color: var(--brand-cyan); transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(15,23,42,0.06);
+  }
+  .lp-service-badge {
+    display: inline-block; padding: 4px 10px;
+    background: var(--gradient-brand-soft); color: var(--brand-teal);
+    border-radius: 999px; font-family: var(--font-body);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .lp-service h3 {
+    font-family: var(--font-display); font-size: 22px; font-weight: 700;
+    color: var(--text-primary); margin: 0 0 12px; letter-spacing: -0.01em;
+  }
+  .lp-service .price {
+    font-family: var(--font-display); font-size: 28px; font-weight: 800;
+    color: var(--brand-green); line-height: 1; margin-bottom: 16px;
+  }
+  .lp-service .price span {
+    font-size: 14px; color: var(--text-muted); font-weight: 500;
+  }
+  .lp-service ul {
+    list-style: none; padding: 0; margin: 0 0 8px;
+    font-family: var(--font-body); font-size: 14px; line-height: 1.7; color: var(--text-secondary);
+  }
+  .lp-service ul li {
+    padding-left: 22px; position: relative;
+  }
+  .lp-service ul li::before {
+    content: "✓"; position: absolute; left: 0; color: var(--brand-teal); font-weight: 700;
+  }
+
+  /* Why Miami */
+  .lp-why {
+    padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px);
+    background: var(--bg-dark); color: var(--text-on-dark);
+  }
+  .lp-why-inner { max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  @media (max-width: 768px) { .lp-why-inner { grid-template-columns: 1fr; gap: 36px; } }
+  .lp-why h2 {
+    font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700; letter-spacing: -0.02em; margin: 0 0 18px;
+  }
+  .lp-why p {
+    font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+    color: var(--text-on-dark-muted); margin: 0 0 28px;
+  }
+  .lp-why-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+  }
+  .lp-why-stat {
+    padding: 24px 20px; background: rgba(255,255,255,0.04);
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);
+  }
+  .lp-why-stat .num {
+    font-family: var(--font-display); font-size: 36px; font-weight: 800;
+    color: var(--brand-teal); line-height: 1; margin-bottom: 6px;
+  }
+  .lp-why-stat .label {
+    font-family: var(--font-body); font-size: 13px;
+    color: var(--text-on-dark-muted); line-height: 1.4;
+  }
+
+  /* Testimonial */
+  .lp-quote {
+    padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px);
+    background: var(--bg);
+  }
+  .lp-quote-inner { max-width: 820px; margin: 0 auto; text-align: center; }
+  .lp-quote .stars { font-size: 20px; color: #F59E0B; letter-spacing: 4px; margin-bottom: 20px; }
+  .lp-quote blockquote {
+    font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 28px);
+    font-weight: 500; line-height: 1.4; margin: 0 0 24px;
+    color: var(--text-primary); letter-spacing: -0.01em;
+  }
+  .lp-quote cite {
+    font-family: var(--font-body); font-style: normal;
+    font-size: 14px; color: var(--text-secondary);
+  }
+  .lp-quote cite strong { color: var(--text-primary); font-weight: 700; display: block; margin-bottom: 2px; }
+
+  /* FAQ */
+  .lp-faq { padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px); background: var(--bg-soft); }
+  .lp-faq-inner { max-width: 820px; margin: 0 auto; }
+  .lp-faq h2 {
+    font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px);
+    font-weight: 700; text-align: center; margin: 0 0 36px; letter-spacing: -0.02em;
+  }
+  .lp-faq details { border-bottom: 1px solid var(--border); padding: 22px 0; }
+  .lp-faq details summary {
+    font-family: var(--font-display); font-size: 17px; font-weight: 600;
+    color: var(--text-primary); cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .lp-faq details summary::-webkit-details-marker { display: none; }
+  .lp-faq details summary::after {
+    content: "+"; font-size: 24px; color: var(--brand-cyan);
+    transition: transform 0.2s; line-height: 1;
+  }
+  .lp-faq details[open] summary::after { transform: rotate(45deg); }
+  .lp-faq details p {
+    font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+    color: var(--text-secondary); margin: 14px 0 0;
+  }
+
+  /* Final CTA */
+  .lp-final {
+    padding: clamp(56px, 8vw, 100px) clamp(20px, 5vw, 40px);
+    background:
+      radial-gradient(700px 280px at 50% 100%, rgba(14,165,233,0.18), transparent 60%),
+      var(--bg-dark);
+    color: var(--text-on-dark); text-align: center;
+  }
+  .lp-final h2 {
+    font-family: var(--font-display); font-size: clamp(32px, 4.5vw, 48px);
+    font-weight: 700; margin: 0 0 18px; letter-spacing: -0.02em;
+  }
+  .lp-final p {
+    font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+    color: var(--text-on-dark-muted); max-width: 580px; margin: 0 auto 32px;
+  }
+  .lp-final .btn-on-dark { background: white; color: var(--text-primary); }
+  .lp-final .btn-on-dark:hover { background: var(--bg-soft); color: var(--brand-cyan); }
+
+  /* Footer */
+  .lp-footer {
+    padding: 32px clamp(20px, 5vw, 40px); background: var(--bg-darker);
+    color: var(--text-on-dark-muted); font-family: var(--font-body);
+    font-size: 13px; text-align: center;
+  }
+  .lp-footer a { color: var(--text-on-dark); text-decoration: none; }
+  .lp-footer a:hover { color: var(--brand-cyan); }
+  .lp-footer-links {
+    margin-bottom: 12px; display: flex; gap: 16px;
+    justify-content: center; flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+  <defs>
+    <linearGradient id="chevGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="50%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#0EA5E9"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- NAV -->
+<nav class="lp-nav">
+  <a href="/" class="lp-nav-brand">
+    <img src="/assets/Fr-Logistics_Logo.png" alt="FR-Logistics">
+    <span class="lp-nav-brand-text">FR-Logistics</span>
+  </a>
+  <div class="lp-nav-trust">
+    <img src="/assets/amazon-spn-logo.png" alt="Amazon SPN Certified">
+    <span>Miami → 9 países LATAM</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="lp-hero">
+  <div class="lp-hero-inner">
+    <span class="lp-eyebrow">Miami → LATAM · Equipo bilingüe</span>
+    <h1>Tu logística desde Miami,<br><span class="accent">hablada en tu idioma.</span></h1>
+    <p class="lead">
+      Sellers de México, Colombia, Argentina, Perú, Chile y más: usá Miami como tu hub.
+      Cross-dock en 24-48h, drop-shipment a tu cliente final en LATAM, FBA prep para Amazon US.
+      <strong>Equipo 100% bilingüe.</strong> Tarifas publicadas.
+    </p>
+    <div class="lp-cta-row">
+      <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hola%2C%20soy%20seller%20LATAM%20y%20vi%20su%20landing%20de%20log%C3%ADstica.%20Quiero%20una%20cotizaci%C3%B3n."
+         class="btn btn-whatsapp btn-lg"
+         data-lp-cta="hero-whatsapp"
+         data-source="ads-latam">💬 Hablemos por WhatsApp</a>
+      <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
+         class="btn btn-outline btn-lg"
+         data-lp-cta="hero-calendly"
+         data-source="ads-latam">📅 Agendar llamada gratuita</a>
+    </div>
+  </div>
+
+  <div class="lp-flags">
+    <div class="flag"><img src="https://flagcdn.com/mx.svg" alt="México"><span>México</span></div>
+    <div class="flag"><img src="https://flagcdn.com/co.svg" alt="Colombia"><span>Colombia</span></div>
+    <div class="flag"><img src="https://flagcdn.com/pe.svg" alt="Perú"><span>Perú</span></div>
+    <div class="flag"><img src="https://flagcdn.com/cl.svg" alt="Chile"><span>Chile</span></div>
+    <div class="flag"><img src="https://flagcdn.com/ar.svg" alt="Argentina"><span>Argentina</span></div>
+    <div class="flag"><img src="https://flagcdn.com/br.svg" alt="Brasil"><span>Brasil</span></div>
+    <div class="flag"><img src="https://flagcdn.com/ec.svg" alt="Ecuador"><span>Ecuador</span></div>
+    <div class="flag"><img src="https://flagcdn.com/ve.svg" alt="Venezuela"><span>Venezuela</span></div>
+    <div class="flag"><img src="https://flagcdn.com/pa.svg" alt="Panamá"><span>Panamá</span></div>
+  </div>
+</section>
+
+<!-- 3 SERVICES -->
+<section class="lp-services">
+  <div class="lp-services-header">
+    <h2>Tres formas de usar Miami como tu hub</h2>
+    <p>Elegí el modelo que mejor se ajusta a tu operación. Mezclás los tres si lo necesitás.</p>
+  </div>
+  <div class="lp-services-grid">
+
+    <div class="lp-service">
+      <span class="lp-service-badge">📦 Más popular</span>
+      <h3>Drop-Shipment a LATAM</h3>
+      <div class="price">$6.00<span>/paquete · tarifa plana</span></div>
+      <ul>
+        <li>Pick + pack + entrega al carrier</li>
+        <li>UPS, FedEx, DHL hacia cliente final</li>
+        <li>Sin contrato mínimo</li>
+        <li>Tracking end-to-end</li>
+      </ul>
+    </div>
+
+    <div class="lp-service">
+      <span class="lp-service-badge">🌎 Para volúmenes mayores</span>
+      <h3>Cross-Docking & LTL</h3>
+      <div class="price">$25<span>/pallet exportado</span></div>
+      <ul>
+        <li>Recibimos contenedores FCL/LCL</li>
+        <li>Consolidación hacia distribuidores</li>
+        <li>Turnaround 24-48h estándar</li>
+        <li>Documentos listos para aduana</li>
+      </ul>
+    </div>
+
+    <div class="lp-service">
+      <span class="lp-service-badge">🏷️ Amazon SPN-Certified</span>
+      <h3>FBA Prep para Amazon US</h3>
+      <div class="price">$0.55<span>/unidad · FNSKU</span></div>
+      <ul>
+        <li>Labeling, poly-bag, kitting</li>
+        <li>Inbound a warehouses de Amazon</li>
+        <li>Primer mes de storage gratis</li>
+        <li>Same-day antes de las 2 PM ET</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- WHY MIAMI -->
+<section class="lp-why">
+  <div class="lp-why-inner">
+    <div>
+      <h2>Por qué Miami es tu mejor puerta a Estados Unidos</h2>
+      <p>
+        Estamos en Doral, a 15 minutos del PortMiami y a 10 del aeropuerto MIA. Recibimos
+        contenedores, carga aérea y drop-offs de freight forwarders todos los días. Tu inventario
+        llega, lo procesamos, lo etiquetamos y lo movemos a Amazon o a tu cliente final.
+      </p>
+      <p style="font-size:15px;margin-bottom:0;">
+        <strong style="color: var(--text-on-dark);">20+ años</strong> moviendo carga LATAM
+        — y un equipo bilingüe que entiende tu negocio desde Tijuana hasta Tierra del Fuego.
+      </p>
+    </div>
+    <div class="lp-why-stats">
+      <div class="lp-why-stat">
+        <div class="num">9</div>
+        <div class="label">países LATAM con operaciones activas</div>
+      </div>
+      <div class="lp-why-stat">
+        <div class="num">24-48h</div>
+        <div class="label">turnaround cross-dock típico</div>
+      </div>
+      <div class="lp-why-stat">
+        <div class="num">100%</div>
+        <div class="label">operación en español si lo necesitás</div>
+      </div>
+      <div class="lp-why-stat">
+        <div class="num">$0</div>
+        <div class="label">fees mensuales · pagás solo lo que usás</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section class="lp-quote">
+  <div class="lp-quote-inner">
+    <div class="stars">★★★★★</div>
+    <blockquote>
+      "El proceso de fulfillment ha sido un cambio total para nuestro negocio. Pedidos procesados
+      rápido, atención al detalle en el picking y packing. Errores mínimos, delivery más rápido,
+      clientes más felices."
+    </blockquote>
+    <cite>
+      <strong>Cliente E-Commerce</strong>
+      Shopify · Reseña verificada en Google
+    </cite>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="lp-faq">
+  <div class="lp-faq-inner">
+    <h2>Preguntas rápidas antes de contactarnos</h2>
+
+    <details>
+      <summary>¿Reciben mercancía desde China, Vietnam, otros orígenes?</summary>
+      <p>Sí. Recibimos <strong>contenedores FCL y LCL</strong> desde PortMiami y Port Everglades, <strong>carga aérea</strong> desde MIA, y entregas directas de freight forwarders. Descargamos, inspeccionamos, fotografiamos, etiquetamos y almacenamos.</p>
+    </details>
+
+    <details>
+      <summary>¿Manejan Mercado Libre o solo Amazon?</summary>
+      <p>Manejamos múltiples marketplaces — <strong>Amazon (SPN), Mercado Libre, Walmart, Shopify, TikTok Shop, eBay</strong>. Nuestra integración con ShipStation, Linnworks y SkuVault te deja sincronizar inventario en todos los canales.</p>
+    </details>
+
+    <details>
+      <summary>¿Cuánto cuesta el envío a LATAM?</summary>
+      <p>El cargo de envío es del carrier (UPS, FedEx, DHL, freight forwarder marítimo/aéreo). Te lo pasamos <strong>al costo, sin markup</strong>, o podés usar tu propia cuenta de carrier. Nosotros cobramos solo el manejo ($6/paquete drop-shipment o $25/pallet LTL).</p>
+    </details>
+
+    <details>
+      <summary>¿Necesito tener una empresa en USA?</summary>
+      <p>No para empezar a usar nuestros servicios. Para vender en Amazon US sí vas a necesitar EIN + cuenta seller. Te conectamos con Jose Fuentes si querés discutir la estructura legal antes de avanzar.</p>
+    </details>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="lp-final">
+  <h2>Empezá esta semana.</h2>
+  <p>Cotización personalizada en menos de 24 horas. Sin contratos, sin fees mensuales, sin sorpresas. Equipo bilingüe disponible ahora.</p>
+  <div class="lp-cta-row">
+    <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hola%2C%20vi%20su%20landing%20LATAM%20y%20quiero%20empezar"
+       class="btn btn-whatsapp btn-lg"
+       data-lp-cta="final-whatsapp"
+       data-source="ads-latam">💬 Empezar por WhatsApp</a>
+    <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
+       class="btn btn-on-dark btn-lg"
+       data-lp-cta="final-calendly"
+       data-source="ads-latam">📅 Agendar llamada de 30 min</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="lp-footer">
+  <div class="lp-footer-links">
+    <a href="/">Sitio principal</a>
+    <a href="/es/">Versión en español</a>
+    <a href="/pricing">Tarifas</a>
+    <a href="tel:+17863001443">📞 +1 (786) 300-1443</a>
+  </div>
+  <div>
+    10893 NW 17th St Unit 121 · Doral, FL 33172 · USA<br>
+    © 2026 FR-Logistics Miami, Inc. · Amazon SPN-Certified
+  </div>
+</footer>
+
+</body>
+</html>
