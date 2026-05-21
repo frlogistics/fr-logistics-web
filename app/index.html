@@ -657,11 +657,25 @@
       const res = await fetch(`${API_BASE}/portal-dashboard?portal_user=${encodeURIComponent(portalUser)}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to load dashboard');
-      // portal-dashboard returns: { client: {id,name,...}, orders: {total,pending,processing,exported} }
-      clientName = (json.client && json.client.name) || 'Client';
-      document.getElementById('header-client').textContent = clientName.toUpperCase();
-      document.getElementById('dash-greeting').textContent = `Hello, ${clientName}`;
-      document.getElementById('dash-sub').textContent = `${clientName} · Client portal`;
+      // portal-dashboard returns: { client: {id,name,company,store_name}, orders: {...} }
+      // Prefer company (canonical business name) for the header and the
+      // greeting — that's the user's identity as a business. Use name (the
+      // human contact) only when company isn't set. The subtitle still
+      // shows the contact name so the operator/contact knows whose login
+      // they're using.
+      const client = json.client || {};
+      const company = client.company || client.name || 'Client';
+      const contactName = client.name || company;
+      clientName = company;
+      document.getElementById('header-client').textContent = company.toUpperCase();
+      document.getElementById('dash-greeting').textContent = `Hello, ${company}`;
+      // If the contact name is the same string as the company (e.g. JDK
+      // Network LLC where name == company), don't duplicate it in the
+      // subtitle. Otherwise show "Julia Ov. Andrea · Client portal".
+      const subtitle = (contactName && contactName !== company)
+        ? `${contactName} · Client portal`
+        : 'Client portal';
+      document.getElementById('dash-sub').textContent = subtitle;
       const counts = json.orders || {};
       document.getElementById('kpi-total').textContent = counts.total ?? 0;
       document.getElementById('kpi-pending').textContent = counts.pending ?? 0;
