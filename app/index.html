@@ -110,6 +110,11 @@
     letter-spacing: 0.5px; color: var(--fr-gray); padding: 10px 12px;
     border-bottom: 1px solid var(--fr-border);
   }
+  /* ---- Sortable column headers (Inventory tab) ---- */
+  th.sortable { cursor: pointer; user-select: none; transition: color 0.15s; }
+  th.sortable:hover { color: var(--fr-dark); }
+  th.sortable .sort-arrow { display: inline-block; margin-left: 4px; opacity: 0.4; font-size: 10px; }
+  th.sortable.active .sort-arrow { opacity: 1; color: var(--fr-green); }
   td { padding: 12px; border-bottom: 1px solid var(--fr-border); }
   tr:last-child td { border-bottom: none; }
   .status-badge {
@@ -372,6 +377,7 @@
           <option value="ok">In stock</option>
         </select>
         <button class="btn-refresh" id="inv-refresh-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Refresh</button>
+        <button id="inv-export-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;" disabled>Export CSV</button>
         <span style="margin-left: auto; font-size: 12px; color: var(--fr-gray);" id="inv-last-sync">—</span>
       </div>
 
@@ -379,13 +385,13 @@
         <table>
           <thead>
             <tr>
-              <th>SKU</th>
-              <th>Name</th>
-              <th>Brand</th>
-              <th style="text-align:right;">On Hand</th>
-              <th style="text-align:right;">Allocated</th>
-              <th style="text-align:right;">Available</th>
-              <th>Status</th>
+              <th class="sortable" data-field="sku">SKU<span class="sort-arrow">↕</span></th>
+              <th class="sortable" data-field="title">Name<span class="sort-arrow">↕</span></th>
+              <th class="sortable" data-field="brand">Brand<span class="sort-arrow">↕</span></th>
+              <th class="sortable active" data-field="onHand" style="text-align:right;">On Hand<span class="sort-arrow">↓</span></th>
+              <th class="sortable" data-field="allocated" style="text-align:right;">Allocated<span class="sort-arrow">↕</span></th>
+              <th class="sortable" data-field="available" style="text-align:right;">Available<span class="sort-arrow">↕</span></th>
+              <th class="sortable" data-field="status">Status<span class="sort-arrow">↕</span></th>
               <th>Location</th>
             </tr>
           </thead>
@@ -1209,6 +1215,17 @@
   const invSearch = document.getElementById('inv-search');
   const invStatusFilter = document.getElementById('inv-status-filter');
   const invMsg = document.getElementById('inv-msg');
+  const invExportBtn = document.getElementById('inv-export-btn');
+
+  // Sort state — default On Hand DESC per project decision (May 2026).
+  let invSortField = 'onHand';
+  let invSortDir = 'desc';
+  // Current filtered + sorted rows. Updated on every render. Used by
+  // the CSV export so the user gets exactly what they're seeing.
+  let invFilteredRows = [];
+  // Tracks the last load result so empty states can distinguish
+  // "no SKUs at all" from "filters returned nothing" from "API failed".
+  let invLoadFailed = false;
 
   function showInvMsg(text, kind) {
     invMsg.innerHTML = `<div class="${kind === 'error' ? 'error-box' : 'success-box'}">${text}</div>`;
@@ -1218,6 +1235,8 @@
   async function loadInventory() {
     invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading inventory…</td></tr>';
     clearInvMsg();
+    invLoadFailed = false;
+    invExportBtn.disabled = true;
     // Capture the user this fetch is for. If the user logs out and a new
     // one logs in before this resolves, we discard the response so the new
     // user never sees the previous user's data.
@@ -1243,7 +1262,10 @@
       renderInventory();
     } catch (err) {
       if (portalUser !== fetchForUser) return;
-      invTbody.innerHTML = `<tr><td colspan="8" class="empty-state">${esc(err.message)}</td></tr>`;
+      invLoadFailed = true;
+      invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">' +
+        'Couldn\'t load inventory. Refresh in a moment, or contact support if this persists.' +
+        '</td></tr>';
       document.getElementById('inv-kpi-skus').textContent = '—';
       document.getElementById('inv-kpi-units').textContent = '—';
       document.getElementById('inv-kpi-low').textContent = '—';
@@ -1251,11 +1273,48 @@
     }
   }
 
+  // Sort comparator. Numbers compared numerically; status compared by a
+  // fixed severity order (out → low → ok) so "Out of stock first" is one
+  // click away. Strings use locale-aware sort. nulls / undefineds sink.
+  const STATUS_ORDER = { out: 0, low: 1, ok: 2 };
+  function compareSKUs(a, b, field, dir) {
+    let va = a[field];
+    let vb = b[field];
+    if (field === 'status') {
+      va = STATUS_ORDER[va] ?? 99;
+      vb = STATUS_ORDER[vb] ?? 99;
+    }
+    // Treat missing values as last.
+    if (va === null || va === undefined || va === '') return 1;
+    if (vb === null || vb === undefined || vb === '') return -1;
+    let cmp;
+    if (typeof va === 'number' && typeof vb === 'number') {
+      cmp = va - vb;
+    } else {
+      cmp = String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' });
+    }
+    return dir === 'desc' ? -cmp : cmp;
+  }
+
   function renderInventory() {
     if (!inventoryCache) return;
+    const allSkus = inventoryCache.skus || [];
+
+    // Empty state 1: client has zero SKUs in their account at all.
+    if (allSkus.length === 0) {
+      invTbody.innerHTML = '<tr><td colspan="8" class="empty-state" style="padding: 32px 16px; line-height: 1.6;">' +
+        '<strong style="display:block; margin-bottom:8px; color: var(--fr-dark);">No products in our warehouse yet.</strong>' +
+        'Your inventory will appear here once it\'s received and tagged in our system.<br>' +
+        'Contact <a href="mailto:warehouse@fr-logistics.net" style="color: var(--fr-green);">warehouse@fr-logistics.net</a> to schedule a shipment.' +
+        '</td></tr>';
+      invFilteredRows = [];
+      invExportBtn.disabled = true;
+      return;
+    }
+
     const search = invSearch.value.trim().toLowerCase();
     const statusFilter = invStatusFilter.value;
-    let rows = inventoryCache.skus || [];
+    let rows = allSkus.slice(); // copy so we don't mutate cache
 
     if (statusFilter !== 'all') {
       rows = rows.filter((s) => s.status === statusFilter);
@@ -1268,8 +1327,17 @@
       );
     }
 
+    // Sort after filtering, before render. Stable sort guaranteed by V8.
+    rows.sort((a, b) => compareSKUs(a, b, invSortField, invSortDir));
+
+    invFilteredRows = rows;
+    invExportBtn.disabled = rows.length === 0;
+
+    // Empty state 2: filters returned nothing, but data exists.
     if (rows.length === 0) {
-      invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">No matching SKUs.</td></tr>';
+      invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">' +
+        'No SKUs match your filters. Try clearing the search or selecting "All statuses".' +
+        '</td></tr>';
       return;
     }
 
@@ -1293,9 +1361,86 @@
     });
   }
 
+  // Click handler on sortable column headers. Toggles direction if the
+  // same column is clicked, or sets DESC for a new column (most useful
+  // first click for numeric columns).
+  function updateInvSortIndicators() {
+    document.querySelectorAll('#tab-inventory th.sortable').forEach((th) => {
+      const field = th.getAttribute('data-field');
+      const arrow = th.querySelector('.sort-arrow');
+      if (field === invSortField) {
+        th.classList.add('active');
+        arrow.textContent = invSortDir === 'desc' ? '↓' : '↑';
+      } else {
+        th.classList.remove('active');
+        arrow.textContent = '↕';
+      }
+    });
+  }
+
+  document.querySelectorAll('#tab-inventory th.sortable').forEach((th) => {
+    th.addEventListener('click', () => {
+      const field = th.getAttribute('data-field');
+      if (field === invSortField) {
+        invSortDir = invSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        invSortField = field;
+        // Numeric fields default to DESC (biggest first), text to ASC.
+        invSortDir = (['onHand', 'allocated', 'available'].includes(field)) ? 'desc' : 'asc';
+      }
+      updateInvSortIndicators();
+      renderInventory();
+    });
+  });
+
+  // CSV export — exports the currently filtered + sorted rows (what the
+  // user sees on screen). UTF-8 + BOM so Excel renders accents correctly.
+  function exportInventoryCSV() {
+    if (!invFilteredRows.length) return;
+    const headers = ['SKU', 'Name', 'Brand', 'On Hand', 'Allocated', 'Available', 'Status', 'Locations'];
+    const statusLabel = { ok: 'OK', low: 'Low Stock', out: 'Out of Stock' };
+    const csvCellLocal = (val) => {
+      if (val === null || val === undefined) return '';
+      const s = String(val);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+    const lines = [headers.join(',')];
+    invFilteredRows.forEach((s) => {
+      const locs = (s.locations && s.locations.length) ? s.locations.join(', ') : '';
+      lines.push([
+        csvCellLocal(s.sku),
+        csvCellLocal(s.title || ''),
+        csvCellLocal(s.brand || ''),
+        s.onHand || 0,
+        s.allocated || 0,
+        s.available || 0,
+        csvCellLocal(statusLabel[s.status] || s.status || ''),
+        csvCellLocal(locs),
+      ].join(','));
+    });
+    // Build filename: fr-logistics-inventory-{client-slug}-{YYYY-MM-DD}.csv
+    const client = (inventoryCache && inventoryCache.client) || {};
+    const clientName = client.company || client.name || 'client';
+    const slug = clientName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const today = new Date().toISOString().slice(0, 10);
+    const filename = `fr-logistics-inventory-${slug}-${today}.csv`;
+    // UTF-8 BOM + CRLF line endings for Excel-friendly output.
+    const csv = '\ufeff' + lines.join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   invSearch.addEventListener('input', renderInventory);
   invStatusFilter.addEventListener('change', renderInventory);
   document.getElementById('inv-refresh-btn').addEventListener('click', loadInventory);
+  invExportBtn.addEventListener('click', exportInventoryCSV);
 
   // ---------- Tracking ----------
   const trkTbody = document.getElementById('trk-tbody');
