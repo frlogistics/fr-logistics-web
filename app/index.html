@@ -523,6 +523,47 @@
   let trackingCache = null;
   let trackingLoaded = false;
 
+  // ---------- Helper: reset ALL per-session state so cross-user leakage
+  // is impossible. Called on logout AND at the start of every login so that
+  // even if the previous session crashed without a clean signOut, the new
+  // user never inherits stale data from the previous one.
+  function resetSessionState() {
+    portalUser = null;
+    clientName = null;
+    ordersCache = [];
+    inventoryCache = null;
+    inventoryLoaded = false;
+    trackingCache = null;
+    trackingLoaded = false;
+
+    // Wipe UI for the data-bearing tabs so a flash of stale content can't
+    // appear between the new user clicking a tab and the fetch returning.
+    const invTbody = document.getElementById('inv-tbody');
+    if (invTbody) invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading inventory…</td></tr>';
+    ['inv-kpi-skus','inv-kpi-units','inv-kpi-low','inv-kpi-out'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    const invSync = document.getElementById('inv-last-sync');
+    if (invSync) invSync.textContent = '—';
+
+    const trkTbody = document.getElementById('trk-tbody');
+    if (trkTbody) trkTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading shipments…</td></tr>';
+    ['trk-kpi-total','trk-kpi-carriers'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    const trkSync = document.getElementById('trk-last-sync');
+    if (trkSync) trkSync.textContent = '—';
+
+    const ordersTbody = document.getElementById('orders-tbody');
+    if (ordersTbody) ordersTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading orders…</td></tr>';
+    ['kpi-total','kpi-pending','kpi-processing','kpi-exported'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '0';
+    });
+  }
+
   // ---------- Elements ----------
   const loginView = document.getElementById('login-view');
   const appView = document.getElementById('app-view');
@@ -547,23 +588,36 @@
       loginError.classList.remove('hidden');
       return;
     }
+    // Reset state BEFORE assigning the new portalUser so no stale data leaks
+    // from a previous user on the same browser tab.
+    resetSessionState();
     portalUser = data.user.email;
     await startApp();
   });
 
   document.getElementById('logout-btn').addEventListener('click', async () => {
     await sb.auth.signOut();
-    portalUser = null; clientName = null; ordersCache = [];
+    resetSessionState();
     appView.classList.add('hidden');
     loginView.classList.remove('hidden');
     document.getElementById('email').value = '';
     document.getElementById('password').value = '';
+    // Reset active tab to dashboard so next login starts clean.
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
+    document.getElementById('tab-dashboard').classList.remove('hidden');
+    document.getElementById('tab-orders').classList.add('hidden');
+    document.getElementById('tab-bulk').classList.add('hidden');
+    document.getElementById('tab-inventory').classList.add('hidden');
+    document.getElementById('tab-tracking').classList.add('hidden');
   });
 
   // Restore session on load
   (async () => {
     const { data } = await sb.auth.getSession();
     if (data.session && data.session.user) {
+      // Same as login: clear state before adopting the restored user.
+      resetSessionState();
       portalUser = data.session.user.email;
       await startApp();
     }
@@ -589,7 +643,9 @@
       document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
       document.getElementById('tab-inventory').classList.toggle('hidden', target !== 'inventory');
       document.getElementById('tab-tracking').classList.toggle('hidden', target !== 'tracking');
-      // Lazy load on first visit.
+      // Lazy load on first visit (within the current session). The
+      // resetSessionState helper clears these flags at every login/logout
+      // so the next user always triggers a fresh fetch.
       if (target === 'inventory' && !inventoryLoaded) loadInventory();
       if (target === 'tracking' && !trackingLoaded) loadTracking();
     });
@@ -1107,9 +1163,14 @@
   async function loadInventory() {
     invTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading inventory…</td></tr>';
     clearInvMsg();
+    // Capture the user this fetch is for. If the user logs out and a new
+    // one logs in before this resolves, we discard the response so the new
+    // user never sees the previous user's data.
+    const fetchForUser = portalUser;
     try {
-      const res = await fetch(`${API_BASE}/portal-inventory?portal_user=${encodeURIComponent(portalUser)}`);
+      const res = await fetch(`${API_BASE}/portal-inventory?portal_user=${encodeURIComponent(fetchForUser)}`);
       const json = await res.json();
+      if (portalUser !== fetchForUser) return; // session changed mid-flight
       if (!res.ok) throw new Error(json.error || 'Failed to load inventory');
       inventoryCache = json;
       inventoryLoaded = true;
@@ -1126,6 +1187,7 @@
       }
       renderInventory();
     } catch (err) {
+      if (portalUser !== fetchForUser) return;
       invTbody.innerHTML = `<tr><td colspan="8" class="empty-state">${esc(err.message)}</td></tr>`;
       document.getElementById('inv-kpi-skus').textContent = '—';
       document.getElementById('inv-kpi-units').textContent = '—';
@@ -1202,9 +1264,13 @@
   async function loadTracking() {
     trkTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading shipments…</td></tr>';
     clearTrkMsg();
+    // Same guard as inventory: capture the user for this fetch and bail out
+    // if it changes mid-flight.
+    const fetchForUser = portalUser;
     try {
-      const res = await fetch(`${API_BASE}/portal-tracking?portal_user=${encodeURIComponent(portalUser)}`);
+      const res = await fetch(`${API_BASE}/portal-tracking?portal_user=${encodeURIComponent(fetchForUser)}`);
       const json = await res.json();
+      if (portalUser !== fetchForUser) return;
       if (!res.ok) throw new Error(json.error || 'Failed to load tracking');
       trackingCache = json;
       trackingLoaded = true;
@@ -1237,6 +1303,7 @@
 
       renderTracking();
     } catch (err) {
+      if (portalUser !== fetchForUser) return;
       trkTbody.innerHTML = `<tr><td colspan="8" class="empty-state">${esc(err.message)}</td></tr>`;
       document.getElementById('trk-kpi-total').textContent = '—';
       document.getElementById('trk-kpi-carriers').textContent = '—';
