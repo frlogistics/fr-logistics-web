@@ -306,9 +306,10 @@
         <details style="margin-top: 16px;">
           <summary style="cursor:pointer;font-size:13px;color:var(--fr-gray);">Show column reference</summary>
           <div style="margin-top: 10px; font-size: 12px; color: var(--fr-gray);">
-            <p style="margin-bottom: 8px;"><strong>Required:</strong> order_number, recipient_name, address_line1, city, state, postal_code, country_code, item_sku, item_quantity</p>
-            <p style="margin-bottom: 8px;"><strong>Optional:</strong> recipient_phone, address_line2, shipping_service, notes_to_buyer, item_name, item_unit_price</p>
-            <p><strong>Notes:</strong> country_code must be 2 letters (US, CA, MX…). item_quantity must be 1 or more. For an order with multiple items, repeat the order_number on each row with different item_sku.</p>
+            <p style="margin-bottom: 8px;"><strong>Format:</strong> ShipStation standard export (47-column layout). You can upload the file you already export from ShipStation — no reformatting needed.</p>
+            <p style="margin-bottom: 8px;"><strong>Required columns:</strong> Order #, Recipient Full Name, Address Line 1, City, State, Postal Code, Country Code, Item SKU, Item Quantity</p>
+            <p style="margin-bottom: 8px;"><strong>Optional columns we use:</strong> Recipient Phone, Address Line 2, Shipping Service, Notes to the Buyer, Item Name / Title, Item Unit Price</p>
+            <p><strong>Notes:</strong> Country Code accepts "United States" or "US". Item Quantity must be 1 or more. For an order with multiple items, repeat the Order # on each row with different Item SKU. The other 32 ShipStation columns (Order Total, Buyer info, weights, etc.) are accepted but ignored.</p>
           </div>
         </details>
       </div>
@@ -862,16 +863,45 @@
   });
 
   // ---------- Bulk Upload ----------
+  // ShipStation standard export format — 47 columns in this exact order.
+  // Mirrors CSV_HEADERS in portal-warehouse-orders.js so the file the
+  // warehouse later exports to ShipStation has the same shape as the file
+  // the client uploads. Any ShipStation user can drop their own export
+  // straight into the portal without reformatting.
   const TEMPLATE_HEADERS = [
-    'order_number','recipient_name','recipient_phone',
-    'address_line1','address_line2','city','state','postal_code','country_code',
-    'shipping_service','notes_to_buyer',
-    'item_sku','item_name','item_quantity','item_unit_price',
+    'Order #', 'Order Date', 'Date Paid', 'Order Total', 'Amount Paid', 'Tax',
+    'Shipping Paid', 'Shipping Service', 'Height(in)', 'Length(in)', 'Width(in)',
+    'Weight(oz)', 'Custom Field 1', 'Custom Field 2', 'Custom Field 3', 'Order Source',
+    'Notes to the Buyer', 'Notes from the Buyer', 'Internal Notes', 'Gift Message',
+    'Gift Flag', 'Buyer Full Name', 'Buyer First Name', 'Buyer Last Name', 'Buyer Email',
+    'Buyer Phone', 'Buyer Username', 'Recipient Full Name', 'Recipient First Name',
+    'Recipient Last Name', 'Recipient Phone', 'Recipient Company', 'Address Line 1',
+    'Address Line 2', 'Address Line 3', 'City', 'State', 'Postal Code', 'Country Code',
+    'Item SKU', 'Item Name / Title', 'Item Quantity', 'Item Unit Price', 'Item Weight (oz)',
+    'Item Options', 'Item Warehouse Location', 'Item Marketplace ID',
   ];
+  // Only these columns are strictly required. The backend ignores the rest
+  // even though they're part of the template (Order Total, Buyer info, etc.).
   const REQUIRED_FIELDS = [
-    'order_number','recipient_name','address_line1','city','state',
-    'postal_code','country_code','item_sku','item_quantity',
+    'Order #', 'Recipient Full Name', 'Address Line 1', 'City', 'State',
+    'Postal Code', 'Country Code', 'Item SKU', 'Item Quantity',
   ];
+  // USA-only country normalisation; mirrors the backend.
+  const COUNTRY_NORMALISE = {
+    'united states': 'US',
+    'united states of america': 'US',
+    'usa': 'US',
+    'us': 'US',
+  };
+  function normaliseCountry(value) {
+    if (value === undefined || value === null) return value;
+    const trimmed = String(value).trim();
+    if (trimmed === '') return trimmed;
+    const lower = trimmed.toLowerCase();
+    if (COUNTRY_NORMALISE[lower]) return COUNTRY_NORMALISE[lower];
+    if (trimmed.length === 2) return trimmed.toUpperCase();
+    return trimmed;
+  }
   const MAX_ROWS = 500;
 
   let parsedRows = [];   // [{row:{}, row_index:N, errors:[]}]
@@ -923,42 +953,53 @@
         errors.push('Missing: ' + f);
       }
     }
-    if (row.country_code && String(row.country_code).trim().length !== 2) {
-      errors.push('country_code must be 2 letters');
+    // Normalise Country Code in place so "United States" passes validation.
+    if (row['Country Code'] !== undefined && String(row['Country Code']).trim() !== '') {
+      row['Country Code'] = normaliseCountry(row['Country Code']);
+      if (String(row['Country Code']).trim().length !== 2) {
+        errors.push('Country Code must be 2 letters (e.g. US) — or "United States" / "USA"');
+      }
     }
-    if (row.item_quantity && String(row.item_quantity).trim() !== '') {
-      const qty = parseInt(row.item_quantity, 10);
-      if (!Number.isInteger(qty) || qty < 1) errors.push('item_quantity must be >= 1');
+    if (row['Item Quantity'] && String(row['Item Quantity']).trim() !== '') {
+      const qty = parseInt(row['Item Quantity'], 10);
+      if (!Number.isInteger(qty) || qty < 1) errors.push('Item Quantity must be >= 1');
     }
-    if (row.item_unit_price && String(row.item_unit_price).trim() !== '') {
-      const p = parseFloat(row.item_unit_price);
-      if (Number.isNaN(p) || p < 0) errors.push('item_unit_price must be a non-negative number');
+    if (row['Item Unit Price'] && String(row['Item Unit Price']).trim() !== '') {
+      const p = parseFloat(row['Item Unit Price']);
+      if (Number.isNaN(p) || p < 0) errors.push('Item Unit Price must be a non-negative number');
     }
     return errors;
   }
 
   // Template download
   document.getElementById('download-template-btn').addEventListener('click', () => {
+    // Example row using ShipStation column names. Only the required columns
+    // and a few useful optionals are filled; the rest stay blank so the user
+    // sees the column layout but isn't pressured to fill all 47 fields.
     const sample = {
-      order_number: 'EXAMPLE-001',
-      recipient_name: 'Jane Smith',
-      recipient_phone: '305-555-0100',
-      address_line1: '123 Main St',
-      address_line2: 'Apt 2',
-      city: 'Miami',
-      state: 'FL',
-      postal_code: '33131',
-      country_code: 'US',
-      shipping_service: 'USPS Priority',
-      notes_to_buyer: 'Thanks for your order!',
-      item_sku: 'SKU-EXAMPLE-001',
-      item_name: 'Example product',
-      item_quantity: '1',
-      item_unit_price: '9.99',
+      'Order #': 'EXAMPLE-001',
+      'Order Date': '5/21/2026',
+      'Order Total': '9.99',
+      'Shipping Service': 'USPS Priority',
+      'Notes to the Buyer': 'Thanks for your order!',
+      'Buyer Full Name': 'Jane Smith',
+      'Buyer Email': 'jane@example.com',
+      'Recipient Full Name': 'Jane Smith',
+      'Recipient Phone': '305-555-0100',
+      'Address Line 1': '123 Main St',
+      'Address Line 2': 'Apt 2',
+      'City': 'Miami',
+      'State': 'FL',
+      'Postal Code': '33131',
+      'Country Code': 'US',
+      'Item SKU': 'SKU-EXAMPLE-001',
+      'Item Name / Title': 'Example product',
+      'Item Quantity': '1',
+      'Item Unit Price': '9.99',
     };
     const lines = [
       TEMPLATE_HEADERS.join(','),
-      TEMPLATE_HEADERS.map((h) => csvCell(sample[h])).join(','),
+      TEMPLATE_HEADERS.map((h) => csvCell(sample[h] || '')).join(','),
     ];
     const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
