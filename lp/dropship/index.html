@@ -18,15 +18,45 @@
 <meta property="og:description" content="Recibimos tus paquetes, removemos branding y procesamos tus órdenes. Para sellers de Mercado Libre, Amazon LATAM, Shopify, TikTok Shop.">
 <meta property="og:locale" content="es_ES">
 
-<!-- Google Ads conversion tracking placeholder — replace AW-XXXXXXXXX with real ID -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXX"></script>
+<!-- ═══════ GA4 tracking — Measurement ID G-73G5QBFTN7 ═══════ -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-73G5QBFTN7"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'AW-XXXXXXXXX');
+  gtag('config', 'G-73G5QBFTN7', { 'send_page_view': true });
+
+  /**
+   * track() — landing-page event helper.
+   * Maps button-click labels to canonical GA4 events.
+   * After these events appear in GA4 (24-48h), mark them as Key Events
+   * so they become available as conversions in Google Ads.
+   */
   function track(label){
-    gtag('event', 'conversion', {'send_to': 'AW-XXXXXXXXX/CONVERSION_LABEL', 'event_label': label});
+    var eventName = null, value = 0, location = 'unknown';
+
+    var path = window.location.pathname.toLowerCase();
+    var landing = 'unknown';
+    if (path.indexOf('/lp/dropship') === 0)        landing = 'dropship';
+    else if (path.indexOf('/lp/fba-prep') === 0)   landing = 'fba_prep';
+    else if (path.indexOf('/lp/latam') === 0)      landing = 'latam_logistics';
+    else if (path.indexOf('/lp/wholesale') === 0)  landing = 'wholesale';
+
+    if (label.indexOf('whatsapp') !== -1)      { eventName = 'whatsapp_click';     value = 15; }
+    else if (label.indexOf('calendly') !== -1) { eventName = 'calendly_booking';   value = 50; }
+    else if (label.indexOf('form') !== -1)     { eventName = 'quote_form_submit';  value = 30; }
+
+    if (label.indexOf('hero') !== -1)         location = 'hero';
+    else if (label.indexOf('final') !== -1)   location = 'final_cta';
+    else if (label.indexOf('pricing') !== -1) location = 'pricing';
+    else if (label.indexOf('nav') !== -1)     location = 'nav';
+
+    if (eventName) {
+      gtag('event', eventName, {
+        'landing': landing, 'location': location, 'value': value, 'currency': 'USD'
+      });
+    }
+    gtag('event', 'cta_click', { 'label': label, 'landing': landing, 'location': location });
   }
 </script>
 
