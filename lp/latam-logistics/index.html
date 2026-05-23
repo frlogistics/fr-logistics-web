@@ -14,7 +14,47 @@
 <link rel="icon" type="image/jpeg" href="/assets/Fr-Logistics_Logo.jpg">
 <link rel="canonical" href="https://fr-logistics.net/lp/latam-logistics">
 
-<!-- TRACKING-PLACEHOLDER · Day 2: GA4 + Clarity + Google Ads tag here -->
+<!-- ═══════ GA4 tracking — Measurement ID G-73G5QBFTN7 ═══════ -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-73G5QBFTN7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-73G5QBFTN7', { 'send_page_view': true });
+
+  /**
+   * track() — landing-page event helper.
+   * Maps button-click labels to canonical GA4 events.
+   * After these events appear in GA4 (24-48h), mark them as Key Events
+   * so they become available as conversions in Google Ads.
+   */
+  function track(label){
+    var eventName = null, value = 0, location = 'unknown';
+
+    var path = window.location.pathname.toLowerCase();
+    var landing = 'unknown';
+    if (path.indexOf('/lp/dropship') === 0)        landing = 'dropship';
+    else if (path.indexOf('/lp/fba-prep') === 0)   landing = 'fba_prep';
+    else if (path.indexOf('/lp/latam') === 0)      landing = 'latam_logistics';
+    else if (path.indexOf('/lp/wholesale') === 0)  landing = 'wholesale';
+
+    if (label.indexOf('whatsapp') !== -1)      { eventName = 'whatsapp_click';     value = 15; }
+    else if (label.indexOf('calendly') !== -1) { eventName = 'calendly_booking';   value = 50; }
+    else if (label.indexOf('form') !== -1)     { eventName = 'quote_form_submit';  value = 30; }
+
+    if (label.indexOf('hero') !== -1)         location = 'hero';
+    else if (label.indexOf('final') !== -1)   location = 'final_cta';
+    else if (label.indexOf('pricing') !== -1) location = 'pricing';
+    else if (label.indexOf('nav') !== -1)     location = 'nav';
+
+    if (eventName) {
+      gtag('event', eventName, {
+        'landing': landing, 'location': location, 'value': value, 'currency': 'USD'
+      });
+    }
+    gtag('event', 'cta_click', { 'label': label, 'landing': landing, 'location': location });
+  }
+</script>
 
 <style>
   /* Inherits from /assets/styles.css. LATAM-specific overrides below. */
@@ -289,11 +329,11 @@
       <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hola%2C%20soy%20seller%20LATAM%20y%20vi%20su%20landing%20de%20log%C3%ADstica.%20Quiero%20una%20cotizaci%C3%B3n."
          class="btn btn-whatsapp btn-lg"
          data-lp-cta="hero-whatsapp"
-         data-source="ads-latam">💬 Hablemos por WhatsApp</a>
+         data-source="ads-latam" onclick="track('hero_whatsapp')">💬 Hablemos por WhatsApp</a>
       <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
          class="btn btn-outline btn-lg"
          data-lp-cta="hero-calendly"
-         data-source="ads-latam">📅 Agendar llamada gratuita</a>
+         data-source="ads-latam" onclick="track('hero_calendly')">📅 Agendar llamada gratuita</a>
     </div>
   </div>
 
@@ -444,11 +484,11 @@
     <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hola%2C%20vi%20su%20landing%20LATAM%20y%20quiero%20empezar"
        class="btn btn-whatsapp btn-lg"
        data-lp-cta="final-whatsapp"
-       data-source="ads-latam">💬 Empezar por WhatsApp</a>
+       data-source="ads-latam" onclick="track('final_whatsapp')">💬 Empezar por WhatsApp</a>
     <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
        class="btn btn-on-dark btn-lg"
        data-lp-cta="final-calendly"
-       data-source="ads-latam">📅 Agendar llamada de 30 min</a>
+       data-source="ads-latam" onclick="track('final_calendly')">📅 Agendar llamada de 30 min</a>
   </div>
 </section>
 
