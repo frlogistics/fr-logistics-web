@@ -14,7 +14,47 @@
 <link rel="icon" type="image/jpeg" href="/assets/Fr-Logistics_Logo.jpg">
 <link rel="canonical" href="https://fr-logistics.net/lp/wholesale">
 
-<!-- TRACKING-PLACEHOLDER · Day 2: GA4 + Clarity + Google Ads tag here -->
+<!-- ═══════ GA4 tracking — Measurement ID G-73G5QBFTN7 ═══════ -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-73G5QBFTN7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-73G5QBFTN7', { 'send_page_view': true });
+
+  /**
+   * track() — landing-page event helper.
+   * Maps button-click labels to canonical GA4 events.
+   * After these events appear in GA4 (24-48h), mark them as Key Events
+   * so they become available as conversions in Google Ads.
+   */
+  function track(label){
+    var eventName = null, value = 0, location = 'unknown';
+
+    var path = window.location.pathname.toLowerCase();
+    var landing = 'unknown';
+    if (path.indexOf('/lp/dropship') === 0)        landing = 'dropship';
+    else if (path.indexOf('/lp/fba-prep') === 0)   landing = 'fba_prep';
+    else if (path.indexOf('/lp/latam') === 0)      landing = 'latam_logistics';
+    else if (path.indexOf('/lp/wholesale') === 0)  landing = 'wholesale';
+
+    if (label.indexOf('whatsapp') !== -1)      { eventName = 'whatsapp_click';     value = 15; }
+    else if (label.indexOf('calendly') !== -1) { eventName = 'calendly_booking';   value = 50; }
+    else if (label.indexOf('form') !== -1)     { eventName = 'quote_form_submit';  value = 30; }
+
+    if (label.indexOf('hero') !== -1)         location = 'hero';
+    else if (label.indexOf('final') !== -1)   location = 'final_cta';
+    else if (label.indexOf('pricing') !== -1) location = 'pricing';
+    else if (label.indexOf('nav') !== -1)     location = 'nav';
+
+    if (eventName) {
+      gtag('event', eventName, {
+        'landing': landing, 'location': location, 'value': value, 'currency': 'USD'
+      });
+    }
+    gtag('event', 'cta_click', { 'label': label, 'landing': landing, 'location': location });
+  }
+</script>
 
 <style>
   body { background: var(--bg); }
@@ -329,11 +369,11 @@
       <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi!%20I%27m%20a%20wholesale%20FBA%20seller%20and%20saw%20your%20landing.%20I%27d%20like%20a%20quote."
          class="btn btn-whatsapp btn-lg"
          data-lp-cta="hero-whatsapp"
-         data-source="ads-wholesale">💬 Get a quote on WhatsApp</a>
+         data-source="ads-wholesale" onclick="track('hero_whatsapp')">💬 Get a quote on WhatsApp</a>
       <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
          class="btn btn-outline btn-lg"
          data-lp-cta="hero-calendly"
-         data-source="ads-wholesale">📅 Book a 30-min call</a>
+         data-source="ads-wholesale" onclick="track('hero_calendly')">📅 Book a 30-min call</a>
     </div>
 
     <div class="lp-hero-stats">
@@ -503,11 +543,11 @@
     <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi!%20I%27m%20a%20wholesale%20FBA%20seller%20ready%20to%20start.%20Let%27s%20talk."
        class="btn btn-whatsapp btn-lg"
        data-lp-cta="final-whatsapp"
-       data-source="ads-wholesale">💬 Start on WhatsApp</a>
+       data-source="ads-wholesale" onclick="track('final_whatsapp')">💬 Start on WhatsApp</a>
     <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
        class="btn btn-on-dark btn-lg"
        data-lp-cta="final-calendly"
-       data-source="ads-wholesale">📅 Book a 30-min discovery</a>
+       data-source="ads-wholesale" onclick="track('final_calendly')">📅 Book a 30-min discovery</a>
   </div>
 </section>
 
