@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- ═══════ SEO ═══════ -->
-<title>Dropshipment desde Miami para Mercado Libre y Amazon LATAM | FR-Logistics</title>
-<meta name="description" content="Servicio de dropshipment para sellers LATAM que venden en Mercado Libre, Amazon MX/BR, Shopify y TikTok Shop. Recibimos, removemos branding, repackeamos y procesamos tu orden desde Doral, Miami. Cotización en 24h.">
+<title>3PL Dropship Service from Miami for Mercado Libre & Amazon LATAM Sellers | FR-Logistics</title>
+<meta name="description" content="Paid 3PL warehouse in Doral, Miami for Mercado Libre, Amazon MX/BR, Shopify and TikTok Shop LATAM sellers. We receive, repack neutral, and process your orders. From $6 per package. B2B service, not employment.">
 <meta name="theme-color" content="#0F172A">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="noindex,nofollow">
 <link rel="canonical" href="https://fr-logistics.net/lp/dropship/">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://fr-logistics.net/lp/dropship/">
-<meta property="og:title" content="Dropshipment desde Miami para Mercado Libre y Amazon LATAM | FR-Logistics">
-<meta property="og:description" content="Recibimos tus paquetes, removemos branding y procesamos tus órdenes. Para sellers de Mercado Libre, Amazon LATAM, Shopify, TikTok Shop.">
-<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="3PL Dropship Service from Miami for LATAM Sellers | FR-Logistics">
+<meta property="og:description" content="Paid 3PL warehouse for Mercado Libre, Amazon LATAM sellers. We receive, repack and process. From $6/package. B2B service.">
+<meta property="og:locale" content="en_US">
 
 <!-- ═══════ GA4 tracking — Measurement ID G-73G5QBFTN7 ═══════ -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-73G5QBFTN7"></script>
@@ -26,15 +26,8 @@
   gtag('js', new Date());
   gtag('config', 'G-73G5QBFTN7', { 'send_page_view': true });
 
-  /**
-   * track() — landing-page event helper.
-   * Maps button-click labels to canonical GA4 events.
-   * After these events appear in GA4 (24-48h), mark them as Key Events
-   * so they become available as conversions in Google Ads.
-   */
   function track(label){
     var eventName = null, value = 0, location = 'unknown';
-
     var path = window.location.pathname.toLowerCase();
     var landing = 'unknown';
     if (path.indexOf('/lp/dropship') === 0)        landing = 'dropship';
@@ -48,8 +41,6 @@
 
     if (label.indexOf('hero') !== -1)         location = 'hero';
     else if (label.indexOf('final') !== -1)   location = 'final_cta';
-    else if (label.indexOf('pricing') !== -1) location = 'pricing';
-    else if (label.indexOf('nav') !== -1)     location = 'nav';
 
     if (eventName) {
       gtag('event', eventName, {
@@ -60,1099 +51,332 @@
   }
 </script>
 
-<!-- Fonts (matches existing /lp/* pages) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+<link rel="stylesheet" href="/assets/styles.css">
 <link rel="icon" type="image/jpeg" href="/assets/Fr-Logistics_Logo.jpg">
 
 <style>
-  /* ═══════════════════════════════════════════════════════════════════
-     Design tokens — match the production site exactly
-     ═══════════════════════════════════════════════════════════════════ */
-  :root {
-    --brand-green: #10B981;
-    --brand-teal: #14B8A6;
-    --brand-cyan: #0EA5E9;
-    --brand-grad: linear-gradient(90deg, #10B981 0%, #14B8A6 50%, #0EA5E9 100%);
-    --ink: #0F172A;
-    --ink-2: #1E293B;
-    --ink-soft: #334155;
-    --text-muted: #64748B;
-    --line: #E2E8F0;
-    --bg: #FFFFFF;
-    --bg-soft: #F8FAFC;
-    --bg-warm: rgba(16,185,129,0.05);
-    --shadow-sm: 0 1px 2px rgba(15,23,42,0.05);
-    --shadow: 0 1px 2px rgba(15,23,42,0.05), 0 8px 24px rgba(15,23,42,0.08);
-    --shadow-lg: 0 4px 12px rgba(15,23,42,0.08), 0 24px 48px rgba(15,23,42,0.12);
-    --radius: 14px;
-    --radius-lg: 20px;
-    --container: 1200px;
-  }
+  body { background: var(--bg); }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-    color: var(--ink);
-    background: var(--bg);
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
+  .lp-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px clamp(20px, 5vw, 40px); border-bottom: 1px solid var(--border); background: var(--white); }
+  .lp-nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .lp-nav-brand img { height: 36px; width: auto; }
+  .lp-nav-brand-text { font-family: var(--font-display); font-weight: 700; color: var(--text-primary); font-size: 17px; letter-spacing: -0.01em; }
+  .lp-nav-trust { display: flex; align-items: center; gap: 14px; font-family: var(--font-body); font-size: 13px; color: var(--text-secondary); }
+  .lp-nav-trust img { height: 22px; }
+  @media (max-width: 640px) { .lp-nav-trust { display: none; } }
 
-  .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
+  .lp-hero { background: radial-gradient(1200px 400px at 100% 0%, rgba(20,184,166,0.10), transparent 60%), radial-gradient(800px 300px at 0% 50%, rgba(14,165,233,0.08), transparent 60%), var(--bg); padding: clamp(60px, 8vw, 100px) clamp(20px, 5vw, 40px) clamp(40px, 6vw, 80px); }
+  .lp-hero-inner { max-width: 980px; margin: 0 auto; text-align: center; }
+  .lp-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(20,184,166,0.10); border: 1px solid rgba(20,184,166,0.30); border-radius: 999px; color: var(--brand-teal); font-family: var(--font-body); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 24px; }
+  .lp-eyebrow::before { content: "✓"; background: var(--brand-teal); color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+  .lp-hero h1 { font-family: var(--font-display); font-size: clamp(36px, 5.5vw, 60px); font-weight: 700; line-height: 1.05; letter-spacing: -0.025em; color: var(--text-primary); margin: 0 0 22px; }
+  .lp-hero h1 .accent { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lp-hero p.lead { font-family: var(--font-body); font-size: clamp(17px, 2vw, 21px); line-height: 1.55; color: var(--text-secondary); max-width: 720px; margin: 0 auto 24px; }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     Brand stripe + minimal header (no nav — ad-only landing)
-     ═══════════════════════════════════════════════════════════════════ */
-  .brand-stripe {
-    height: 3px;
-    background: var(--brand-grad);
-  }
-  .lp-header {
-    padding: 18px 0;
-    border-bottom: 1px solid var(--line);
-    background: #fff;
-  }
-  .lp-header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .lp-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: var(--ink);
-  }
-  .lp-brand-icon {
-    width: 40px; height: 34px;
-  }
-  .lp-brand-text {
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-weight: 800;
-    font-size: 20px;
-    letter-spacing: -0.01em;
-  }
-  .lp-header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-  .lp-spn-mini {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
-  .lp-spn-mini img {
-    height: 28px;
-    width: auto;
-  }
-  .lp-header-tagline {
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
+  .lp-pricing-chip { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: #0F172A; color: #fff; border-radius: 999px; font-family: var(--font-display); font-size: 14px; font-weight: 700; margin-bottom: 28px; letter-spacing: -0.005em; }
+  .lp-pricing-chip strong { color: #14B8A6; font-weight: 800; }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     SVG icons / chevrons (inline so the page is fully self-contained)
-     ═══════════════════════════════════════════════════════════════════ */
-  .chev-icon {
-    display: inline-block;
-    width: 14px;
-    height: 10px;
-    vertical-align: middle;
-  }
+  .lp-cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px; }
+  .lp-cta-row .btn { min-height: 56px; padding: 16px 28px; font-size: 15px; }
+  .lp-trust-row { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; padding-top: 28px; border-top: 1px solid var(--border); font-family: var(--font-body); font-size: 14px; color: var(--text-secondary); }
+  .lp-trust-row span { display: inline-flex; align-items: center; gap: 6px; }
+  .lp-trust-row strong { color: var(--text-primary); font-weight: 700; }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     Typography
-     ═══════════════════════════════════════════════════════════════════ */
-  h1, h2, h3, h4 {
-    font-family: 'Bricolage Grotesque', sans-serif;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
-  h1 {
-    font-size: clamp(36px, 5.5vw, 60px);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-  }
-  h2 {
-    font-size: clamp(28px, 4vw, 42px);
-    font-weight: 800;
-  }
-  h3 {
-    font-size: clamp(20px, 2.4vw, 24px);
-    font-weight: 700;
-    line-height: 1.2;
-  }
-  h4 {
-    font-size: 17px;
-    font-weight: 700;
-  }
-  .accent {
-    background: var(--brand-grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: var(--bg-warm);
-    color: var(--ink-soft);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-  }
-  .eyebrow::before {
-    content: "";
-    width: 6px; height: 6px;
-    background: var(--brand-green);
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(16,185,129,0.18);
-  }
+  /* DISQUALIFIER */
+  .lp-disqualifier { background: rgba(239,68,68,0.04); border-top: 1px solid rgba(239,68,68,0.20); border-bottom: 1px solid rgba(239,68,68,0.20); padding: 32px clamp(20px, 5vw, 40px); }
+  .lp-disq-inner { max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .lp-disq-col h4 { font-family: var(--font-body); font-size: 13px; margin: 0 0 12px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 800; }
+  .lp-disq-yes h4 { color: #10B981; }
+  .lp-disq-no h4 { color: #991B1B; }
+  .lp-disq-col ul { list-style: none; padding: 0; margin: 0; }
+  .lp-disq-col li { font-family: var(--font-body); font-size: 14px; color: var(--text-secondary); padding: 4px 0; line-height: 1.5; display: flex; align-items: flex-start; gap: 8px; }
+  @media (max-width: 720px) { .lp-disq-inner { grid-template-columns: 1fr; gap: 18px; } }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     Buttons
-     ═══════════════════════════════════════════════════════════════════ */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px 24px;
-    border-radius: 12px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .btn-lg { padding: 16px 28px; font-size: 16px; }
-  .btn-primary {
-    background: var(--brand-green);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(16,185,129,0.25);
-  }
-  .btn-primary:hover {
-    background: #059669;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(16,185,129,0.35);
-  }
-  .btn-outline {
-    background: #fff;
-    color: var(--ink);
-    border-color: var(--line);
-  }
-  .btn-outline:hover {
-    border-color: var(--ink);
-    transform: translateY(-2px);
-  }
-  .btn-on-dark {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-    border-color: rgba(255,255,255,0.2);
-  }
-  .btn-on-dark:hover {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.3);
-  }
+  .lp-marketplaces { padding: 36px clamp(20px, 5vw, 40px); background: var(--white); border-bottom: 1px solid var(--border); }
+  .lp-marketplaces-label { text-align: center; font-family: var(--font-body); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 20px; }
+  .lp-marketplace-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; max-width: 1100px; margin: 0 auto; }
+  .lp-marketplace-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #fff; border: 1px solid var(--border); border-radius: 999px; font-family: var(--font-body); font-size: 14px; font-weight: 600; color: var(--text-secondary); }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     Hero
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-hero {
-    position: relative;
-    padding: 72px 0 60px;
-    background: linear-gradient(180deg, #F8FAFC 0%, #fff 100%);
-    overflow: hidden;
-  }
-  .lp-hero::before {
-    content: "";
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(900px 500px at 85% 10%, rgba(16,185,129,0.12), transparent 60%),
-      radial-gradient(700px 400px at 5% 90%, rgba(14,165,233,0.10), transparent 60%);
-    pointer-events: none;
-  }
-  .lp-hero-inner {
-    position: relative;
-    text-align: center;
-    max-width: 880px;
-    margin: 0 auto;
-  }
-  .lp-hero h1 {
-    margin-bottom: 20px;
-  }
-  .lp-hero-lead {
-    font-size: clamp(17px, 2vw, 19px);
-    color: var(--ink-soft);
-    max-width: 720px;
-    margin: 0 auto 32px;
-    line-height: 1.55;
-  }
-  .lp-hero-ctas {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 36px;
-  }
-  .lp-trust-pills {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 24px 32px;
-    margin-top: 28px;
-    padding-top: 28px;
-    border-top: 1px solid var(--line);
-  }
-  .lp-trust-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-  .lp-trust-item strong {
-    color: var(--ink);
-    font-weight: 700;
-    margin-right: 4px;
-  }
-  .lp-trust-emoji { font-size: 18px; }
+  .lp-profiles { padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px); background: var(--bg-soft); }
+  .lp-section-header { text-align: center; max-width: 760px; margin: 0 auto 48px; }
+  .lp-section-header h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lp-section-header h2 .accent { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lp-section-header p { font-family: var(--font-body); font-size: 17px; color: var(--text-secondary); margin: 0; }
+  .lp-profile-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  @media (max-width: 920px) { .lp-profile-grid { grid-template-columns: 1fr; } }
+  .lp-profile-card { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 36px; transition: transform 0.2s, box-shadow 0.2s; }
+  .lp-profile-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(15,23,42,0.06); }
+  .lp-profile-num { font-family: var(--font-display); font-size: 14px; font-weight: 800; background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+  .lp-profile-card h3 { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px; }
+  .lp-profile-card .desc { color: var(--text-secondary); font-family: var(--font-body); font-size: 15px; margin: 0 0 20px; line-height: 1.55; }
+  .lp-profile-features { list-style: none; margin: 0; padding: 0; }
+  .lp-profile-features li { font-family: var(--font-body); display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 14px; color: var(--text-secondary); line-height: 1.45; }
+  .lp-profile-features li::before { content: "✓"; flex: 0 0 auto; color: var(--brand-green); font-weight: 800; font-size: 15px; }
+  .lp-profile-tag { display: inline-block; margin-top: 20px; padding: 6px 12px; background: rgba(16,185,129,0.10); color: var(--brand-teal); border-radius: 8px; font-family: var(--font-body); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     Marketplace strip
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-marketplaces {
-    padding: 36px 0;
-    background: #fff;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-  .lp-marketplaces-label {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-  }
-  .lp-marketplace-row {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .lp-marketplace-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
-  .lp-marketplace-chip:hover {
-    border-color: var(--brand-teal);
-    color: var(--ink);
-  }
-  .lp-marketplace-emoji { font-size: 16px; }
+  .lp-how { padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px); background: var(--bg); }
+  .lp-how-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  @media (max-width: 920px) { .lp-how-grid { grid-template-columns: 1fr 1fr; gap: 32px 24px; } }
+  .lp-step-card { text-align: center; }
+  .lp-step-num { width: 60px; height: 60px; background: #fff; border: 2px solid var(--brand-green); color: var(--brand-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 22px; margin: 0 auto 18px; box-shadow: 0 4px 12px rgba(16,185,129,0.18); }
+  .lp-step-card h4 { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+  .lp-step-card p { font-family: var(--font-body); font-size: 14px; color: var(--text-muted); line-height: 1.5; margin: 0; }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     Two-profile section
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-profiles {
-    padding: 80px 0;
-    background: var(--bg-soft);
-  }
-  .lp-section-header {
-    text-align: center;
-    max-width: 760px;
-    margin: 0 auto 48px;
-  }
-  .lp-section-header h2 { margin-bottom: 14px; }
-  .lp-section-header p {
-    font-size: 17px;
-    color: var(--ink-soft);
-  }
-  .lp-profile-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 28px;
-  }
-  .lp-profile-card {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    padding: 36px;
-    box-shadow: var(--shadow-sm);
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-  }
-  .lp-profile-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow);
-  }
-  .lp-profile-num {
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-size: 14px;
-    font-weight: 800;
-    background: var(--brand-grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .lp-profile-card h3 {
-    margin-bottom: 16px;
-  }
-  .lp-profile-card .desc {
-    color: var(--ink-soft);
-    font-size: 15px;
-    margin-bottom: 20px;
-    line-height: 1.55;
-  }
-  .lp-profile-features {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .lp-profile-features li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px 0;
-    font-size: 14px;
-    color: var(--ink-soft);
-    line-height: 1.45;
-  }
-  .lp-profile-features li::before {
-    content: "✓";
-    flex: 0 0 auto;
-    color: var(--brand-green);
-    font-weight: 800;
-    font-size: 15px;
-    margin-top: -1px;
-  }
-  .lp-profile-tag {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 6px 12px;
-    background: var(--bg-warm);
-    color: var(--brand-teal);
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
+  .lp-latam { padding: 56px clamp(20px, 5vw, 40px); background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #fff; text-align: center; }
+  .lp-latam h3 { font-family: var(--font-display); color: #fff; margin: 0 0 8px; font-size: 22px; }
+  .lp-latam p { font-family: var(--font-body); color: rgba(255,255,255,0.65); margin: 0 0 28px; font-size: 14px; }
+  .lp-flag-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 28px 36px; max-width: 920px; margin: 0 auto; }
+  .lp-flag-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: rgba(255,255,255,0.85); text-transform: uppercase; }
+  .lp-flag-item img { width: 38px; height: 28px; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     How it works (4 steps)
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-how {
-    padding: 80px 0;
-    background: #fff;
-  }
-  .lp-how-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-    position: relative;
-    margin-top: 8px;
-  }
-  .lp-how-grid::before {
-    content: "";
-    position: absolute;
-    top: 30px;
-    left: 12.5%;
-    right: 12.5%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, #10B981 20%, #14B8A6 50%, #0EA5E9 80%, transparent 100%);
-    z-index: 0;
-    opacity: 0.35;
-  }
-  .lp-step {
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-  .lp-step-num {
-    width: 60px; height: 60px;
-    background: #fff;
-    border: 2px solid var(--brand-green);
-    color: var(--brand-green);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-weight: 800;
-    font-size: 22px;
-    margin: 0 auto 18px;
-    box-shadow: 0 4px 12px rgba(16,185,129,0.18);
-  }
-  .lp-step h4 {
-    margin-bottom: 8px;
-    font-size: 18px;
-  }
-  .lp-step p {
-    font-size: 14px;
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
+  .lp-faq { padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px); background: var(--bg-soft); }
+  .lp-faq-inner { max-width: 820px; margin: 0 auto; }
+  .lp-faq h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px); font-weight: 700; text-align: center; margin: 0 0 36px; letter-spacing: -0.02em; }
+  .lp-faq details { border-bottom: 1px solid var(--border); padding: 22px 0; }
+  .lp-faq details summary { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text-primary); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  .lp-faq details summary::-webkit-details-marker { display: none; }
+  .lp-faq details summary::after { content: "+"; font-size: 24px; color: var(--brand-teal); transition: transform 0.2s; line-height: 1; }
+  .lp-faq details[open] summary::after { transform: rotate(45deg); }
+  .lp-faq details p { font-family: var(--font-body); font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 14px 0 0; }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     What's included
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-included {
-    padding: 80px 0;
-    background: var(--bg-soft);
-  }
-  .lp-included-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .lp-included-card {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 24px;
-    transition: all 0.2s;
-  }
-  .lp-included-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow);
-  }
-  .lp-included-icon {
-    font-size: 28px;
-    margin-bottom: 12px;
-  }
-  .lp-included-card h4 {
-    margin-bottom: 6px;
-    font-size: 16px;
-  }
-  .lp-included-card p {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.45;
-  }
+  .lp-final { padding: clamp(56px, 8vw, 100px) clamp(20px, 5vw, 40px); background: radial-gradient(700px 280px at 50% 100%, rgba(20,184,166,0.18), transparent 60%), var(--bg-dark); color: var(--text-on-dark); text-align: center; }
+  .lp-final h2 { font-family: var(--font-display); font-size: clamp(32px, 4.5vw, 48px); font-weight: 700; margin: 0 0 18px; letter-spacing: -0.02em; }
+  .lp-final h2 .accent { background: linear-gradient(90deg, #14B8A6, #0EA5E9); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lp-final p { font-family: var(--font-body); font-size: 17px; line-height: 1.6; color: var(--text-on-dark-muted); max-width: 580px; margin: 0 auto 32px; }
+  .lp-final .btn-on-dark { background: white; color: var(--text-primary); }
+  .lp-final .btn-on-dark:hover { background: var(--bg-soft); color: var(--brand-green); }
 
-  /* ═══════════════════════════════════════════════════════════════════
-     LATAM flags strip
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-latam {
-    padding: 56px 0;
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-    color: #fff;
-    text-align: center;
-  }
-  .lp-latam h3 {
-    color: #fff;
-    margin-bottom: 8px;
-    font-size: 22px;
-  }
-  .lp-latam p {
-    color: rgba(255,255,255,0.65);
-    margin-bottom: 28px;
-    font-size: 14px;
-  }
-  .lp-flag-row {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 28px 36px;
-    max-width: 920px;
-    margin: 0 auto;
-  }
-  .lp-flag-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: rgba(255,255,255,0.85);
-    text-transform: uppercase;
-  }
-  .lp-flag-item img {
-    width: 38px;
-    height: 28px;
-    border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
-
-  /* ═══════════════════════════════════════════════════════════════════
-     Carriers strip
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-carriers {
-    padding: 60px 0;
-    background: #fff;
-    border-top: 1px solid var(--line);
-  }
-  .lp-carriers-label {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-  }
-  .lp-carriers h3 {
-    text-align: center;
-    margin-bottom: 8px;
-    font-size: 22px;
-  }
-  .lp-carriers p {
-    text-align: center;
-    font-size: 14px;
-    color: var(--text-muted);
-    max-width: 620px;
-    margin: 0 auto 28px;
-  }
-  .lp-carrier-row {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .lp-carrier-chip {
-    padding: 10px 18px;
-    background: var(--bg-soft);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--ink-soft);
-  }
-
-  /* ═══════════════════════════════════════════════════════════════════
-     Founder quote
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-founder {
-    padding: 80px 0;
-    background: var(--bg-soft);
-  }
-  .lp-founder-inner {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  .lp-founder-avatar {
-    width: 88px; height: 88px;
-    border-radius: 50%;
-    background: var(--brand-grad);
-    color: #fff;
-    margin: 0 auto 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-size: 32px;
-    font-weight: 800;
-    box-shadow: 0 8px 24px rgba(16,185,129,0.25);
-  }
-  .lp-founder blockquote {
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-size: clamp(22px, 2.8vw, 30px);
-    line-height: 1.35;
-    color: var(--ink);
-    font-weight: 700;
-    letter-spacing: -0.015em;
-    margin-bottom: 22px;
-  }
-  .lp-founder-name {
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--ink);
-  }
-  .lp-founder-title {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
-
-  /* ═══════════════════════════════════════════════════════════════════
-     FAQ
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-faq {
-    padding: 80px 0;
-    background: #fff;
-  }
-  .lp-faq-list {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  .lp-faq-item {
-    background: var(--bg-soft);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 22px 26px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .lp-faq-item:hover {
-    border-color: rgba(16,185,129,0.4);
-  }
-  .lp-faq-item summary {
-    list-style: none;
-    font-family: 'Bricolage Grotesque', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--ink);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    line-height: 1.3;
-  }
-  .lp-faq-item summary::-webkit-details-marker { display: none; }
-  .lp-faq-item summary::after {
-    content: "+";
-    color: var(--brand-green);
-    font-size: 24px;
-    font-weight: 400;
-    transition: transform 0.2s;
-    flex: 0 0 auto;
-  }
-  .lp-faq-item[open] summary::after {
-    transform: rotate(45deg);
-  }
-  .lp-faq-item .answer {
-    margin-top: 14px;
-    color: var(--ink-soft);
-    font-size: 15px;
-    line-height: 1.6;
-  }
-  .lp-faq-item .answer strong { color: var(--ink); }
-
-  /* ═══════════════════════════════════════════════════════════════════
-     Final CTA
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-final {
-    padding: 96px 0;
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-    color: #fff;
-    text-align: center;
-  }
-  .lp-final h2 {
-    color: #fff;
-    margin-bottom: 16px;
-  }
-  .lp-final .accent {
-    background: linear-gradient(90deg, #14B8A6, #0EA5E9);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .lp-final p {
-    color: rgba(255,255,255,0.75);
-    font-size: 18px;
-    max-width: 600px;
-    margin: 0 auto 32px;
-    line-height: 1.5;
-  }
-  .lp-final-ctas {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  /* ═══════════════════════════════════════════════════════════════════
-     Footer (minimal — matches /lp/* pattern)
-     ═══════════════════════════════════════════════════════════════════ */
-  .lp-footer {
-    padding: 36px 0;
-    background: #0F172A;
-    color: rgba(255,255,255,0.6);
-    text-align: center;
-    font-size: 13px;
-  }
-  .lp-footer a {
-    color: rgba(255,255,255,0.85);
-    text-decoration: none;
-    margin: 0 12px;
-  }
-  .lp-footer a:hover { color: #fff; }
-  .lp-footer-spn {
-    display: inline-block;
-    margin-top: 12px;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    color: var(--brand-teal);
-    font-weight: 700;
-  }
-
-  /* ═══════════════════════════════════════════════════════════════════
-     Responsive
-     ═══════════════════════════════════════════════════════════════════ */
-  @media (max-width: 920px) {
-    .lp-profile-grid { grid-template-columns: 1fr; }
-    .lp-how-grid { grid-template-columns: 1fr 1fr; gap: 32px 24px; }
-    .lp-how-grid::before { display: none; }
-    .lp-included-grid { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 560px) {
-    .lp-hero { padding: 48px 0 40px; }
-    .lp-trust-pills { gap: 16px 24px; }
-    .lp-trust-item { font-size: 12px; }
-    .lp-header-tagline { display: none; }
-    .lp-flag-row { gap: 20px 24px; }
-    .lp-flag-item img { width: 32px; height: 24px; }
-  }
+  .lp-footer { padding: 32px clamp(20px, 5vw, 40px); background: var(--bg-darker); color: var(--text-on-dark-muted); font-family: var(--font-body); font-size: 13px; text-align: center; }
+  .lp-footer a { color: var(--text-on-dark); text-decoration: none; }
+  .lp-footer a:hover { color: var(--brand-teal); }
+  .lp-footer-links { margin-bottom: 12px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════ Brand stripe + header ═══════════════════ -->
-<div class="brand-stripe" role="presentation"></div>
-<header class="lp-header">
-  <div class="container">
-    <div class="lp-header-inner">
-      <a href="/" class="lp-brand">
-        <img src="/assets/Fr-Logistics_Icon.png" alt="" class="lp-brand-icon">
-        <span class="lp-brand-text">FR-Logistics</span>
-      </a>
-      <div class="lp-header-right">
-        <span class="lp-spn-mini">
-          <img src="/assets/amazon-spn-logo.png" alt="Amazon SPN Certified">
-        </span>
-        <span class="lp-header-tagline">Hecho para sellers LATAM</span>
-      </div>
-    </div>
-  </div>
-</header>
+<svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+  <defs><linearGradient id="chevGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10B981"/><stop offset="50%" stop-color="#14B8A6"/><stop offset="100%" stop-color="#0EA5E9"/></linearGradient></defs>
+</svg>
 
-<!-- ═══════════════════ HERO ═══════════════════ -->
+<nav class="lp-nav">
+  <a href="/" class="lp-nav-brand">
+    <img src="/assets/Fr-Logistics_Logo.png" alt="FR-Logistics">
+    <span class="lp-nav-brand-text">FR-Logistics</span>
+  </a>
+  <div class="lp-nav-trust">
+    <img src="/assets/amazon-spn-logo.png" alt="Amazon SPN Certified">
+    <span>3PL Warehouse for LATAM Sellers</span>
+  </div>
+</nav>
+
 <section class="lp-hero">
-  <div class="container">
-    <div class="lp-hero-inner">
-      <span class="eyebrow">Dropshipment desde Miami · Para LATAM</span>
-      <h1>Tu inventario en Miami.<br>Tus ventas en <span class="accent">Mercado Libre, Amazon LATAM y más.</span></h1>
-      <p class="lp-hero-lead">Procesamos tus órdenes desde Doral con embalaje neutro, sin branding de Amazon ni Walmart, y las entregamos al carrier de tu preferencia. Ideal para sellers que venden en Mercado Libre, Amazon México/Brasil, Shopify y TikTok Shop.</p>
+  <div class="lp-hero-inner">
+    <span class="lp-eyebrow">3PL Service · Paid Warehouse in Miami</span>
+    <h1>Your inventory in Miami.<br>Your sales on <span class="accent">Mercado Libre, Amazon LATAM and beyond.</span></h1>
+    <p class="lead">We process your orders from our Doral warehouse with neutral packaging, no Amazon or Walmart branding, and hand them to your carrier of choice. Built for sellers already selling on Mercado Libre, Amazon MX/BR, Shopify and TikTok Shop.</p>
 
-      <div class="lp-hero-ctas">
-        <a href="href="https://api.whatsapp.com/send?phone=13052403172&text=Hola%2C%20soy%20seller%20de%20Mercado%20Libre%20%2F%20Amazon%20LATAM%20y%20necesito%20servicio%20de%20Dropship%20desde%20Miami.%20Mi%20volumen%20mensual%20aproximado%20es%3A%20___%20paquetes"">
-          💬 Cotiza por WhatsApp
-        </a>
-        <a href="https://calendly.com/fr-logistics/discoverycall" target="_blank" rel="noopener" class="btn btn-outline btn-lg" onclick="track('hero_calendly')">
-          📅 Agenda una llamada
-        </a>
-      </div>
+    <div class="lp-pricing-chip">💼 Paid B2B Service · <strong>From $6 per package processed</strong></div>
 
-      <div class="lp-trust-pills">
-        <div class="lp-trust-item">
-          <span class="lp-trust-emoji">✅</span>
-          <span><strong>SPN-Certified</strong> partner</span>
-        </div>
-        <div class="lp-trust-item">
-          <span class="lp-trust-emoji">🌎</span>
-          <span><strong>9 países LATAM</strong> servidos</span>
-        </div>
-        <div class="lp-trust-item">
-          <span class="lp-trust-emoji">🗣️</span>
-          <span><strong>100% bilingüe</strong> EN/ES</span>
-        </div>
-        <div class="lp-trust-item">
-          <span class="lp-trust-emoji">⚡</span>
-          <span><strong>Procesamiento</strong> mismo día</span>
-        </div>
-      </div>
+    <div class="lp-cta-row">
+      <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi%2C%20I%27m%20a%20Mercado%20Libre%20%2F%20Amazon%20LATAM%20seller%20and%20need%20dropship%20service%20from%20Miami.%20My%20monthly%20volume%20is%20approximately%3A%20___%20packages" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg" data-lp-cta="hero-whatsapp" data-source="ads-dropship" onclick="track('hero_whatsapp')">💬 Get a quote on WhatsApp</a>
+      <a href="https://calendly.com/fr-logistics/discovery-meeting-clone" target="_blank" rel="noopener" class="btn btn-outline btn-lg" data-lp-cta="hero-calendly" data-source="ads-dropship" onclick="track('hero_calendly')">📅 Book a discovery call</a>
+    </div>
+
+    <div class="lp-trust-row">
+      <span>✅ <strong>SPN-Certified</strong> partner</span>
+      <span>🌎 <strong>9 LATAM countries</strong> served</span>
+      <span>🗣️ <strong>100% bilingual</strong> EN/ES</span>
+      <span>⚡ <strong>Same-day</strong> processing</span>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════ Marketplaces strip ═══════════════════ -->
+<!-- ═══════ DISQUALIFIER bar ═══════ -->
+<section class="lp-disqualifier">
+  <div class="lp-disq-inner">
+    <div class="lp-disq-col lp-disq-yes">
+      <h4>✅ This IS for you</h4>
+      <ul>
+        <li>📦 You sell on Mercado Libre, Amazon LATAM, Shopify or TikTok Shop</li>
+        <li>💼 You're looking for a warehouse to receive your packages and process your orders</li>
+        <li>💵 You're ready to pay from $6/package for the service</li>
+        <li>🌎 You're in LATAM and need a Miami logistics hub</li>
+      </ul>
+    </div>
+    <div class="lp-disq-col lp-disq-no">
+      <h4>❌ This is NOT</h4>
+      <ul>
+        <li>🚫 NOT a job offer — we don't hire couriers or shippers</li>
+        <li>🚫 We do NOT pay people to do dropshipping or commissions</li>
+        <li>🚫 NOT a course or training to "make money online"</li>
+        <li>🚫 NOT a "business without investment" — we're a paid B2B provider</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 <section class="lp-marketplaces">
-  <div class="container">
-    <div class="lp-marketplaces-label">Diseñado para sellers que venden en</div>
-    <div class="lp-marketplace-row">
-      <span class="lp-marketplace-chip"><span class="lp-marketplace-emoji">🛒</span> Mercado Libre</span>
-      <span class="lp-marketplace-chip"><span class="lp-marketplace-emoji">📦</span> Amazon MX / BR / Global</span>
-      <span class="lp-marketplace-chip"><span class="lp-marketplace-emoji">🛍️</span> Shopify</span>
-      <span class="lp-marketplace-chip"><span class="lp-marketplace-emoji">🎵</span> TikTok Shop</span>
-      <span class="lp-marketplace-chip"><span class="lp-marketplace-emoji">📸</span> Instagram Shop</span>
-    </div>
+  <div class="lp-marketplaces-label">Designed for sellers who sell on</div>
+  <div class="lp-marketplace-row">
+    <span class="lp-marketplace-chip">🛒 Mercado Libre</span>
+    <span class="lp-marketplace-chip">📦 Amazon MX / BR / Global</span>
+    <span class="lp-marketplace-chip">🛍️ Shopify</span>
+    <span class="lp-marketplace-chip">🎵 TikTok Shop</span>
+    <span class="lp-marketplace-chip">📸 Instagram Shop</span>
   </div>
 </section>
 
-<!-- ═══════════════════ Two profiles ═══════════════════ -->
 <section class="lp-profiles">
-  <div class="container">
-    <div class="lp-section-header">
-      <span class="eyebrow">Dos formas de operar</span>
-      <h2>¿Cuál es <span class="accent">tu caso?</span></h2>
-      <p>Servimos a sellers LATAM en dos modelos operativos distintos. Tu estructura define cómo trabajamos juntos.</p>
-    </div>
+  <div class="lp-section-header">
+    <h2>Which <span class="accent">model fits you?</span></h2>
+    <p>We serve LATAM sellers under two distinct operational models. Your setup defines how we work together.</p>
+  </div>
 
-    <div class="lp-profile-grid">
-      <!-- Profile 1 -->
-      <article class="lp-profile-card">
-        <div class="lp-profile-num">Modelo 1</div>
-        <h3>Compras en US, vendes en LATAM</h3>
-        <p class="desc">Tu cliente final ordena en Mercado Libre o en tu tienda. Tú compras el producto en Amazon US, Walmart o Home Depot, lo envías a nuestro warehouse y nosotros nos encargamos del resto.</p>
-        <ul class="lp-profile-features">
-          <li>Recibimos paquetes de Amazon, Walmart, Home Depot, Target, Best Buy, Costco y más</li>
-          <li>Removemos todo el branding y packing slips del retailer</li>
-          <li>Repackeamos con embalaje neutro (sin identificadores de terceros)</li>
-          <li>Procesamos el label desde tu plataforma o tu cuenta de carrier</li>
-          <li>Foto de confirmación de cada paquete saliente</li>
-        </ul>
-        <span class="lp-profile-tag">Retail arbitrage · Online arbitrage · Reventa</span>
-      </article>
+  <div class="lp-profile-grid">
+    <article class="lp-profile-card">
+      <div class="lp-profile-num">Model 1</div>
+      <h3>Buy in US, sell in LATAM</h3>
+      <p class="desc">Your end customer orders on Mercado Libre or your store. You buy the product on Amazon US, Walmart, or Home Depot, ship it to our warehouse, and we handle everything else.</p>
+      <ul class="lp-profile-features">
+        <li>We receive packages from Amazon, Walmart, Home Depot, Target, Best Buy, Costco and more</li>
+        <li>Remove all retailer branding and packing slips</li>
+        <li>Repack with neutral materials (no third-party identifiers)</li>
+        <li>Process the label from your platform or your carrier account</li>
+        <li>Photo confirmation of every outbound package</li>
+      </ul>
+      <span class="lp-profile-tag">Retail arbitrage · Online arbitrage · Reseller</span>
+    </article>
 
-      <!-- Profile 2 -->
-      <article class="lp-profile-card">
-        <div class="lp-profile-num">Modelo 2</div>
-        <h3>Inventario en Miami, ventas en LATAM</h3>
-        <p class="desc">Tienes tu propio stock almacenado en nuestro warehouse de Doral. Cuando entra una orden en Mercado Libre, Shopify o TikTok Shop, nosotros pickeamos, empacamos y la entregamos al carrier que tú definas.</p>
-        <ul class="lp-profile-features">
-          <li>Storage en pallet o shelf · primer mes gratis</li>
-          <li>Pick &amp; pack desde tu inventario propio</li>
-          <li>Empaque branded opcional (tu marca, tu inserts, tu nota)</li>
-          <li>Integración con ShipStation, Shopify, Amazon, eBay</li>
-          <li>Inventario en tiempo real desde tu portal de cliente</li>
-        </ul>
-        <span class="lp-profile-tag">Brand owner · Private label · DTC LATAM</span>
-      </article>
-    </div>
+    <article class="lp-profile-card">
+      <div class="lp-profile-num">Model 2</div>
+      <h3>Inventory in Miami, sales in LATAM</h3>
+      <p class="desc">You have your own stock stored at our Doral warehouse. When an order comes in via Mercado Libre, Shopify, or TikTok Shop, we pick, pack, and hand it to the carrier you define.</p>
+      <ul class="lp-profile-features">
+        <li>Pallet or shelf storage · first month free</li>
+        <li>Pick &amp; pack from your own inventory</li>
+        <li>Optional branded packaging (your brand, inserts, note)</li>
+        <li>Integration with ShipStation, Shopify, Amazon, eBay</li>
+        <li>Real-time inventory in your client portal</li>
+      </ul>
+      <span class="lp-profile-tag">Brand owner · Private label · DTC LATAM</span>
+    </article>
   </div>
 </section>
 
-<!-- ═══════════════════ How it works ═══════════════════ -->
 <section class="lp-how">
-  <div class="container">
-    <div class="lp-section-header">
-      <span class="eyebrow">Cómo funciona</span>
-      <h2>Cuatro pasos. <span class="accent">Sin sorpresas.</span></h2>
+  <div class="lp-section-header">
+    <h2>Four steps. <span class="accent">No surprises.</span></h2>
+  </div>
+  <div class="lp-how-grid">
+    <div class="lp-step-card">
+      <div class="lp-step-num">1</div>
+      <h4>Order comes in</h4>
+      <p>Your end customer orders on Mercado Libre, Amazon, Shopify or TikTok Shop. The order hits our system.</p>
     </div>
-
-    <div class="lp-how-grid">
-      <div class="lp-step">
-        <div class="lp-step-num">1</div>
-        <h4>Entra la orden</h4>
-        <p>Tu cliente final ordena en Mercado Libre, Amazon, Shopify o TikTok Shop. La orden llega a nuestro sistema.</p>
-      </div>
-      <div class="lp-step">
-        <div class="lp-step-num">2</div>
-        <h4>Procesamos</h4>
-        <p>Recibimos tu paquete (Modelo 1) o pickeamos de tu inventario (Modelo 2). Mismo día si llega antes de las 2 PM ET.</p>
-      </div>
-      <div class="lp-step">
-        <div class="lp-step-num">3</div>
-        <h4>Repackeamos limpio</h4>
-        <p>Removemos branding de retailers, aplicamos tu label y empacamos con materiales neutros. Foto de confirmación.</p>
-      </div>
-      <div class="lp-step">
-        <div class="lp-step-num">4</div>
-        <h4>Entregamos al carrier</h4>
-        <p>Despachamos al carrier que tú elijas: DHL, FedEx, UPS, USPS o tu courier preferido. Tracking enviado a tu plataforma.</p>
-      </div>
+    <div class="lp-step-card">
+      <div class="lp-step-num">2</div>
+      <h4>We process</h4>
+      <p>We receive your package (Model 1) or pick from your inventory (Model 2). Same day if before 2 PM ET.</p>
+    </div>
+    <div class="lp-step-card">
+      <div class="lp-step-num">3</div>
+      <h4>Repack neutral</h4>
+      <p>Remove retailer branding, apply your label, repack with neutral materials. Photo confirmation included.</p>
+    </div>
+    <div class="lp-step-card">
+      <div class="lp-step-num">4</div>
+      <h4>Hand to carrier</h4>
+      <p>Dispatch to your carrier of choice: DHL, FedEx, UPS, USPS or your preferred courier. Tracking back to your platform.</p>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════ What's included ═══════════════════ -->
-<section class="lp-included">
-  <div class="container">
-    <div class="lp-section-header">
-      <span class="eyebrow">Qué incluye</span>
-      <h2>Operación completa, <span class="accent">desde recepción hasta entrega al carrier.</span></h2>
-    </div>
-
-    <div class="lp-included-grid">
-      <div class="lp-included-card">
-        <div class="lp-included-icon">📥</div>
-        <h4>Recepción de inbound</h4>
-        <p>Recibimos paquetes de retailers o de tu proveedor. Verificación visual y conteo contra tu PO.</p>
-      </div>
-      <div class="lp-included-card">
-        <div class="lp-included-icon">🧹</div>
-        <h4>Remoción de branding</h4>
-        <p>Packing slips, stickers, cajas con logo del retailer — todo removido antes del despacho.</p>
-      </div>
-      <div class="lp-included-card">
-        <div class="lp-included-icon">📦</div>
-        <h4>Repackeo neutro</h4>
-        <p>Cajas y polybags genéricos. Sin identificadores de terceros. Opción de empaque con tu marca.</p>
-      </div>
-      <div class="lp-included-card">
-        <div class="lp-included-icon">🏷️</div>
-        <h4>Aplicación de label</h4>
-        <p>Generamos label desde tu plataforma (ShipStation, Shopify, Amazon) o usamos el tuyo pre-generado.</p>
-      </div>
-      <div class="lp-included-card">
-        <div class="lp-included-icon">📸</div>
-        <h4>Foto de confirmación</h4>
-        <p>Cada paquete saliente se documenta con foto. Pruebas de despacho disponibles en tu portal.</p>
-      </div>
-      <div class="lp-included-card">
-        <div class="lp-included-icon">🔄</div>
-        <h4>Manejo de devoluciones</h4>
-        <p>RMA processing: inspección, repack y restock para reventa, o disposal según tu instrucción.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════ LATAM strip ═══════════════════ -->
 <section class="lp-latam">
-  <div class="container">
-    <h3>9 países LATAM ya envían desde Miami con nosotros</h3>
-    <p>Equipo 100% bilingüe. Hablamos tu idioma, conocemos tu marketplace.</p>
-    <div class="lp-flag-row">
-      <div class="lp-flag-item"><img src="https://flagcdn.com/mx.svg" alt="México" loading="lazy"><span>México</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/co.svg" alt="Colombia" loading="lazy"><span>Colombia</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/pe.svg" alt="Perú" loading="lazy"><span>Perú</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/cl.svg" alt="Chile" loading="lazy"><span>Chile</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/ar.svg" alt="Argentina" loading="lazy"><span>Argentina</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/br.svg" alt="Brasil" loading="lazy"><span>Brasil</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/ec.svg" alt="Ecuador" loading="lazy"><span>Ecuador</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/ve.svg" alt="Venezuela" loading="lazy"><span>Venezuela</span></div>
-      <div class="lp-flag-item"><img src="https://flagcdn.com/pa.svg" alt="Panamá" loading="lazy"><span>Panamá</span></div>
-    </div>
+  <h3>9 LATAM countries already ship from Miami with us</h3>
+  <p>100% bilingual team. We speak your language and know your marketplace.</p>
+  <div class="lp-flag-row">
+    <div class="lp-flag-item"><img src="https://flagcdn.com/mx.svg" alt="Mexico" loading="lazy"><span>Mexico</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/co.svg" alt="Colombia" loading="lazy"><span>Colombia</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/pe.svg" alt="Peru" loading="lazy"><span>Peru</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/cl.svg" alt="Chile" loading="lazy"><span>Chile</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/ar.svg" alt="Argentina" loading="lazy"><span>Argentina</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/br.svg" alt="Brazil" loading="lazy"><span>Brazil</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/ec.svg" alt="Ecuador" loading="lazy"><span>Ecuador</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/ve.svg" alt="Venezuela" loading="lazy"><span>Venezuela</span></div>
+    <div class="lp-flag-item"><img src="https://flagcdn.com/pa.svg" alt="Panama" loading="lazy"><span>Panama</span></div>
   </div>
 </section>
 
-<!-- ═══════════════════ Carriers ═══════════════════ -->
-<section class="lp-carriers">
-  <div class="container">
-    <div class="lp-carriers-label">Importante</div>
-    <h3>Tú eliges el carrier. Nosotros entregamos el paquete listo.</h3>
-    <p>No manejamos shipping internacional propio. Procesamos tu orden y la entregamos al carrier de tu preferencia con su label generado por ti o por nosotros desde tu cuenta.</p>
-    <div class="lp-carrier-row">
-      <span class="lp-carrier-chip">DHL</span>
-      <span class="lp-carrier-chip">FedEx</span>
-      <span class="lp-carrier-chip">UPS</span>
-      <span class="lp-carrier-chip">USPS</span>
-      <span class="lp-carrier-chip">Aeropost</span>
-      <span class="lp-carrier-chip">Mercado Envíos</span>
-      <span class="lp-carrier-chip">Tu courier preferido</span>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════ Founder quote ═══════════════════ -->
-<section class="lp-founder">
-  <div class="container">
-    <div class="lp-founder-inner">
-      <div class="lp-founder-avatar">JF</div>
-      <blockquote>"El seller LATAM no necesita un 3PL gigante. Necesita un partner que conozca Mercado Libre, hable su idioma, y conteste el WhatsApp cuando se traba un envío."</blockquote>
-      <div class="lp-founder-name">Jose Fuentes</div>
-      <div class="lp-founder-title">Dueño y Operations Manager · FR-Logistics Miami · 20+ años en logística</div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════ FAQ ═══════════════════ -->
 <section class="lp-faq">
-  <div class="container">
-    <div class="lp-section-header">
-      <span class="eyebrow">Preguntas frecuentes</span>
-      <h2>Lo que <span class="accent">necesitas saber</span> antes de empezar.</h2>
-    </div>
+  <div class="lp-faq-inner">
+    <h2>Frequently asked questions</h2>
 
-    <div class="lp-faq-list">
-      <details class="lp-faq-item">
-        <summary>¿Manejan ustedes el shipping internacional Miami → LATAM?</summary>
-        <div class="answer"><strong>No directamente.</strong> Nosotros procesamos tu orden completa (recepción, repackeo, label, entrega al carrier), pero el shipping internacional lo manejas con tu carrier de preferencia: DHL, FedEx, UPS, Aeropost, Mercado Envíos o el courier que tú tengas contratado. Trabajamos con tu cuenta o generamos el label desde tu plataforma.</div>
-      </details>
+    <details>
+      <summary>Is this a job offer or a service I pay for?</summary>
+      <p><strong>It's a paid B2B service.</strong> FR-Logistics is a 3PL warehouse in Doral, Miami. Companies and sellers hire us and pay us <strong>from $6 per package processed</strong> to store, process, and ship their products. We do not offer employment, we do not pay people to do dropshipping, and we do not sell training. If you're looking for a job or paid side hustle, this is not the right page.</p>
+    </details>
 
-      <details class="lp-faq-item">
-        <summary>¿Cómo se conectan con Mercado Libre y mis otros canales?</summary>
-        <div class="answer">Nos integramos con tu plataforma de gestión de órdenes — ShipStation, Linnworks, SkuVault, Shopify Apps. Si tú vendes en Mercado Libre, Amazon MX/BR, Shopify y TikTok Shop al mismo tiempo, todas esas órdenes pueden centralizarse en ShipStation y nosotros las procesamos desde ahí. <strong>No nos conectamos directamente a la API de Mercado Libre</strong> — siempre vía tu OMS.</div>
-      </details>
+    <details>
+      <summary>Do you handle international shipping Miami → LATAM?</summary>
+      <p><strong>Not directly.</strong> We process your full order (receiving, repack, label, hand-off to carrier), but international shipping is handled with your carrier of choice: DHL, FedEx, UPS, Aeropost, Mercado Envíos, or the courier you have contracted. We work with your account or generate the label from your platform.</p>
+    </details>
 
-      <details class="lp-faq-item">
-        <summary>¿Cuánto cobran por dropshipment?</summary>
-        <div class="answer">El rate típico de dropshipment va entre <strong>$1.50 y $3.00 por orden</strong>, dependiendo del volumen mensual y los servicios adicionales (kitting, branded packaging, fotos extra). Cotizamos en discovery call después de entender tu volumen y operativa específica. Sin cuotas mensuales, sin mínimos.</div>
-      </details>
+    <details>
+      <summary>How do you connect with Mercado Libre and my other channels?</summary>
+      <p>We integrate with your order management platform — ShipStation, Linnworks, SkuVault, Shopify Apps. If you sell on Mercado Libre, Amazon MX/BR, Shopify, and TikTok Shop simultaneously, all those orders can be centralized in ShipStation and we process them from there. <strong>We do not connect directly to Mercado Libre's API</strong> — always through your OMS.</p>
+    </details>
 
-      <details class="lp-faq-item">
-        <summary>¿Qué pasa con los impuestos y aduana?</summary>
-        <div class="answer">El paquete sale de US como exportación normal. La gestión aduanal en el país destino la maneja tu carrier internacional (DHL, FedEx, etc.) o el broker que tú designes. Nosotros incluimos la commercial invoice y el packing slist con la información que tú nos indiques. <strong>No actuamos como agente aduanal</strong>.</div>
-      </details>
+    <details>
+      <summary>How much do you charge for dropship?</summary>
+      <p>Typical dropship rate goes <strong>from $6 per order processed</strong>, depending on monthly volume and additional services (kitting, branded packaging, extra photos). We quote in a discovery call after understanding your volume and specific operations. No monthly fees, no minimums.</p>
+    </details>
 
-      <details class="lp-faq-item">
-        <summary>¿Cuánto tarda mi paquete en salir de Miami después de recibirlo?</summary>
-        <div class="answer">Si tu paquete inbound o tu orden de pick &amp; pack llega antes de las <strong>2 PM ET</strong>, lo procesamos y lo entregamos al carrier ese mismo día. Si llega después, sale al siguiente día hábil. Lunes a viernes.</div>
-      </details>
+    <details>
+      <summary>What about taxes and customs?</summary>
+      <p>The package leaves US as a normal export. Customs management at destination is handled by your international carrier (DHL, FedEx, etc.) or the broker you designate. We include the commercial invoice and packing slip with the information you provide us. <strong>We do not act as a customs broker.</strong></p>
+    </details>
 
-      <details class="lp-faq-item">
-        <summary>¿Cómo sé que removieron correctamente el branding del retailer?</summary>
-        <div class="answer">Cada orden saliente lleva foto de confirmación antes y después del repackeo. Las fotos quedan documentadas en tu portal de cliente. <strong>Cero packing slips de Amazon, Walmart o cualquier retailer terminan en manos de tu comprador final.</strong></div>
-      </details>
+    <details>
+      <summary>How fast does my package leave Miami after you receive it?</summary>
+      <p>If your inbound package or pick &amp; pack order arrives before <strong>2 PM ET</strong>, we process it and hand it to the carrier the same day. After that, it ships the next business day. Monday through Friday.</p>
+    </details>
 
-      <details class="lp-faq-item">
-        <summary>¿Trabajan con Mercado Envíos Full / Flex?</summary>
-        <div class="answer">Sí. Si tu carrier de elección es Mercado Envíos (Flex o Full), procesamos la orden con el label que Mercado Libre te genere y lo entregamos al pickup point o al courier que ML designe. La integración con la API de ML la haces tú; nosotros operamos del lado del fulfillment físico.</div>
-      </details>
+    <details>
+      <summary>How do I know you correctly removed the retailer branding?</summary>
+      <p>Every outbound order includes before/after photo confirmation of the repack. Photos are documented in your client portal. <strong>Zero Amazon, Walmart or any retailer packing slips end up in your end customer's hands.</strong></p>
+    </details>
 
-      <details class="lp-faq-item">
-        <summary>¿Dónde está su warehouse?</summary>
-        <div class="answer">10893 NW 17th St, Unit 121, Doral, FL 33172. A 12 minutos del aeropuerto de Miami y cerca del puerto. Visitas con cita previa — bienvenidos.</div>
-      </details>
-    </div>
+    <details>
+      <summary>Do you work with Mercado Envíos Full / Flex?</summary>
+      <p>Yes. If your carrier of choice is Mercado Envíos (Flex or Full), we process the order with the label Mercado Libre generates for you and hand it to the pickup point or the courier ML designates. The ML API integration is on your side; we operate the physical fulfillment.</p>
+    </details>
+
+    <details>
+      <summary>Where is your warehouse?</summary>
+      <p>10893 NW 17th St, Unit 121, Doral, FL 33172. 12 minutes from Miami International Airport and close to the port. Visits by appointment — welcome.</p>
+    </details>
   </div>
 </section>
 
-<!-- ═══════════════════ Final CTA ═══════════════════ -->
 <section class="lp-final">
-  <div class="container">
-    <h2>Tu próxima orden de Mercado Libre <span class="accent">sale limpia.</span></h2>
-    <p>15 minutos por teléfono. Cotización personalizada en 24 horas. Sin compromiso.</p>
-    <div class="lp-final-ctas">
-      <a href="href="https://api.whatsapp.com/send?phone=13052403172&text=Hola%2C%20soy%20seller%20de%20Mercado%20Libre%20%2F%20Amazon%20LATAM%20y%20necesito%20servicio%20de%20Dropship%20desde%20Miami.%20Mi%20volumen%20mensual%20aproximado%20es%3A%20___%20paquetes"">
-        💬 Cotiza por WhatsApp
-      </a>
-      <a href="https://calendly.com/fr-logistics/discoverycall" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg" onclick="track('final_calendly')">
-        📅 Agenda llamada gratuita
-      </a>
-    </div>
+  <h2>Your next Mercado Libre order <span class="accent">ships clean.</span></h2>
+  <p>15 minutes by phone. Custom quote in 24 hours. No commitment.</p>
+  <div class="lp-cta-row">
+    <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi%2C%20I%27m%20a%20Mercado%20Libre%20%2F%20Amazon%20LATAM%20seller%20and%20need%20dropship%20service%20from%20Miami.%20My%20monthly%20volume%20is%20approximately%3A%20___%20packages" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg" data-lp-cta="final-whatsapp" data-source="ads-dropship" onclick="track('final_whatsapp')">💬 Start on WhatsApp</a>
+    <a href="https://calendly.com/fr-logistics/discovery-meeting-clone" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg" data-lp-cta="final-calendly" data-source="ads-dropship" onclick="track('final_calendly')">📅 Book a free call</a>
   </div>
 </section>
 
-<!-- ═══════════════════ Footer minimal ═══════════════════ -->
 <footer class="lp-footer">
-  <div class="container">
-    <div>
-      <a href="/">Inicio</a> ·
-      <a href="/es/">ES</a> ·
-      <a href="mailto:info@fr-logistics.net">info@fr-logistics.net</a> ·
-      <a href="tel:+17863001443">+1 (786) 300-1443</a>
-    </div>
-    <div class="lp-footer-spn">✅ AMAZON SPN CERTIFIED · DORAL, MIAMI</div>
+  <div class="lp-footer-links">
+    <a href="/">Main site</a>
+    <a href="mailto:info@fr-logistics.net">info@fr-logistics.net</a>
+    <a href="tel:+17863001443">📞 +1 (786) 300-1443</a>
   </div>
+  <div>10893 NW 17th St Unit 121 · Doral, FL 33172 · USA<br>© 2026 FR-Logistics Miami, Inc. · Amazon SPN-Certified</div>
 </footer>
 
 </body>
