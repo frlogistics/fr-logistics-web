@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Wholesale FBA prep for high-volume Amazon sellers. Receive directly from brands and distributors. SPN-Certified Miami warehouse. Published rates, no monthly fees.">
+<meta name="description" content="Wholesale FBA prep for high-volume Amazon sellers. Receive directly from brands and distributors. SPN-Certified Miami warehouse. Published rates, no monthly fees. Paid B2B service.">
 <meta name="theme-color" content="#0F172A">
 <meta name="robots" content="noindex,nofollow">
 <title>Wholesale FBA Prep Miami · For Established Sellers · FR-Logistics</title>
@@ -22,15 +22,8 @@
   gtag('js', new Date());
   gtag('config', 'G-73G5QBFTN7', { 'send_page_view': true });
 
-  /**
-   * track() — landing-page event helper.
-   * Maps button-click labels to canonical GA4 events.
-   * After these events appear in GA4 (24-48h), mark them as Key Events
-   * so they become available as conversions in Google Ads.
-   */
   function track(label){
     var eventName = null, value = 0, location = 'unknown';
-
     var path = window.location.pathname.toLowerCase();
     var landing = 'unknown';
     if (path.indexOf('/lp/dropship') === 0)        landing = 'dropship';
@@ -44,8 +37,6 @@
 
     if (label.indexOf('hero') !== -1)         location = 'hero';
     else if (label.indexOf('final') !== -1)   location = 'final_cta';
-    else if (label.indexOf('pricing') !== -1) location = 'pricing';
-    else if (label.indexOf('nav') !== -1)     location = 'nav';
 
     if (eventName) {
       gtag('event', eventName, {
@@ -58,292 +49,111 @@
 
 <style>
   body { background: var(--bg); }
-
-  .lp-nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px clamp(20px, 5vw, 40px);
-    border-bottom: 1px solid var(--border); background: var(--white);
-  }
+  .lp-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px clamp(20px, 5vw, 40px); border-bottom: 1px solid var(--border); background: var(--white); }
   .lp-nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
   .lp-nav-brand img { height: 36px; width: auto; }
-  .lp-nav-brand-text {
-    font-family: var(--font-display); font-weight: 700; color: var(--text-primary);
-    font-size: 17px; letter-spacing: -0.01em;
-  }
-  .lp-nav-trust { display: flex; align-items: center; gap: 14px;
-    font-family: var(--font-body); font-size: 13px; color: var(--text-secondary); }
+  .lp-nav-brand-text { font-family: var(--font-display); font-weight: 700; color: var(--text-primary); font-size: 17px; letter-spacing: -0.01em; }
+  .lp-nav-trust { display: flex; align-items: center; gap: 14px; font-family: var(--font-body); font-size: 13px; color: var(--text-secondary); }
   .lp-nav-trust img { height: 22px; }
   @media (max-width: 640px) { .lp-nav-trust { display: none; } }
 
-  .lp-hero {
-    background:
-      radial-gradient(1200px 400px at 100% 0%, rgba(16,185,129,0.10), transparent 60%),
-      radial-gradient(800px 300px at 0% 100%, rgba(14,165,233,0.08), transparent 60%),
-      var(--bg);
-    padding: clamp(60px, 8vw, 100px) clamp(20px, 5vw, 40px) clamp(40px, 6vw, 80px);
-    position: relative;
-    overflow: hidden;
-  }
+  .lp-hero { background: radial-gradient(1200px 400px at 100% 0%, rgba(16,185,129,0.10), transparent 60%), radial-gradient(800px 300px at 0% 100%, rgba(14,165,233,0.08), transparent 60%), var(--bg); padding: clamp(60px, 8vw, 100px) clamp(20px, 5vw, 40px) clamp(40px, 6vw, 80px); position: relative; overflow: hidden; }
   .lp-hero-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
-  .lp-eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 8px 16px; background: rgba(16,185,129,0.10);
-    border: 1px solid rgba(16,185,129,0.30); border-radius: 999px;
-    color: var(--brand-green); font-family: var(--font-body);
-    font-weight: 700; font-size: 12px; letter-spacing: 0.08em;
-    text-transform: uppercase; margin-bottom: 24px;
-  }
-  .lp-eyebrow::before {
-    content: "★"; background: var(--brand-green); color: white;
-    width: 18px; height: 18px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px;
-  }
-  .lp-hero h1 {
-    font-family: var(--font-display); font-size: clamp(36px, 5.5vw, 64px);
-    font-weight: 700; line-height: 1.05; letter-spacing: -0.025em;
-    color: var(--text-primary); margin: 0 0 22px; max-width: 880px;
-  }
-  .lp-hero h1 .accent {
-    background: var(--gradient-brand); -webkit-background-clip: text;
-    background-clip: text; color: transparent;
-  }
-  .lp-hero p.lead {
-    font-family: var(--font-body); font-size: clamp(17px, 2vw, 22px);
-    line-height: 1.55; color: var(--text-secondary);
-    max-width: 720px; margin: 0 0 36px;
-  }
+  .lp-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(16,185,129,0.10); border: 1px solid rgba(16,185,129,0.30); border-radius: 999px; color: var(--brand-green); font-family: var(--font-body); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 24px; }
+  .lp-eyebrow::before { content: "★"; background: var(--brand-green); color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+  .lp-hero h1 { font-family: var(--font-display); font-size: clamp(36px, 5.5vw, 64px); font-weight: 700; line-height: 1.05; letter-spacing: -0.025em; color: var(--text-primary); margin: 0 0 22px; max-width: 880px; }
+  .lp-hero h1 .accent { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lp-hero p.lead { font-family: var(--font-body); font-size: clamp(17px, 2vw, 22px); line-height: 1.55; color: var(--text-secondary); max-width: 720px; margin: 0 0 24px; }
+
+  .lp-pricing-chip { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: #0F172A; color: #fff; border-radius: 999px; font-family: var(--font-display); font-size: 14px; font-weight: 700; margin-bottom: 28px; letter-spacing: -0.005em; }
+  .lp-pricing-chip strong { color: #10B981; font-weight: 800; }
+
   .lp-cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
   .lp-cta-row .btn { min-height: 56px; padding: 16px 28px; font-size: 15px; }
 
-  /* Hero stats inline */
-  .lp-hero-stats {
-    margin-top: 50px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 24px;
-    padding-top: 32px;
-    border-top: 1px solid var(--border);
-  }
-  .lp-hero-stat .num {
-    font-family: var(--font-display); font-size: clamp(28px, 3.6vw, 40px);
-    font-weight: 800;
-    background: var(--gradient-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    line-height: 1; margin-bottom: 6px;
-  }
-  .lp-hero-stat .label {
-    font-family: var(--font-body); font-size: 13px;
-    color: var(--text-secondary);
-  }
+  .lp-hero-stats { margin-top: 50px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 24px; padding-top: 32px; border-top: 1px solid var(--border); }
+  .lp-hero-stat .num { font-family: var(--font-display); font-size: clamp(28px, 3.6vw, 40px); font-weight: 800; background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1; margin-bottom: 6px; }
+  .lp-hero-stat .label { font-family: var(--font-body); font-size: 13px; color: var(--text-secondary); }
 
-  /* For wholesale sellers section */
-  .lp-target {
-    padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px);
-    background: var(--bg);
-  }
+  /* DISQUALIFIER bar */
+  .lp-disqualifier { background: rgba(239,68,68,0.04); border-top: 1px solid rgba(239,68,68,0.20); border-bottom: 1px solid rgba(239,68,68,0.20); padding: 32px clamp(20px, 5vw, 40px); }
+  .lp-disq-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .lp-disq-col h4 { font-family: var(--font-body); font-size: 13px; margin: 0 0 12px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 800; }
+  .lp-disq-yes h4 { color: #10B981; }
+  .lp-disq-no h4 { color: #991B1B; }
+  .lp-disq-col ul { list-style: none; padding: 0; margin: 0; }
+  .lp-disq-col li { font-family: var(--font-body); font-size: 14px; color: var(--text-secondary); padding: 4px 0; line-height: 1.5; display: flex; align-items: flex-start; gap: 8px; }
+  @media (max-width: 720px) { .lp-disq-inner { grid-template-columns: 1fr; gap: 18px; } }
+
+  .lp-target { padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px); background: var(--bg); }
   .lp-target-inner { max-width: 1100px; margin: 0 auto; }
   .lp-target-header { text-align: center; max-width: 720px; margin: 0 auto 48px; }
-  .lp-target-header h2 {
-    font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px);
-    font-weight: 700; letter-spacing: -0.02em; margin: 0 0 12px;
-  }
-  .lp-target-header p {
-    font-family: var(--font-body); font-size: 17px;
-    color: var(--text-secondary); margin: 0;
-  }
-  .lp-target-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;
-  }
-  .lp-target-card {
-    background: var(--bg-soft); padding: 28px 24px;
-    border-radius: 16px; border: 1px solid var(--border);
-  }
-  .lp-target-card .icon {
-    width: 48px; height: 48px;
-    background: var(--gradient-brand); border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 22px; margin-bottom: 18px;
-  }
-  .lp-target-card h3 {
-    font-family: var(--font-display); font-size: 19px;
-    font-weight: 700; color: var(--text-primary); margin: 0 0 10px;
-  }
-  .lp-target-card p {
-    font-family: var(--font-body); font-size: 14px; line-height: 1.55;
-    color: var(--text-secondary); margin: 0;
-  }
+  .lp-target-header h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lp-target-header p { font-family: var(--font-body); font-size: 17px; color: var(--text-secondary); margin: 0; }
+  .lp-target-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .lp-target-card { background: var(--bg-soft); padding: 28px 24px; border-radius: 16px; border: 1px solid var(--border); }
+  .lp-target-card .icon { width: 48px; height: 48px; background: var(--gradient-brand); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; margin-bottom: 18px; }
+  .lp-target-card h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--text-primary); margin: 0 0 10px; }
+  .lp-target-card p { font-family: var(--font-body); font-size: 14px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
 
-  /* Operations workflow */
-  .lp-workflow {
-    padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px);
-    background: var(--bg-soft);
-  }
+  .lp-workflow { padding: clamp(56px, 8vw, 90px) clamp(20px, 5vw, 40px); background: var(--bg-soft); }
   .lp-workflow-inner { max-width: 1100px; margin: 0 auto; }
-  .lp-workflow h2 {
-    font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px);
-    font-weight: 700; text-align: center; margin: 0 0 12px; letter-spacing: -0.02em;
-  }
-  .lp-workflow > .lp-workflow-inner > p {
-    text-align: center; font-family: var(--font-body); font-size: 17px;
-    color: var(--text-secondary); margin: 0 0 48px;
-  }
-  .lp-steps {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px; position: relative;
-  }
-  .lp-step {
-    background: white; padding: 28px 24px; border-radius: 16px;
-    border: 1px solid var(--border); position: relative;
-  }
-  .lp-step .step-num {
-    position: absolute; top: -14px; left: 24px;
-    width: 32px; height: 32px;
-    background: var(--gradient-brand); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-family: var(--font-display);
-    font-weight: 800; font-size: 14px;
-  }
-  .lp-step h3 {
-    font-family: var(--font-display); font-size: 17px;
-    font-weight: 700; color: var(--text-primary); margin: 10px 0 8px;
-  }
-  .lp-step p {
-    font-family: var(--font-body); font-size: 14px; line-height: 1.55;
-    color: var(--text-secondary); margin: 0;
-  }
+  .lp-workflow h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 700; text-align: center; margin: 0 0 12px; letter-spacing: -0.02em; }
+  .lp-workflow > .lp-workflow-inner > p { text-align: center; font-family: var(--font-body); font-size: 17px; color: var(--text-secondary); margin: 0 0 48px; }
+  .lp-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; position: relative; }
+  .lp-step { background: white; padding: 28px 24px; border-radius: 16px; border: 1px solid var(--border); position: relative; }
+  .lp-step .step-num { position: absolute; top: -14px; left: 24px; width: 32px; height: 32px; background: var(--gradient-brand); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-family: var(--font-display); font-weight: 800; font-size: 14px; }
+  .lp-step h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 10px 0 8px; }
+  .lp-step p { font-family: var(--font-body); font-size: 14px; line-height: 1.55; color: var(--text-secondary); margin: 0; }
 
-  /* Pricing */
-  .lp-pricing {
-    padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px);
-    background: var(--bg);
-  }
+  .lp-pricing { padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px); background: var(--bg); }
   .lp-pricing-inner { max-width: 900px; margin: 0 auto; }
-  .lp-pricing h2 {
-    font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px);
-    font-weight: 700; text-align: center; margin: 0 0 12px; letter-spacing: -0.02em;
-  }
-  .lp-pricing p.intro {
-    text-align: center; font-family: var(--font-body);
-    color: var(--text-secondary); margin-bottom: 36px; font-size: 16px;
-  }
-  .lp-rates-table {
-    width: 100%; border-collapse: separate; border-spacing: 0;
-    background: white; border-radius: 16px; overflow: hidden;
-    border: 1px solid var(--border);
-    font-family: var(--font-body);
-  }
-  .lp-rates-table th {
-    background: var(--bg-soft); padding: 16px 20px;
-    text-align: left; font-size: 12px; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--text-secondary);
-    font-weight: 700; border-bottom: 1px solid var(--border);
-  }
-  .lp-rates-table td {
-    padding: 16px 20px; border-bottom: 1px solid var(--border);
-    font-size: 15px; color: var(--text-primary);
-  }
+  .lp-pricing h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px); font-weight: 700; text-align: center; margin: 0 0 12px; letter-spacing: -0.02em; }
+  .lp-pricing p.intro { text-align: center; font-family: var(--font-body); color: var(--text-secondary); margin-bottom: 36px; font-size: 16px; }
+  .lp-rates-table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); font-family: var(--font-body); }
+  .lp-rates-table th { background: var(--bg-soft); padding: 16px 20px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); font-weight: 700; border-bottom: 1px solid var(--border); }
+  .lp-rates-table td { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--text-primary); }
   .lp-rates-table tr:last-child td { border-bottom: none; }
-  .lp-rates-table .price-cell {
-    text-align: right; font-family: var(--font-display);
-    font-weight: 700; color: var(--brand-green); white-space: nowrap;
-  }
+  .lp-rates-table .price-cell { text-align: right; font-family: var(--font-display); font-weight: 700; color: var(--brand-green); white-space: nowrap; }
   .lp-rates-table tr:hover td { background: var(--bg-soft); }
 
-  /* Testimonial */
-  .lp-quote {
-    padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px);
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
+  .lp-quote { padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px); background: var(--bg); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   .lp-quote-inner { max-width: 820px; margin: 0 auto; text-align: center; }
   .lp-quote .stars { font-size: 20px; color: #F59E0B; letter-spacing: 4px; margin-bottom: 20px; }
-  .lp-quote blockquote {
-    font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 28px);
-    font-weight: 500; line-height: 1.4; margin: 0 0 24px;
-    color: var(--text-primary); letter-spacing: -0.01em;
-  }
-  .lp-quote cite {
-    font-family: var(--font-body); font-style: normal;
-    font-size: 14px; color: var(--text-secondary);
-  }
+  .lp-quote blockquote { font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 28px); font-weight: 500; line-height: 1.4; margin: 0 0 24px; color: var(--text-primary); letter-spacing: -0.01em; }
+  .lp-quote cite { font-family: var(--font-body); font-style: normal; font-size: 14px; color: var(--text-secondary); }
   .lp-quote cite strong { color: var(--text-primary); font-weight: 700; display: block; margin-bottom: 2px; }
 
-  /* FAQ */
   .lp-faq { padding: clamp(48px, 7vw, 80px) clamp(20px, 5vw, 40px); background: var(--bg-soft); }
   .lp-faq-inner { max-width: 820px; margin: 0 auto; }
-  .lp-faq h2 {
-    font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px);
-    font-weight: 700; text-align: center; margin: 0 0 36px; letter-spacing: -0.02em;
-  }
+  .lp-faq h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px); font-weight: 700; text-align: center; margin: 0 0 36px; letter-spacing: -0.02em; }
   .lp-faq details { border-bottom: 1px solid var(--border); padding: 22px 0; }
-  .lp-faq details summary {
-    font-family: var(--font-display); font-size: 17px; font-weight: 600;
-    color: var(--text-primary); cursor: pointer; list-style: none;
-    display: flex; justify-content: space-between; align-items: center;
-  }
+  .lp-faq details summary { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text-primary); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
   .lp-faq details summary::-webkit-details-marker { display: none; }
-  .lp-faq details summary::after {
-    content: "+"; font-size: 24px; color: var(--brand-green);
-    transition: transform 0.2s; line-height: 1;
-  }
+  .lp-faq details summary::after { content: "+"; font-size: 24px; color: var(--brand-green); transition: transform 0.2s; line-height: 1; }
   .lp-faq details[open] summary::after { transform: rotate(45deg); }
-  .lp-faq details p {
-    font-family: var(--font-body); font-size: 15px; line-height: 1.6;
-    color: var(--text-secondary); margin: 14px 0 0;
-  }
+  .lp-faq details p { font-family: var(--font-body); font-size: 15px; line-height: 1.6; color: var(--text-secondary); margin: 14px 0 0; }
 
-  /* Final CTA */
-  .lp-final {
-    padding: clamp(56px, 8vw, 100px) clamp(20px, 5vw, 40px);
-    background:
-      radial-gradient(700px 280px at 50% 100%, rgba(16,185,129,0.18), transparent 60%),
-      var(--bg-dark);
-    color: var(--text-on-dark); text-align: center;
-  }
-  .lp-final h2 {
-    font-family: var(--font-display); font-size: clamp(32px, 4.5vw, 48px);
-    font-weight: 700; margin: 0 0 18px; letter-spacing: -0.02em;
-  }
-  .lp-final p {
-    font-family: var(--font-body); font-size: 17px; line-height: 1.6;
-    color: var(--text-on-dark-muted); max-width: 580px; margin: 0 auto 32px;
-  }
+  .lp-final { padding: clamp(56px, 8vw, 100px) clamp(20px, 5vw, 40px); background: radial-gradient(700px 280px at 50% 100%, rgba(16,185,129,0.18), transparent 60%), var(--bg-dark); color: var(--text-on-dark); text-align: center; }
+  .lp-final h2 { font-family: var(--font-display); font-size: clamp(32px, 4.5vw, 48px); font-weight: 700; margin: 0 0 18px; letter-spacing: -0.02em; }
+  .lp-final p { font-family: var(--font-body); font-size: 17px; line-height: 1.6; color: var(--text-on-dark-muted); max-width: 580px; margin: 0 auto 32px; }
   .lp-final .btn-on-dark { background: white; color: var(--text-primary); }
   .lp-final .btn-on-dark:hover { background: var(--bg-soft); color: var(--brand-green); }
   .lp-final .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
   .lp-final .cta-row .btn { min-height: 56px; padding: 16px 28px; font-size: 15px; }
 
-  /* Footer */
-  .lp-footer {
-    padding: 32px clamp(20px, 5vw, 40px); background: var(--bg-darker);
-    color: var(--text-on-dark-muted); font-family: var(--font-body);
-    font-size: 13px; text-align: center;
-  }
+  .lp-footer { padding: 32px clamp(20px, 5vw, 40px); background: var(--bg-darker); color: var(--text-on-dark-muted); font-family: var(--font-body); font-size: 13px; text-align: center; }
   .lp-footer a { color: var(--text-on-dark); text-decoration: none; }
   .lp-footer a:hover { color: var(--brand-green); }
-  .lp-footer-links {
-    margin-bottom: 12px; display: flex; gap: 16px;
-    justify-content: center; flex-wrap: wrap;
-  }
+  .lp-footer-links { margin-bottom: 12px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 </style>
 </head>
 <body>
 
 <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
-  <defs>
-    <linearGradient id="chevGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#10B981"/>
-      <stop offset="50%" stop-color="#14B8A6"/>
-      <stop offset="100%" stop-color="#0EA5E9"/>
-    </linearGradient>
-  </defs>
+  <defs><linearGradient id="chevGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#10B981"/><stop offset="50%" stop-color="#14B8A6"/><stop offset="100%" stop-color="#0EA5E9"/></linearGradient></defs>
 </svg>
 
-<!-- NAV -->
 <nav class="lp-nav">
   <a href="/" class="lp-nav-brand">
     <img src="/assets/Fr-Logistics_Logo.png" alt="FR-Logistics">
@@ -355,49 +165,52 @@
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="lp-hero">
   <div class="lp-hero-inner">
     <span class="lp-eyebrow">Wholesale FBA · Brand & Distributor Receiving</span>
     <h1>Wholesale FBA done at <span class="accent">serious-seller scale.</span></h1>
-    <p class="lead">
-      You buy from brands. You source from distributors. We receive your shipments, inspect every unit,
-      prep to Amazon's exact specs, and inbound on your plan. <strong>20+ years of logistics.</strong>
-      Published rates. No monthly minimums.
-    </p>
+    <p class="lead">You buy from brands. You source from distributors. We receive your shipments, inspect every unit, prep to Amazon's exact specs, and inbound on your plan. <strong>20+ years of logistics.</strong> Published rates. No monthly minimums.</p>
+
+    <div class="lp-pricing-chip">💼 Paid B2B Service · <strong>From $0.55/unit + $2.50/carton receiving</strong></div>
+
     <div class="lp-cta-row">
-      <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi!%20I%27m%20a%20wholesale%20FBA%20seller%20and%20saw%20your%20landing.%20I%27d%20like%20a%20quote."
-         class="btn btn-whatsapp btn-lg"
-         data-lp-cta="hero-whatsapp"
-         data-source="ads-wholesale" onclick="track('hero_whatsapp')">💬 Get a quote on WhatsApp</a>
-      <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
-         class="btn btn-outline btn-lg"
-         data-lp-cta="hero-calendly"
-         data-source="ads-wholesale" onclick="track('hero_calendly')">📅 Book a 30-min call</a>
+      <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi%2C%20I%20do%20wholesale%20on%20Amazon%20and%20need%20brand-direct%20receiving%20and%20prep%20service.%20My%20monthly%20volume%20is%20approximately%3A%20___%20cases" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg" data-lp-cta="hero-whatsapp" data-source="ads-wholesale" onclick="track('hero_whatsapp')">💬 Get a quote on WhatsApp</a>
+      <a href="https://calendly.com/fr-logistics/discovery-meeting-clone" target="_blank" rel="noopener" class="btn btn-outline btn-lg" data-lp-cta="hero-calendly" data-source="ads-wholesale" onclick="track('hero_calendly')">📅 Book a 30-min call</a>
     </div>
 
     <div class="lp-hero-stats">
-      <div class="lp-hero-stat">
-        <div class="num">20+</div>
-        <div class="label">years of logistics experience</div>
-      </div>
-      <div class="lp-hero-stat">
-        <div class="num">99%+</div>
-        <div class="label">FBA prep accuracy rate</div>
-      </div>
-      <div class="lp-hero-stat">
-        <div class="num">$0</div>
-        <div class="label">monthly fees · first month storage free</div>
-      </div>
-      <div class="lp-hero-stat">
-        <div class="num">SPN</div>
-        <div class="label">Amazon-certified prep partner</div>
-      </div>
+      <div class="lp-hero-stat"><div class="num">20+</div><div class="label">years of logistics experience</div></div>
+      <div class="lp-hero-stat"><div class="num">99%+</div><div class="label">FBA prep accuracy rate</div></div>
+      <div class="lp-hero-stat"><div class="num">$0</div><div class="label">monthly fees · first month storage free</div></div>
+      <div class="lp-hero-stat"><div class="num">SPN</div><div class="label">Amazon-certified prep partner</div></div>
     </div>
   </div>
 </section>
 
-<!-- TARGET SELLERS -->
+<!-- ═══════ DISQUALIFIER bar ═══════ -->
+<section class="lp-disqualifier">
+  <div class="lp-disq-inner">
+    <div class="lp-disq-col lp-disq-yes">
+      <h4>✅ This IS for you</h4>
+      <ul>
+        <li>📦 You source wholesale from brands or distributors</li>
+        <li>💼 You need a Miami warehouse to receive, inspect and prep at scale</li>
+        <li>💵 You're ready to pay published per-unit and per-carton rates</li>
+        <li>📈 You move real Amazon FBA volume month over month</li>
+      </ul>
+    </div>
+    <div class="lp-disq-col lp-disq-no">
+      <h4>❌ This is NOT</h4>
+      <ul>
+        <li>🚫 NOT a job offer or employment opportunity</li>
+        <li>🚫 We do NOT pay people to source wholesale or "find deals"</li>
+        <li>🚫 NOT a course or mentorship for Amazon arbitrage</li>
+        <li>🚫 NOT a "business without investment" — we're a paid B2B provider</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 <section class="lp-target">
   <div class="lp-target-inner">
     <div class="lp-target-header">
@@ -405,73 +218,33 @@
       <p>If you're moving real volume from brands or distributors, this is built for you.</p>
     </div>
     <div class="lp-target-grid">
-      <div class="lp-target-card">
-        <div class="icon">📦</div>
-        <h3>Brand-direct receiving</h3>
-        <p>We receive shipments directly from the brand or distributor. Inspection, photo documentation, condition reporting on every unit.</p>
-      </div>
-      <div class="lp-target-card">
-        <div class="icon">🏷️</div>
-        <h3>FBA prep at any scale</h3>
-        <p>FNSKU labels, poly-bags, suffocation warnings, sticker removal, bubble wrap — all to Amazon's exact specs. Zero chargebacks.</p>
-      </div>
-      <div class="lp-target-card">
-        <div class="icon">📋</div>
-        <h3>Shipment plan execution</h3>
-        <p>You build the plan in Seller Central. We build the cartons, palletize, generate BOL, and ship to the right FC the first time.</p>
-      </div>
-      <div class="lp-target-card">
-        <div class="icon">🔍</div>
-        <h3>Traceability for brand protection</h3>
-        <p>Need IMEI tracking, lot codes, or serial logging? Our Traceability service is built for telecom, electronics, regulated B2B.</p>
-      </div>
+      <div class="lp-target-card"><div class="icon">📦</div><h3>Brand-direct receiving</h3><p>We receive shipments directly from the brand or distributor. Inspection, photo documentation, condition reporting on every unit.</p></div>
+      <div class="lp-target-card"><div class="icon">🏷️</div><h3>FBA prep at any scale</h3><p>FNSKU labels, poly-bags, suffocation warnings, sticker removal, bubble wrap — all to Amazon's exact specs. Zero chargebacks.</p></div>
+      <div class="lp-target-card"><div class="icon">📋</div><h3>Shipment plan execution</h3><p>You build the plan in Seller Central. We build the cartons, palletize, generate BOL, and ship to the right FC the first time.</p></div>
+      <div class="lp-target-card"><div class="icon">🔍</div><h3>Traceability for brand protection</h3><p>Need IMEI tracking, lot codes, or serial logging? Our Traceability service is built for telecom, electronics, regulated B2B.</p></div>
     </div>
   </div>
 </section>
 
-<!-- WORKFLOW -->
 <section class="lp-workflow">
   <div class="lp-workflow-inner">
     <h2>How wholesale FBA prep works with us</h2>
     <p>From PO confirmation to "Delivered" at Amazon — one operational handoff.</p>
     <div class="lp-steps">
-      <div class="lp-step">
-        <div class="step-num">1</div>
-        <h3>Send us your ASN</h3>
-        <p>Advance Shipping Notice from your brand or distributor. We're expecting it.</p>
-      </div>
-      <div class="lp-step">
-        <div class="step-num">2</div>
-        <h3>We receive & inspect</h3>
-        <p>Carton-by-carton inspection. Photo documentation. Damaged units flagged before they cost you a return.</p>
-      </div>
-      <div class="lp-step">
-        <div class="step-num">3</div>
-        <h3>FBA prep to spec</h3>
-        <p>FNSKU labels, polybags, kitting — whatever your SKUs need. SPN-audited process.</p>
-      </div>
-      <div class="lp-step">
-        <div class="step-num">4</div>
-        <h3>Ship on your plan</h3>
-        <p>Your shipment plan from Seller Central. Our cartons, our pallets, our BOL. Inbound to Amazon.</p>
-      </div>
+      <div class="lp-step"><div class="step-num">1</div><h3>Send us your ASN</h3><p>Advance Shipping Notice from your brand or distributor. We're expecting it.</p></div>
+      <div class="lp-step"><div class="step-num">2</div><h3>We receive & inspect</h3><p>Carton-by-carton inspection. Photo documentation. Damaged units flagged before they cost you a return.</p></div>
+      <div class="lp-step"><div class="step-num">3</div><h3>FBA prep to spec</h3><p>FNSKU labels, polybags, kitting — whatever your SKUs need. SPN-audited process.</p></div>
+      <div class="lp-step"><div class="step-num">4</div><h3>Ship on your plan</h3><p>Your shipment plan from Seller Central. Our cartons, our pallets, our BOL. Inbound to Amazon.</p></div>
     </div>
   </div>
 </section>
 
-<!-- PRICING -->
 <section class="lp-pricing">
   <div class="lp-pricing-inner">
     <h2>Volume-friendly published rates</h2>
     <p class="intro">No "request a quote" tricks. The rates below apply to all volumes. First month of storage on us.</p>
     <table class="lp-rates-table">
-      <thead>
-        <tr>
-          <th>Service</th>
-          <th>Unit</th>
-          <th style="text-align:right;">Rate</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Service</th><th>Unit</th><th style="text-align:right;">Rate</th></tr></thead>
       <tbody>
         <tr><td>FNSKU Labeling</td><td>Per unit, all volumes</td><td class="price-cell">$0.55/unit</td></tr>
         <tr><td>Inbound Receiving</td><td>Per carton with inspection</td><td class="price-cell">$2.50/carton</td></tr>
@@ -487,26 +260,22 @@
   </div>
 </section>
 
-<!-- TESTIMONIAL -->
 <section class="lp-quote">
   <div class="lp-quote-inner">
     <div class="stars">★★★★★</div>
-    <blockquote>
-      "Outstanding service! FR-Logistics receives my inventory, checks every unit, stores it,
-      and ships my orders with incredible consistency. Their warehouse in Miami is efficient,
-      organized, and their communication is excellent."
-    </blockquote>
-    <cite>
-      <strong>Amazon Seller</strong>
-      Verified Google Review
-    </cite>
+    <blockquote>"Outstanding service! FR-Logistics receives my inventory, checks every unit, stores it, and ships my orders with incredible consistency. Their warehouse in Miami is efficient, organized, and their communication is excellent."</blockquote>
+    <cite><strong>Amazon Seller</strong>Verified Google Review</cite>
   </div>
 </section>
 
-<!-- FAQ -->
 <section class="lp-faq">
   <div class="lp-faq-inner">
     <h2>Wholesale-specific questions</h2>
+
+    <details>
+      <summary>Is this a job offer or a paid service?</summary>
+      <p><strong>It's a paid B2B service.</strong> FR-Logistics is a 3PL warehouse in Doral, Miami. Wholesale Amazon sellers hire us and pay us per-unit and per-carton rates to receive, inspect, prep, and inbound their inventory. We do not offer employment, we do not pay people to source deals or do arbitrage, and we do not sell training. If you're looking for a job or a side hustle, this is not the right page.</p>
+    </details>
 
     <details>
       <summary>Can the brand ship directly to your warehouse?</summary>
@@ -535,23 +304,15 @@
   </div>
 </section>
 
-<!-- FINAL CTA -->
 <section class="lp-final">
   <h2>Ready to scale your FBA operation?</h2>
   <p>Tell us your monthly volume and brand mix. We'll come back within 24 hours with a custom plan — including projected costs and onboarding timeline.</p>
   <div class="cta-row">
-    <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi!%20I%27m%20a%20wholesale%20FBA%20seller%20ready%20to%20start.%20Let%27s%20talk."
-       class="btn btn-whatsapp btn-lg"
-       data-lp-cta="final-whatsapp"
-       data-source="ads-wholesale" onclick="track('final_whatsapp')">💬 Start on WhatsApp</a>
-    <a href="https://calendly.com/fr-logistics/discovery-meeting-clone"
-       class="btn btn-on-dark btn-lg"
-       data-lp-cta="final-calendly"
-       data-source="ads-wholesale" onclick="track('final_calendly')">📅 Book a 30-min discovery</a>
+    <a href="https://api.whatsapp.com/send?phone=13052403172&text=Hi%2C%20I%20do%20wholesale%20on%20Amazon%20and%20need%20brand-direct%20receiving%20and%20prep%20service.%20My%20monthly%20volume%20is%20approximately%3A%20___%20cases" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg" data-lp-cta="final-whatsapp" data-source="ads-wholesale" onclick="track('final_whatsapp')">💬 Start on WhatsApp</a>
+    <a href="https://calendly.com/fr-logistics/discovery-meeting-clone" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg" data-lp-cta="final-calendly" data-source="ads-wholesale" onclick="track('final_calendly')">📅 Book a 30-min discovery</a>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="lp-footer">
   <div class="lp-footer-links">
     <a href="/">Main site</a>
@@ -559,10 +320,7 @@
     <a href="/traceability">Traceability service</a>
     <a href="tel:+17863001443">📞 +1 (786) 300-1443</a>
   </div>
-  <div>
-    10893 NW 17th St Unit 121 · Doral, FL 33172 · USA<br>
-    © 2026 FR-Logistics Miami, Inc. · Amazon SPN-Certified
-  </div>
+  <div>10893 NW 17th St Unit 121 · Doral, FL 33172 · USA<br>© 2026 FR-Logistics Miami, Inc. · Amazon SPN-Certified</div>
 </footer>
 
 </body>
