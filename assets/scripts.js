@@ -277,81 +277,128 @@
     const daysSlider    = document.getElementById('calcDays');
     const daysValue     = document.getElementById('calcDaysValue');
     const sizeSelect    = document.getElementById('calcSize');
+    const sizeField     = document.getElementById('calcSizeField');
+    const storageField  = document.getElementById('calcStorageField');
+    const storageToggle = document.getElementById('calcStorageToggle');
+    const storageRow    = document.getElementById('calcStorageRow');
+    const addonsField   = document.getElementById('calcAddonsField');
     const addons        = calcForm.querySelectorAll('.calc-addons input[type="checkbox"]');
     const totalEl       = document.getElementById('calcTotal');
     const unitsLabel    = document.getElementById('calcUnitsLabel');
+    const resultNote    = document.getElementById('calcResultNote');
+    const unitsValUnit  = { current: ' orders' };
+
+    const DEFAULT_NOTE = 'excludes carrier shipping costs & optional specialty services';
+    // Detect language from URL so the shared scripts.js serves the right copy.
+    const IS_ES = window.location.pathname.startsWith('/es/') || window.location.pathname === '/es';
+    const T = IS_ES ? {
+      fulfillmentNote: 'Fulfillment Shopify / DTC — pick, pack y etiqueta según peso de la orden: $3.00 (≤1.5 lb) · $4.00 (1.5–3 lb) · $5.00 (>3 lb).',
+      fulfillmentUnit: 'Órdenes por mes', fulfillmentWord: ' órdenes',
+      fbaNote: 'Preparación Amazon FBA — etiquetado FNSKU ($0.55/unidad) + recepción entrante ($2.50/caja). Certificado SPN.',
+      fbaUnit: 'Unidades por mes', fbaWord: ' unidades',
+      dropNote: 'Drop-Shipment (LATAM) — $6.00 por paquete: inspección, impresión de etiqueta y entrega al transportista.',
+      dropUnit: 'Paquetes por mes', dropWord: ' paquetes',
+      dropResultNote: 'La tarifa plana de $6/paquete aplica solo a órdenes de MercadoLibre. Otros destinos LATAM — contáctanos para una cotización personalizada.',
+      defaultResultNote: 'excluye costos de envío y servicios especializados opcionales',
+    } : {
+      fulfillmentNote: 'Shopify / DTC Fulfillment — pick, pack & label priced by order weight: $3.00 (≤1.5 lb) · $4.00 (1.5–3 lb) · $5.00 (>3 lb).',
+      fulfillmentUnit: 'Orders per month', fulfillmentWord: ' orders',
+      fbaNote: 'Amazon FBA Prep — FNSKU labeling ($0.55/unit) + inbound receiving ($2.50/carton). SPN-certified.',
+      fbaUnit: 'Units per month', fbaWord: ' units',
+      dropNote: 'Drop-Shipment (LATAM) — $6.00 per package: inspection, label print & carrier handoff.',
+      dropUnit: 'Packages per month', dropWord: ' packages',
+      dropResultNote: 'Flat $6/package applies to MercadoLibre orders only. Other LATAM destinations — contact us for a custom quote.',
+      defaultResultNote: DEFAULT_NOTE,
+    };
 
     // ─── SERVICE CONFIGS ─────────────────────────────────────────────────
+    // Each service declares which controls it shows. Storage is opt-in for
+    // every service (toggle OFF by default) and never auto-added to the total.
     const SERVICE_CONFIGS = {
-      fba: {
-        noteText: 'FBA Prep: FNSKU labeling + inbound receiving + storage + shipment prep. All rates flat per current rate card.',
-        unitLabel: 'Units per month',
+      fulfillment: {
+        noteText: T.fulfillmentNote,
+        unitLabel: T.fulfillmentUnit,
+        unitWord: T.fulfillmentWord,
         showSize: true,
+        showStorage: true,
         showAddons: true,
+        resultNote: T.defaultResultNote,
+      },
+      fba: {
+        noteText: T.fbaNote,
+        unitLabel: T.fbaUnit,
+        unitWord: T.fbaWord,
+        showSize: false,
+        showStorage: true,
+        showAddons: true,
+        resultNote: T.defaultResultNote,
       },
       dropshipment: {
-        noteText: 'Drop-Shipment: $6.00 per package shipped. Each drop-ship includes inspection, label print, and carrier handoff.',
-        unitLabel: 'Drop-shipments per month',
+        noteText: T.dropNote,
+        unitLabel: T.dropUnit,
+        unitWord: T.dropWord,
         showSize: false,
+        showStorage: false,
         showAddons: false,
-      },
-      fulfillment: {
-        noteText: 'Shopify/DTC Fulfillment: pick, pack & label by order weight — $3.00 (≤1.5 lb) / $4.00 (1.5–3 lb) / $5.00 (>3 lb), set by unit size. Storage & receiving optional. Good for DTC brands.',
-        unitLabel: 'Orders per month',
-        showSize: true,
-        showAddons: true,
+        resultNote: T.dropResultNote,
       },
     };
 
     // ─── COMPUTE ─────────────────────────────────────────────────────────
     function compute() {
-      const service = serviceSelect ? serviceSelect.value : 'fba';
-      const units = parseInt(unitsSlider.value, 10) || 0;
-      const days  = parseInt(daysSlider.value, 10) || 0;
-      const size  = sizeSelect ? sizeSelect.value : 'standard';
+      const service = serviceSelect ? serviceSelect.value : 'fulfillment';
+      const cfg     = SERVICE_CONFIGS[service] || SERVICE_CONFIGS.fulfillment;
+      const units   = parseInt(unitsSlider.value, 10) || 0;
+      const size    = sizeSelect ? sizeSelect.value : 'standard';
+
+      // Storage is only counted when the user opts in AND the service allows it.
+      const storageOn = cfg.showStorage && storageToggle && storageToggle.checked;
+      const days      = storageOn ? (parseInt(daysSlider.value, 10) || 0) : 0;
 
       let total = 0;
 
-      if (service === 'fba') {
-        const cartons = Math.max(1, Math.ceil(units / (size === 'small' ? 200 : size === 'standard' ? 100 : 40)));
-        const pallets = Math.max(1, Math.ceil(cartons / 20));
-        total += units * RATES.fnsku;
-        total += cartons * RATES.receiving;
-        total += pallets * RATES.storage * days;
-        total += units * RATES.outbound / (size === 'small' ? 10 : size === 'standard' ? 5 : 2);
-
-        addons.forEach(box => {
-          if (box.checked) {
-            const v = box.value;
-            if (v === 'polybag') total += units * RATES.polybag;
-            if (v === 'bubble')  total += units * RATES.bubble;
-            if (v === 'kitting') total += units * RATES.kitting;
-            if (v === 'sticker') total += units * RATES.sticker;
-          }
-        });
-      } else if (service === 'dropshipment') {
-        // Drop-shipment: flat $6/package
-        total += units * RATES.dropshipment;
-      } else if (service === 'fulfillment') {
-        const cartons = Math.max(1, Math.ceil(units / (size === 'small' ? 200 : size === 'standard' ? 100 : 40)));
-        const pallets = Math.max(1, Math.ceil(cartons / 20));
-        // Pick & Pack weight tier from selected unit size: small→Small,
-        // standard→Standard, large→Oversized. RATES.fulfillment is { small, standard, oversized }.
+      if (service === 'fulfillment') {
+        // Pick & Pack by weight tier: small→$3, standard→$4, large(oversized)→$5.
         const ppTierKey = size === 'small' ? 'small' : size === 'standard' ? 'standard' : 'oversized';
         const ppRate = (RATES.fulfillment && typeof RATES.fulfillment === 'object')
           ? RATES.fulfillment[ppTierKey]
-          : RATES.fulfillment;  // graceful fallback if a flat number ever slips through
+          : RATES.fulfillment;  // fallback if a flat number ever slips through
         total += units * ppRate;
-        total += cartons * RATES.receiving;
-        total += pallets * RATES.storage * days;
 
         addons.forEach(box => {
-          if (box.checked) {
-            const v = box.value;
-            if (v === 'polybag') total += units * RATES.polybag;
-            if (v === 'bubble')  total += units * RATES.bubble;
-          }
+          if (!box.checked) return;
+          const v = box.value;
+          if (v === 'polybag') total += units * RATES.polybag;
+          if (v === 'bubble')  total += units * RATES.bubble;
+          if (v === 'kitting') total += units * RATES.kitting;
+          if (v === 'sticker') total += units * RATES.sticker;
         });
+
+      } else if (service === 'fba') {
+        // FBA prep: FNSKU labeling + inbound receiving. No storage in the base.
+        const cartons = Math.max(1, Math.ceil(units / 100));
+        total += units * RATES.fnsku;
+        total += cartons * RATES.receiving;
+
+        addons.forEach(box => {
+          if (!box.checked) return;
+          const v = box.value;
+          if (v === 'polybag') total += units * RATES.polybag;
+          if (v === 'bubble')  total += units * RATES.bubble;
+          if (v === 'kitting') total += units * RATES.kitting;
+          if (v === 'sticker') total += units * RATES.sticker;
+        });
+
+      } else if (service === 'dropshipment') {
+        // Flat $6/package (MercadoLibre). No size, no addons.
+        total += units * RATES.dropshipment;
+      }
+
+      // Optional storage estimate (any service that allows it, when toggled on).
+      if (storageOn && days > 0) {
+        const cartons = Math.max(1, Math.ceil(units / (size === 'small' ? 200 : size === 'standard' ? 100 : 40)));
+        const pallets = Math.max(1, Math.ceil(cartons / 20));
+        total += pallets * RATES.storage * days;
       }
 
       totalEl.textContent = '$' + total.toFixed(2);
@@ -363,35 +410,45 @@
       const cfg = SERVICE_CONFIGS[service];
       if (!cfg) return;
 
-      // Update note
       if (serviceNote) serviceNote.textContent = cfg.noteText;
+      if (unitsLabel)  unitsLabel.textContent  = cfg.unitLabel;
+      unitsValUnit.current = cfg.unitWord;
+      if (unitsValue) unitsValue.textContent = unitsSlider.value + cfg.unitWord;
+      if (resultNote) resultNote.textContent = cfg.resultNote || DEFAULT_NOTE;
 
-      // Update label
-      if (unitsLabel) unitsLabel.textContent = cfg.unitLabel;
+      if (sizeField)    sizeField.style.display    = cfg.showSize    ? '' : 'none';
+      if (addonsField)  addonsField.style.display  = cfg.showAddons  ? '' : 'none';
+      if (storageField) storageField.style.display = cfg.showStorage ? '' : 'none';
 
-      // Show/hide size selector
-      const sizeFieldWrap = sizeSelect ? sizeSelect.closest('.calc-field') : null;
-      if (sizeFieldWrap) sizeFieldWrap.style.display = cfg.showSize ? '' : 'none';
-
-      // Show/hide addons
-      const addonsWrap = calcForm.querySelector('.calc-addons');
-      if (addonsWrap) addonsWrap.style.display = cfg.showAddons ? '' : 'none';
+      // When a service hides storage, force the toggle off + collapse the row.
+      if (!cfg.showStorage && storageToggle) {
+        storageToggle.checked = false;
+        if (storageRow) storageRow.style.display = 'none';
+      }
 
       compute();
     }
 
-    function wire(el, valueEl, unit) {
+    function wire(el, valueEl, unitFn) {
       el.addEventListener('input', () => {
-        if (valueEl) valueEl.textContent = el.value + (unit || '');
+        if (valueEl) valueEl.textContent = el.value + (typeof unitFn === 'function' ? unitFn() : unitFn || '');
         compute();
       });
     }
 
-    wire(unitsSlider, unitsValue, ' units');
+    wire(unitsSlider, unitsValue, () => unitsValUnit.current);
     wire(daysSlider, daysValue, ' days');
     if (sizeSelect) sizeSelect.addEventListener('change', compute);
     addons.forEach(box => box.addEventListener('change', compute));
     if (serviceSelect) serviceSelect.addEventListener('change', updateServiceUI);
+
+    // Storage toggle: reveal/collapse the days row and recompute.
+    if (storageToggle) {
+      storageToggle.addEventListener('change', () => {
+        if (storageRow) storageRow.style.display = storageToggle.checked ? '' : 'none';
+        compute();
+      });
+    }
 
     // ─── INIT ─ async (load rates first, then compute) ───────────────────
     // Show fallback values immediately so calculator is never empty.
