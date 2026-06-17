@@ -178,7 +178,10 @@
           <tr><td>Amazon Shipment Plan Creation</td><td>Per shipment plan</td><td class="price-cell"><strong>$8.00</strong>/plan</td></tr>
 
           <tr class="tier-header"><td colspan="3">🛒 Fulfillment · Shopify / DTC orders</td></tr>
-          <tr><td>Order Processing</td><td>Pick, pack, label, ship</td><td class="price-cell"><strong>$3.00</strong>/order</td></tr>
+          <tr><td>Pick &amp; Pack — Small</td><td>Order ≤ 1.5 lb · pick, pack, label, ship</td><td class="price-cell"><strong>$3.00</strong>/order</td></tr>
+          <tr><td>Pick &amp; Pack — Standard</td><td>Order 1.5–3 lb · pick, pack, label, ship</td><td class="price-cell"><strong>$4.00</strong>/order</td></tr>
+          <tr><td>Pick &amp; Pack — Oversized</td><td>Order &gt; 3 lb · pick, pack, label, ship</td><td class="price-cell"><strong>$5.00</strong>/order</td></tr>
+          <tr><td>Additional Item per Order</td><td>Each item beyond the first</td><td class="price-cell"><strong>$0.50</strong>/item</td></tr>
           <tr><td>Inbound Receiving</td><td>Per carton with inspection</td><td class="price-cell"><strong>$2.50</strong>/carton</td></tr>
 
           <tr class="tier-header"><td colspan="3">🌎 LATAM · Cross-Docking &amp; Drop-Shipment</td></tr>
@@ -219,44 +222,53 @@
       <div class="calc-field" style="margin-bottom: 20px;">
         <label for="calcService"><strong>🎯 Select service</strong></label>
         <select id="calcService" class="calc-service-select">
-          <option value="fba" selected>📦 Amazon FBA Prep</option>
+          <option value="fulfillment" selected>🛒 Shopify / DTC Fulfillment</option>
+          <option value="fba">📦 Amazon FBA Prep</option>
           <option value="dropshipment">🌎 Drop-Shipment (LATAM)</option>
-          <option value="fulfillment">🛒 Shopify / DTC Fulfillment</option>
         </select>
-        <div class="calc-service-note" id="calcServiceNote">FBA Prep: FNSKU labeling + inbound receiving + storage + shipment prep. All rates flat per current rate card.</div>
+        <div class="calc-service-note" id="calcServiceNote">Pick &amp; Pack priced by order weight: $3 (≤1.5 lb) · $4 (1.5–3 lb) · $5 (&gt;3 lb).</div>
       </div>
 
       <div class="calc-grid">
         <div class="calc-field">
-          <label for="calcUnits"><span id="calcUnitsLabel">Units per month</span></label>
+          <label for="calcUnits"><span id="calcUnitsLabel">Orders per month</span></label>
           <input type="range" id="calcUnits" min="1" max="10000" step="1" value="500">
-          <div class="calc-value" id="calcUnitsValue">500 units</div>
+          <div class="calc-value" id="calcUnitsValue">500 orders</div>
         </div>
-        <div class="calc-field">
-          <label for="calcSize">Typical unit size</label>
+        <div class="calc-field" id="calcSizeField">
+          <label for="calcSize">Order weight</label>
           <select id="calcSize">
-            <option value="small">Small (phone case, book)</option>
-            <option value="standard" selected>Standard (apparel, cosmetics)</option>
-            <option value="large">Large (shoes, kitchenware)</option>
+            <option value="small">Small — ≤1.5 lb ($3.00)</option>
+            <option value="standard" selected>Standard — 1.5–3 lb ($4.00)</option>
+            <option value="large">Oversized — &gt;3 lb ($5.00)</option>
           </select>
         </div>
-        <div class="calc-field">
-          <label for="calcDays">Average storage days</label>
+      </div>
+
+      <!-- Storage: opt-in toggle, OFF by default -->
+      <div class="calc-field" id="calcStorageField" style="margin-top:16px;">
+        <label class="calc-checkbox"><input type="checkbox" id="calcStorageToggle"> Add storage estimate</label>
+        <div id="calcStorageRow" style="display:none; margin-top:10px;">
+          <label for="calcDays">Storage days</label>
           <input type="range" id="calcDays" min="0" max="60" step="1" value="0">
-          <div class="calc-value" id="calcDaysValue">7 days</div>
-        </div>
-        <div class="calc-field calc-addons">
-          <label>Add-on services</label>
-          <label class="calc-checkbox"><input type="checkbox" value="polybag"> Poly-Bag</label>
-          <label class="calc-checkbox"><input type="checkbox" value="bubble"> Bubble Wrap</label>
-          <label class="calc-checkbox"><input type="checkbox" value="kitting"> Kitting</label>
-          <label class="calc-checkbox"><input type="checkbox" value="sticker"> Sticker Removal</label>
+          <div class="calc-value" id="calcDaysValue">0 days</div>
+          <div class="calc-fine">Storage billed at $45/pallet/month ($1.50/pallet/day).</div>
         </div>
       </div>
+
+      <!-- Add-ons -->
+      <div class="calc-field calc-addons" id="calcAddonsField" style="margin-top:16px;">
+        <label>Add-on services</label>
+        <label class="calc-checkbox"><input type="checkbox" value="polybag"> Poly-Bag ($0.50/unit)</label>
+        <label class="calc-checkbox"><input type="checkbox" value="bubble"> Bubble Wrap ($0.80/unit)</label>
+        <label class="calc-checkbox"><input type="checkbox" value="kitting"> Kitting ($0.75/unit)</label>
+        <label class="calc-checkbox"><input type="checkbox" value="sticker"> Sticker Removal ($0.25/unit)</label>
+      </div>
+
       <div class="calc-result">
         <div class="calc-result-label">Estimated monthly total</div>
         <div class="calc-total" id="calcTotal">$0.00</div>
-        <div class="calc-fine">excludes carrier shipping costs &amp; optional specialty services</div>
+        <div class="calc-fine" id="calcResultNote">excludes carrier shipping costs &amp; optional specialty services</div>
       </div>
       <a href="/contact" class="btn btn-primary btn-lg" style="margin: 0 auto; display: inline-flex;">Get an exact quote <svg><use href="#chev-white"/></svg></a>
     </form>
