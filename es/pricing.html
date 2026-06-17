@@ -176,7 +176,10 @@
           <tr><td>Creación de Plan de Envío Amazon</td><td>Por plan de envío</td><td class="price-cell"><strong>$8.00</strong>/plan</td></tr>
 
           <tr class="tier-header"><td colspan="3">🛒 Fulfillment · Órdenes Shopify / DTC</td></tr>
-          <tr><td>Procesamiento de Órdenes</td><td>Pick, pack, etiqueta, envío</td><td class="price-cell"><strong>$3.00</strong>/orden</td></tr>
+          <tr><td>Pick &amp; Pack — Pequeño</td><td>Orden ≤ 1.5 lb · pick, pack, etiqueta, envío</td><td class="price-cell"><strong>$3.00</strong>/orden</td></tr>
+          <tr><td>Pick &amp; Pack — Estándar</td><td>Orden 1.5–3 lb · pick, pack, etiqueta, envío</td><td class="price-cell"><strong>$4.00</strong>/orden</td></tr>
+          <tr><td>Pick &amp; Pack — Sobredimensionado</td><td>Orden &gt; 3 lb · pick, pack, etiqueta, envío</td><td class="price-cell"><strong>$5.00</strong>/orden</td></tr>
+          <tr><td>Artículo Adicional por Orden</td><td>Cada artículo después del primero</td><td class="price-cell"><strong>$0.50</strong>/artículo</td></tr>
           <tr><td>Recepción Entrante</td><td>Por caja con inspección</td><td class="price-cell"><strong>$2.50</strong>/caja</td></tr>
 
           <tr class="tier-header"><td colspan="3">🌎 LATAM · Cross-Docking y Drop-Shipment</td></tr>
@@ -216,44 +219,53 @@
       <div class="calc-field" style="margin-bottom: 20px;">
         <label for="calcService"><strong>🎯 Selecciona servicio</strong></label>
         <select id="calcService" class="calc-service-select">
-          <option value="fba" selected>📦 Preparación Amazon FBA</option>
+          <option value="fulfillment" selected>🛒 Fulfillment Shopify / DTC</option>
+          <option value="fba">📦 Preparación Amazon FBA</option>
           <option value="dropshipment">🌎 Drop-Shipment (LATAM)</option>
-          <option value="fulfillment">🛒 Fulfillment Shopify / DTC</option>
         </select>
-        <div class="calc-service-note" id="calcServiceNote">Preparación FBA: etiquetado FNSKU + recepción + almacenamiento + preparación de envío. Tarifas planas según el tarifario actual.</div>
+        <div class="calc-service-note" id="calcServiceNote">Pick &amp; Pack según peso de la orden: $3 (≤1.5 lb) · $4 (1.5–3 lb) · $5 (&gt;3 lb).</div>
       </div>
 
       <div class="calc-grid">
         <div class="calc-field">
-          <label for="calcUnits"><span id="calcUnitsLabel">Unidades por mes</span></label>
+          <label for="calcUnits"><span id="calcUnitsLabel">Órdenes por mes</span></label>
           <input type="range" id="calcUnits" min="1" max="10000" step="1" value="500">
-          <div class="calc-value" id="calcUnitsValue">500 units</div>
+          <div class="calc-value" id="calcUnitsValue">500 órdenes</div>
         </div>
-        <div class="calc-field">
-          <label for="calcSize">Tamaño típico</label>
+        <div class="calc-field" id="calcSizeField">
+          <label for="calcSize">Peso de la orden</label>
           <select id="calcSize">
-            <option value="small">Pequeño (funda, libro)</option>
-            <option value="standard" selected>Estándar (ropa, cosméticos)</option>
-            <option value="large">Grande (zapatos, cocina)</option>
+            <option value="small">Pequeño — ≤1.5 lb ($3.00)</option>
+            <option value="standard" selected>Estándar — 1.5–3 lb ($4.00)</option>
+            <option value="large">Sobredimensionado — &gt;3 lb ($5.00)</option>
           </select>
         </div>
-        <div class="calc-field">
-          <label for="calcDays">Días promedio de almacenamiento</label>
+      </div>
+
+      <!-- Almacenamiento: opcional, desactivado por defecto -->
+      <div class="calc-field" id="calcStorageField" style="margin-top:16px;">
+        <label class="calc-checkbox"><input type="checkbox" id="calcStorageToggle"> Agregar estimado de almacenamiento</label>
+        <div id="calcStorageRow" style="display:none; margin-top:10px;">
+          <label for="calcDays">Días de almacenamiento</label>
           <input type="range" id="calcDays" min="0" max="60" step="1" value="0">
-          <div class="calc-value" id="calcDaysValue">7 days</div>
-        </div>
-        <div class="calc-field calc-addons">
-          <label>Servicios adicionales</label>
-          <label class="calc-checkbox"><input type="checkbox" value="polybag"> Poly-Bag</label>
-          <label class="calc-checkbox"><input type="checkbox" value="bubble"> Burbuja</label>
-          <label class="calc-checkbox"><input type="checkbox" value="kitting"> Kitting</label>
-          <label class="calc-checkbox"><input type="checkbox" value="sticker"> Remoción Sticker</label>
+          <div class="calc-value" id="calcDaysValue">0 días</div>
+          <div class="calc-fine">Almacenamiento a $45/pallet/mes ($1.50/pallet/día).</div>
         </div>
       </div>
+
+      <!-- Servicios adicionales -->
+      <div class="calc-field calc-addons" id="calcAddonsField" style="margin-top:16px;">
+        <label>Servicios adicionales</label>
+        <label class="calc-checkbox"><input type="checkbox" value="polybag"> Poly-Bag ($0.50/unidad)</label>
+        <label class="calc-checkbox"><input type="checkbox" value="bubble"> Burbuja ($0.80/unidad)</label>
+        <label class="calc-checkbox"><input type="checkbox" value="kitting"> Kitting ($0.75/unidad)</label>
+        <label class="calc-checkbox"><input type="checkbox" value="sticker"> Remoción Sticker ($0.25/unidad)</label>
+      </div>
+
       <div class="calc-result">
         <div class="calc-result-label">Total mensual estimado</div>
         <div class="calc-total" id="calcTotal">$0.00</div>
-        <div class="calc-fine">excluye costos de envío y servicios especializados opcionales</div>
+        <div class="calc-fine" id="calcResultNote">excluye costos de envío y servicios especializados opcionales</div>
       </div>
       <a href="/es/contact" class="btn btn-primary btn-lg" style="margin: 0 auto; display: inline-flex;">Obtén cotización exacta <svg><use href="#chev-white"/></svg></a>
     </form>
