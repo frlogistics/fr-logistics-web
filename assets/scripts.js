@@ -169,7 +169,8 @@
       bubble:       0.80,   // PRP_BUBBLE (was $0.15 in v1, now $0.80)
       sticker:      0.25,   // PRP_ROL (was $0.20)
       dropshipment: 6.00,   // FUL_OUT_DROP
-      fulfillment:  3.00,   // FUL_PP1 (D4 — flat, no more tiers)
+      // FUL_PP1 weight tiers (small≤1.5lb $3, standard 1.5-3lb $4, oversized >3lb $5)
+      fulfillment:  { small: 3.00, standard: 4.00, oversized: 5.00 },
     };
 
     // ─── CANONICAL CODE → CALCULATOR KEY MAPPING ─────────────────────────
@@ -219,6 +220,20 @@
         const calcKey = API_KEY_TO_CALC_KEY[code];
         const entry   = apiRates[code];
         if (!entry || entry.rate == null) continue;
+
+        // FUL_PP1 carries weight tiers — read the tiers block, not the flat rate.
+        if (code === 'FUL_PP1') {
+          const t = entry.tiers;
+          if (t && t.small != null && t.standard != null && t.oversized != null) {
+            out.fulfillment = {
+              small:     parseFloat(t.small),
+              standard:  parseFloat(t.standard),
+              oversized: parseFloat(t.oversized),
+            };
+          }
+          // If tiers missing (old API), keep FALLBACK_RATES.fulfillment object.
+          continue;
+        }
 
         const v = parseFloat(entry.rate);
         if (calcKey === 'storage_monthly') {
@@ -281,7 +296,7 @@
         showAddons: false,
       },
       fulfillment: {
-        noteText: 'Shopify/DTC Fulfillment: $3.00 per order shipped (pick, pack, label) + storage + receiving. Good for DTC brands.',
+        noteText: 'Shopify/DTC Fulfillment: pick, pack & label by order weight — $3.00 (≤1.5 lb) / $4.00 (1.5–3 lb) / $5.00 (>3 lb), set by unit size. Storage & receiving optional. Good for DTC brands.',
         unitLabel: 'Orders per month',
         showSize: true,
         showAddons: true,
@@ -320,7 +335,13 @@
       } else if (service === 'fulfillment') {
         const cartons = Math.max(1, Math.ceil(units / (size === 'small' ? 200 : size === 'standard' ? 100 : 40)));
         const pallets = Math.max(1, Math.ceil(cartons / 20));
-        total += units * RATES.fulfillment;
+        // Pick & Pack weight tier from selected unit size: small→Small,
+        // standard→Standard, large→Oversized. RATES.fulfillment is { small, standard, oversized }.
+        const ppTierKey = size === 'small' ? 'small' : size === 'standard' ? 'standard' : 'oversized';
+        const ppRate = (RATES.fulfillment && typeof RATES.fulfillment === 'object')
+          ? RATES.fulfillment[ppTierKey]
+          : RATES.fulfillment;  // graceful fallback if a flat number ever slips through
+        total += units * ppRate;
         total += cartons * RATES.receiving;
         total += pallets * RATES.storage * days;
 
