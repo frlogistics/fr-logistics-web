@@ -442,6 +442,32 @@
           </tbody>
         </table>
       </div>
+
+      <!-- ---- Returns sub-section (inbound return labels) ---- -->
+      <div style="margin-top: 36px;">
+        <h2 class="page-title" style="font-size: 20px;">Returns</h2>
+        <p class="page-sub" id="ret-sub">Inbound return labels created for end customers. Last 30 days.</p>
+
+        <div id="ret-msg"></div>
+
+        <div class="panel" style="padding: 0;">
+          <table>
+            <thead>
+              <tr id="ret-thead-row">
+                <th>Date</th>
+                <th>From (End Customer)</th>
+                <th>Origin</th>
+                <th>Carrier</th>
+                <th>Tracking #</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ret-tbody">
+              <tr><td colspan="6" class="empty-state">Loading returns…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </section>
   </main>
 </div>
@@ -529,6 +555,8 @@
   let inventoryLoaded = false;
   let trackingCache = null;
   let trackingLoaded = false;
+  let returnsCache = null;
+  let returnsLoaded = false;
 
   // ---------- Helper: reset ALL per-session state so cross-user leakage
   // is impossible. Called on logout AND at the start of every login so that
@@ -542,6 +570,8 @@
     inventoryLoaded = false;
     trackingCache = null;
     trackingLoaded = false;
+    returnsCache = null;
+    returnsLoaded = false;
 
     // Wipe UI for the data-bearing tabs so a flash of stale content can't
     // appear between the new user clicking a tab and the fetch returning.
@@ -562,6 +592,11 @@
     });
     const trkSync = document.getElementById('trk-last-sync');
     if (trkSync) trkSync.textContent = '—';
+
+    const retTbody = document.getElementById('ret-tbody');
+    if (retTbody) retTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading returns…</td></tr>';
+    const retMsgEl = document.getElementById('ret-msg');
+    if (retMsgEl) retMsgEl.innerHTML = '';
 
     const ordersTbody = document.getElementById('orders-tbody');
     if (ordersTbody) ordersTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading orders…</td></tr>';
@@ -655,6 +690,7 @@
       // so the next user always triggers a fresh fetch.
       if (target === 'inventory' && !inventoryLoaded) loadInventory();
       if (target === 'tracking' && !trackingLoaded) loadTracking();
+      if (target === 'tracking' && !returnsLoaded) loadReturns();
     });
   });
 
@@ -1556,6 +1592,101 @@
   trkSearch.addEventListener('input', renderTracking);
   trkCarrierFilter.addEventListener('change', renderTracking);
   document.getElementById('trk-refresh-btn').addEventListener('click', loadTracking);
+
+  // ---------- Returns (inbound return labels) ----------
+  // Two server-side modes in portal-returns.js, decided by the logged-in
+  // email: a normal client sees only their own returns WITHOUT cost; the
+  // internal operator (warehouse@fr-logistics.net) sees ALL clients' returns
+  // WITH cost + a total. The cost column only renders when the API reports
+  // isAdmin=true — a client never receives carrier_cost in the payload.
+  const retTbody = document.getElementById('ret-tbody');
+  const retMsg = document.getElementById('ret-msg');
+  const retTheadRow = document.getElementById('ret-thead-row');
+
+  function retStatusBadgeClass(status) {
+    const s = (status || '').toLowerCase();
+    if (s.indexOf('transit') !== -1) return 'processing';
+    if (s.indexOf('delivered') !== -1) return 'exported';
+    if (s.indexOf('void') !== -1) return 'out';
+    return 'pending';
+  }
+
+  function retTrackingCell(carrier, tracking) {
+    if (!tracking) return '—';
+    const c = (carrier || '').toUpperCase();
+    let url = '';
+    if (c.indexOf('UPS') !== -1) {
+      url = 'https://www.ups.com/track?tracknum=' + encodeURIComponent(tracking);
+    } else if (c.indexOf('USPS') !== -1 || c.indexOf('STAMPS') !== -1) {
+      url = 'https://tools.usps.com/go/TrackConfirmAction?tLabels=' + encodeURIComponent(tracking);
+    }
+    if (!url) return esc(tracking);
+    return '<a href="' + esc(url) + '" target="_blank" rel="noopener" ' +
+      'style="color: var(--fr-green); text-decoration: underline;">' + esc(tracking) + '</a>';
+  }
+
+  function retMoney(n) { return '$' + (Number(n) || 0).toFixed(2); }
+
+  async function loadReturns() {
+    retTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading returns…</td></tr>';
+    if (retMsg) retMsg.innerHTML = '';
+    const fetchForUser = portalUser;
+    try {
+      const res = await fetch(`${API_BASE}/portal-returns?portal_user=${encodeURIComponent(fetchForUser)}`);
+      const json = await res.json();
+      if (portalUser !== fetchForUser) return;
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load returns');
+
+      returnsCache = json;
+      returnsLoaded = true;
+
+      const isAdmin = !!json.isAdmin;
+
+      if (retTheadRow) {
+        retTheadRow.innerHTML =
+          '<th>Date</th>' +
+          (isAdmin ? '<th>Client</th>' : '') +
+          '<th>From (End Customer)</th>' +
+          '<th>Origin</th>' +
+          '<th>Carrier</th>' +
+          '<th>Tracking #</th>' +
+          '<th>Status</th>' +
+          (isAdmin ? '<th style="text-align:right;">Cost</th>' : '');
+      }
+
+      const colspan = isAdmin ? 8 : 6;
+      const rows = json.returns || [];
+
+      if (rows.length === 0) {
+        retTbody.innerHTML = '<tr><td colspan="' + colspan + '" class="empty-state">No returns in the last 30 days.</td></tr>';
+        return;
+      }
+
+      retTbody.innerHTML = '';
+      rows.forEach((r) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + esc(r.date) + '</td>' +
+          (isAdmin ? '<td><strong>' + esc(r.client) + '</strong></td>' : '') +
+          '<td>' + esc(r.recipient) + '</td>' +
+          '<td>' + esc(r.origin) + '</td>' +
+          '<td>' + esc((r.carrier || '—')) + '</td>' +
+          '<td>' + retTrackingCell(r.carrier, r.tracking) + '</td>' +
+          '<td><span class="status-badge ' + retStatusBadgeClass(r.status) + '">' + esc(r.status) + '</span></td>' +
+          (isAdmin ? '<td style="text-align:right;">' + retMoney(r.cost) + '</td>' : '');
+        retTbody.appendChild(tr);
+      });
+
+      if (isAdmin && retMsg) {
+        retMsg.innerHTML = '<div class="success-box">Internal view — ' + rows.length +
+          ' return' + (rows.length === 1 ? '' : 's') + ', total cost <strong>' +
+          retMoney(json.total_cost) + '</strong></div>';
+      }
+    } catch (err) {
+      if (portalUser !== fetchForUser) return;
+      retTbody.innerHTML = '<tr><td colspan="8" class="empty-state">' + esc(err.message) + '</td></tr>';
+    }
+  }
 
 })();
 </script>
