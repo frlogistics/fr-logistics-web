@@ -1355,6 +1355,14 @@
     if (statusFilter !== 'all') {
       rows = rows.filter((s) => s.status === statusFilter);
     }
+    // Hide zero-on-hand SKUs from the client's table to keep it clean — but
+    // only when they aren't explicitly asking to see out-of-stock items. If
+    // the filter is "out", show every out-of-stock SKU including the 0/0/0
+    // ones so the count the client sees matches the "Out of Stock" KPI.
+    // KPIs are computed server-side over the full set, so they are unaffected.
+    if (statusFilter !== 'out') {
+      rows = rows.filter((s) => (s.onHand || 0) > 0);
+    }
     if (search) {
       rows = rows.filter((s) =>
         (s.sku || '').toLowerCase().includes(search) ||
