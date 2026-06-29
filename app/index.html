@@ -548,12 +548,26 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
   // ---------- State ----------
+  let portalUser = null;
+  let clientName = null;
+  // Per-client config loaded at login from /portal-client-config. Lets the
+  // Bulk Upload template pre-fill the fields agreed at onboarding
+  // (Shipping Service, Custom Field 1, Order Source, Notes to the Buyer for
+  // MXS, etc.). Shape: { client: {id,name,company}, csv_defaults: {...} }.
+  let clientConfig = null;
+  let ordersCache = [];
+  let inventoryCache = null;
+  let inventoryLoaded = false;
+  let trackingCache = null;
+  let trackingLoaded = false;
+  let returnsCache = null;
+  let returnsLoaded = false;
 
   // ---------- Helper: reset ALL per-session state so cross-user leakage
   // is impossible. Called on logout AND at the start of every login so that
   // even if the previous session crashed without a clean signOut, the new
   // user never inherits stale data from the previous one.
- function resetSessionState() {
+  function resetSessionState() {
     portalUser = null;
     clientName = null;
     clientConfig = null;
@@ -659,7 +673,7 @@
 
   console.log('[FR Portal] listeners registered');
 
- async function startApp() {
+  async function startApp() {
     loginView.classList.add('hidden');
     appView.classList.remove('hidden');
     // Load per-client config FIRST so the Bulk Upload template button has
@@ -1030,7 +1044,7 @@
     return errors;
   }
 
-// Template download
+  // Template download
   //
   // Two modes depending on whether csv_defaults is configured for this client:
   //
