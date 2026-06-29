@@ -548,23 +548,15 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
   // ---------- State ----------
-  let portalUser = null;
-  let clientName = null;
-  let ordersCache = [];
-  let inventoryCache = null;
-  let inventoryLoaded = false;
-  let trackingCache = null;
-  let trackingLoaded = false;
-  let returnsCache = null;
-  let returnsLoaded = false;
 
   // ---------- Helper: reset ALL per-session state so cross-user leakage
   // is impossible. Called on logout AND at the start of every login so that
   // even if the previous session crashed without a clean signOut, the new
   // user never inherits stale data from the previous one.
-  function resetSessionState() {
+ function resetSessionState() {
     portalUser = null;
     clientName = null;
+    clientConfig = null;
     ordersCache = [];
     inventoryCache = null;
     inventoryLoaded = false;
@@ -667,11 +659,36 @@
 
   console.log('[FR Portal] listeners registered');
 
-  async function startApp() {
+ async function startApp() {
     loginView.classList.add('hidden');
     appView.classList.remove('hidden');
+    // Load per-client config FIRST so the Bulk Upload template button has
+    // csv_defaults available even if the user clicks it before the
+    // dashboard finishes loading. Failing to load config is non-fatal —
+    // the template falls back to a single blank example row.
+    await loadClientConfig();
     await loadDashboard();
     await loadOrders();
+  }
+
+  // ---------- Client Config ----------
+  // Fetches the per-client config (csv_defaults, etc.) ONCE per session.
+  // The Bulk Upload template uses csv_defaults to pre-fill the agreed
+  // ShipStation fields on every row so the client doesn't have to retype
+  // them and can't accidentally clear them.
+  async function loadClientConfig() {
+    try {
+      const res = await fetch(`${API_BASE}/portal-client-config?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load client config');
+      clientConfig = json;
+    } catch (err) {
+      // Non-fatal: log but don't surface to user. The template button will
+      // just emit a blank example row, which is what it did before this
+      // feature existed.
+      console.warn('[FR Portal] client config unavailable:', err.message);
+      clientConfig = null;
+    }
   }
 
   // ---------- Tabs ----------
@@ -1013,40 +1030,79 @@
     return errors;
   }
 
-  // Template download
+// Template download
+  //
+  // Two modes depending on whether csv_defaults is configured for this client:
+  //
+  //   (a) Client HAS csv_defaults (e.g. MXS Overseas Ltd):
+  //       Generate 20 pre-filled BLANK rows where every row already has the
+  //       agreed fixed values (Shipping Service, Custom Field 1, Order
+  //       Source, Notes to the Buyer). The client only needs to fill in
+  //       the variable columns (Order #, address, SKU, qty, etc.). The
+  //       fixed values can't be accidentally cleared because every row
+  //       already has them — and even if the client does clear them, the
+  //       backend (portal-orders-bulk-create.js) re-applies the defaults
+  //       on insert.
+  //
+  //   (b) Client has NO csv_defaults (legacy clients or new ones not yet
+  //       onboarded with explicit defaults): keep the original behaviour —
+  //       one example row with sample data — so nothing regresses.
+  //
+  // Filename includes the company name so the client can tell theirs
+  // apart if they download templates from multiple portals.
   document.getElementById('download-template-btn').addEventListener('click', () => {
-    // Example row using ShipStation column names. Only the required columns
-    // and a few useful optionals are filled; the rest stay blank so the user
-    // sees the column layout but isn't pressured to fill all 47 fields.
-    const sample = {
-      'Order #': 'EXAMPLE-001',
-      'Order Date': '5/21/2026',
-      'Order Total': '9.99',
-      'Shipping Service': 'USPS Priority',
-      'Notes to the Buyer': 'Thanks for your order!',
-      'Buyer Full Name': 'Jane Smith',
-      'Buyer Email': 'jane@example.com',
-      'Recipient Full Name': 'Jane Smith',
-      'Recipient Phone': '305-555-0100',
-      'Address Line 1': '123 Main St',
-      'Address Line 2': 'Apt 2',
-      'City': 'Miami',
-      'State': 'FL',
-      'Postal Code': '33131',
-      'Country Code': 'US',
-      'Item SKU': 'SKU-EXAMPLE-001',
-      'Item Name / Title': 'Example product',
-      'Item Quantity': '1',
-      'Item Unit Price': '9.99',
-    };
-    const lines = [
-      TEMPLATE_HEADERS.join(','),
-      TEMPLATE_HEADERS.map((h) => csvCell(sample[h] || '')).join(','),
-    ];
+    const defaults = (clientConfig && clientConfig.csv_defaults) || {};
+    const hasDefaults = Object.keys(defaults).length > 0;
+
+    let lines;
+    let filename = 'fr-logistics-orders-template.csv';
+
+    if (hasDefaults) {
+      // (a) Pre-filled mode — 20 rows with the agreed fixed values.
+      const PREFILLED_ROWS = 20;
+      const rows = [TEMPLATE_HEADERS.join(',')];
+      for (let i = 0; i < PREFILLED_ROWS; i++) {
+        rows.push(TEMPLATE_HEADERS.map((h) => csvCell(defaults[h] || '')).join(','));
+      }
+      lines = rows;
+      const company = (clientConfig.client && clientConfig.client.company) || '';
+      if (company) {
+        const slug = company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        filename = `fr-logistics-orders-template-${slug}.csv`;
+      }
+    } else {
+      // (b) Legacy mode — single example row using ShipStation column names.
+      const sample = {
+        'Order #': 'EXAMPLE-001',
+        'Order Date': '5/21/2026',
+        'Order Total': '9.99',
+        'Shipping Service': 'USPS Priority',
+        'Notes to the Buyer': 'Thanks for your order!',
+        'Buyer Full Name': 'Jane Smith',
+        'Buyer Email': 'jane@example.com',
+        'Recipient Full Name': 'Jane Smith',
+        'Recipient Phone': '305-555-0100',
+        'Address Line 1': '123 Main St',
+        'Address Line 2': 'Apt 2',
+        'City': 'Miami',
+        'State': 'FL',
+        'Postal Code': '33131',
+        'Country Code': 'US',
+        'Item SKU': 'SKU-EXAMPLE-001',
+        'Item Name / Title': 'Example product',
+        'Item Quantity': '1',
+        'Item Unit Price': '9.99',
+      };
+      lines = [
+        TEMPLATE_HEADERS.join(','),
+        TEMPLATE_HEADERS.map((h) => csvCell(sample[h] || '')).join(','),
+      ];
+    }
+
     const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'fr-logistics-orders-template.csv';
+    a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   });
