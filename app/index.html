@@ -246,6 +246,18 @@
     <button class="logout-btn" id="logout-btn">Sign Out</button>
   </header>
 
+  <!-- Internal-only bar. Rendered ONLY when the logged-in email is the
+       admin one; a normal client never sees it and the server ignores
+       as_client from anyone else anyway. -->
+  <div id="viewas-bar" class="hidden" style="background:#0B2545;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;">Internal view</span>
+    <label for="viewas-select" style="font-size:13px;margin:0;">Viewing as:</label>
+    <select id="viewas-select" style="margin:0;width:auto;min-width:240px;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:#fff;color:#1f2937;font-size:13px;">
+      <option value="">— All clients (Inbound only) —</option>
+    </select>
+    <span id="viewas-note" style="font-size:12px;opacity:.8;margin-left:auto;">Read-only. Order creation stays disabled in this mode.</span>
+  </div>
+
   <main>
     <div class="tabs">
       <button class="tab active" data-tab="dashboard">Dashboard</button>
@@ -454,7 +466,7 @@
             </tr>
           </thead>
           <tbody id="inb-tbody">
-            <tr><td colspan="6" class="empty-state">Loading inbound packages&hellip;</td></tr>
+            <tr><td colspan="7" class="empty-state">Loading inbound packages&hellip;</td></tr>
           </tbody>
         </table>
       </div>
@@ -615,6 +627,18 @@
   // ---------- State ----------
   let portalUser = null;
   let clientName = null;
+  // Internal "View as client". Empty string = no impersonation. Only ever set
+  // when the logged-in email is PORTAL_ADMIN_EMAIL; the server enforces the
+  // same rule, so this is convenience, not the security boundary.
+  const PORTAL_ADMIN_EMAIL = 'warehouse@fr-logistics.net';
+  let asClient = '';
+  function isPortalAdmin() {
+    return String(portalUser || '').trim().toLowerCase() === PORTAL_ADMIN_EMAIL;
+  }
+  // Appended to every READ request. Never appended to a write.
+  function asClientQS() {
+    return asClient ? '&as_client=' + encodeURIComponent(asClient) : '';
+  }
   // Per-client config loaded at login from /portal-client-config. Lets the
   // Bulk Upload template pre-fill the fields agreed at onboarding
   // (Shipping Service, Custom Field 1, Order Source, Notes to the Buyer for
@@ -637,6 +661,7 @@
   function resetSessionState() {
     portalUser = null;
     clientName = null;
+    asClient = '';
     clientConfig = null;
     ordersCache = [];
     inventoryCache = null;
@@ -660,7 +685,7 @@
     if (invSync) invSync.textContent = '—';
 
     const inbTbody = document.getElementById('inb-tbody');
-    if (inbTbody) inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading inbound packages…</td></tr>';
+    if (inbTbody) inbTbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading inbound packages…</td></tr>';
     ['inb-kpi-total','inb-kpi-removal','inb-kpi-return','inb-kpi-last'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.textContent = '—';
@@ -754,6 +779,7 @@
   async function startApp() {
     loginView.classList.add('hidden');
     appView.classList.remove('hidden');
+    await setupViewAs();
     // Load per-client config FIRST so the Bulk Upload template button has
     // csv_defaults available even if the user clicks it before the
     // dashboard finishes loading. Failing to load config is non-fatal —
@@ -763,6 +789,69 @@
     await loadOrders();
   }
 
+  // ---------- Internal "View as client" ----------
+  // Lets the warehouse account read the portal exactly as a given client sees
+  // it — for support, and to check what a client will see before writing to
+  // them. The list comes from portal-admin-clients, which 403s for anybody who
+  // is not the admin email. Every read request carries as_client; writes never
+  // do, so nothing can be created on a client's behalf from this mode.
+  const viewAsBar = document.getElementById('viewas-bar');
+  const viewAsSelect = document.getElementById('viewas-select');
+  const viewAsNote = document.getElementById('viewas-note');
+
+  async function setupViewAs() {
+    if (!isPortalAdmin()) {
+      viewAsBar.classList.add('hidden');
+      return;
+    }
+    viewAsBar.classList.remove('hidden');
+    // Only populate once per session.
+    if (viewAsSelect.options.length > 1) return;
+    try {
+      const res = await fetch(`${API_BASE}/portal-admin-clients?portal_user=${encodeURIComponent(portalUser)}`);
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load clients');
+      json.clients.forEach((c) => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.has_portal ? c.label : c.label + ' (no portal login)';
+        viewAsSelect.appendChild(opt);
+      });
+    } catch (err) {
+      viewAsNote.textContent = 'Could not load the client list.';
+    }
+  }
+
+  // Switching client wipes every cached tab so no data from the previous
+  // client can survive on screen, then reloads what the user is looking at.
+  async function applyViewAs() {
+    asClient = viewAsSelect.value || '';
+    clientConfig = null;
+    ordersCache = [];
+    inventoryCache = null; inventoryLoaded = false;
+    trackingCache = null; trackingLoaded = false;
+    returnsCache = null; returnsLoaded = false;
+    inboundCache = null; inboundLoaded = false;
+
+    const label = viewAsSelect.options[viewAsSelect.selectedIndex].textContent;
+    viewAsNote.textContent = asClient
+      ? 'Read-only view of ' + label + '. Order creation stays disabled.'
+      : 'Read-only. Order creation stays disabled in this mode.';
+
+    await loadClientConfig();
+    await loadDashboard();
+    await loadOrders();
+
+    // Reload whichever data tab is currently open.
+    const active = document.querySelector('.tab.active');
+    const target = active ? active.dataset.tab : 'dashboard';
+    if (target === 'inventory') loadInventory();
+    if (target === 'inbound') loadInbound();
+    if (target === 'tracking') { loadTracking(); loadReturns(); }
+  }
+
+  viewAsSelect.addEventListener('change', () => { applyViewAs(); });
+
   // ---------- Client Config ----------
   // Fetches the per-client config (csv_defaults, etc.) ONCE per session.
   // The Bulk Upload template uses csv_defaults to pre-fill the agreed
@@ -770,7 +859,7 @@
   // them and can't accidentally clear them.
   async function loadClientConfig() {
     try {
-      const res = await fetch(`${API_BASE}/portal-client-config?portal_user=${encodeURIComponent(portalUser)}`);
+      const res = await fetch(`${API_BASE}/portal-client-config?portal_user=${encodeURIComponent(portalUser)}${asClientQS()}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to load client config');
       clientConfig = json;
@@ -808,7 +897,7 @@
   // ---------- Dashboard ----------
   async function loadDashboard() {
     try {
-      const res = await fetch(`${API_BASE}/portal-dashboard?portal_user=${encodeURIComponent(portalUser)}`);
+      const res = await fetch(`${API_BASE}/portal-dashboard?portal_user=${encodeURIComponent(portalUser)}${asClientQS()}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to load dashboard');
       // portal-dashboard returns: { client: {id,name,company,store_name}, orders: {...} }
@@ -848,7 +937,7 @@
     const tbody = document.getElementById('orders-tbody');
     tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading orders…</td></tr>';
     try {
-      const res = await fetch(`${API_BASE}/portal-orders-list?portal_user=${encodeURIComponent(portalUser)}`);
+      const res = await fetch(`${API_BASE}/portal-orders-list?portal_user=${encodeURIComponent(portalUser)}${asClientQS()}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to load orders');
       ordersCache = json.orders || [];
@@ -1428,7 +1517,7 @@
     // user never sees the previous user's data.
     const fetchForUser = portalUser;
     try {
-      const res = await fetch(`${API_BASE}/portal-inventory?portal_user=${encodeURIComponent(fetchForUser)}`);
+      const res = await fetch(`${API_BASE}/portal-inventory?portal_user=${encodeURIComponent(fetchForUser)}${asClientQS()}`);
       const json = await res.json();
       if (portalUser !== fetchForUser) return; // session changed mid-flight
       if (!res.ok) throw new Error(json.error || 'Failed to load inventory');
@@ -1662,7 +1751,7 @@
     // if it changes mid-flight.
     const fetchForUser = portalUser;
     try {
-      const res = await fetch(`${API_BASE}/portal-tracking?portal_user=${encodeURIComponent(fetchForUser)}`);
+      const res = await fetch(`${API_BASE}/portal-tracking?portal_user=${encodeURIComponent(fetchForUser)}${asClientQS()}`);
       const json = await res.json();
       if (portalUser !== fetchForUser) return;
       if (!res.ok) throw new Error(json.error || 'Failed to load tracking');
@@ -1797,6 +1886,22 @@
 
   function renderInbound() {
     if (!inboundCache) return;
+    // ADMIN MODE (warehouse@): portal-inbound returns every client's rows and
+    // adds a `client` field. Show it as a first column so the internal user can
+    // tell whose package each row is. A normal client never gets that field.
+    const inbAdmin = !!inboundCache.isAdmin;
+    const inbCols = inbAdmin ? 7 : 6;
+    const inbThead = document.getElementById('inb-thead-row');
+    if (inbThead) {
+      inbThead.innerHTML =
+        '<th>Date</th>' +
+        (inbAdmin ? '<th>Client</th>' : '') +
+        '<th>Type</th>' +
+        '<th>Carrier</th>' +
+        '<th>Tracking #</th>' +
+        '<th>Reference on package</th>' +
+        '<th>Photos</th>';
+    }
     const q = (inbSearch.value || '').trim().toLowerCase();
     const type = inbTypeFilter.value;
     let rows = inboundCache.packages || [];
@@ -1805,7 +1910,8 @@
       rows = rows.filter((p) =>
         (p.tracking || '').toLowerCase().includes(q) ||
         (p.reference || '').toLowerCase().includes(q) ||
-        (p.type || '').toLowerCase().includes(q)
+        (p.type || '').toLowerCase().includes(q) ||
+        (p.client || '').toLowerCase().includes(q)
       );
     }
     inbFilteredRows = rows;
@@ -1816,7 +1922,7 @@
         : rows.length + ' of ' + (inboundCache.packages || []).length + ' packages';
 
     if (!rows.length) {
-      inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">' +
+      inbTbody.innerHTML = '<tr><td colspan="' + inbCols + '" class="empty-state">' +
         'No packages received in this period.</td></tr>';
       return;
     }
@@ -1832,6 +1938,7 @@
         : '';
       return '<tr>' +
         '<td>' + esc(p.date || '—') + '</td>' +
+        (inbAdmin ? '<td><strong>' + esc(p.client || '—') + '</strong></td>' : '') +
         '<td><span class="status-badge ' + badge + '">' + esc(label) + '</span></td>' +
         '<td>' + esc(p.carrier || '—') + '</td>' +
         '<td>' + inbTrackingCell(p) + warn + '</td>' +
@@ -1842,13 +1949,13 @@
   }
 
   async function loadInbound() {
-    inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading inbound packages…</td></tr>';
+    inbTbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading inbound packages…</td></tr>';
     if (inbMsg) inbMsg.innerHTML = '';
     inbExportBtn.disabled = true;
     const days = inbDaysFilter.value || '90';
     const fetchForUser = portalUser;
     try {
-      const res = await fetch(`${API_BASE}/portal-inbound?portal_user=${encodeURIComponent(fetchForUser)}&days=${encodeURIComponent(days)}`);
+      const res = await fetch(`${API_BASE}/portal-inbound?portal_user=${encodeURIComponent(fetchForUser)}&days=${encodeURIComponent(days)}${asClientQS()}`);
       const json = await res.json();
       if (portalUser !== fetchForUser) return; // session changed mid-flight
       if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load inbound');
@@ -1866,7 +1973,7 @@
       renderInbound();
     } catch (err) {
       if (portalUser !== fetchForUser) return;
-      inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">' +
+      inbTbody.innerHTML = '<tr><td colspan="7" class="empty-state">' +
         'Couldn\'t load inbound packages. Refresh in a moment, or contact support if this persists.' +
         '</td></tr>';
       ['inb-kpi-total','inb-kpi-removal','inb-kpi-return','inb-kpi-last'].forEach((id) => {
@@ -1879,7 +1986,10 @@
   // so Excel renders it correctly. Same convention as the Inventory tab.
   function exportInboundCSV() {
     if (!inbFilteredRows.length) return;
-    const headers = ['Date', 'Type', 'Carrier', 'Tracking #', 'Reference on package', 'Note'];
+    const csvAdmin = !!(inboundCache && inboundCache.isAdmin);
+    const headers = csvAdmin
+      ? ['Date', 'Client', 'Type', 'Carrier', 'Tracking #', 'Reference on package', 'Note']
+      : ['Date', 'Type', 'Carrier', 'Tracking #', 'Reference on package', 'Note'];
     const cell = (val) => {
       if (val === null || val === undefined) return '';
       const s = String(val);
@@ -1890,17 +2000,18 @@
     };
     const lines = [headers.join(',')];
     inbFilteredRows.forEach((p) => {
-      lines.push([
-        cell(p.date),
+      const row = [cell(p.date)];
+      if (csvAdmin) row.push(cell(p.client || ''));
+      lines.push(row.concat([
         cell(INB_TYPE_LABEL[p.type_key] || p.type || ''),
         cell(p.carrier || ''),
         cell(p.tracking || ''),
         cell(p.reference || ''),
         cell(p.warning || ''),
-      ].join(','));
+      ]).join(','));
     });
     const c = (inboundCache && inboundCache.client) || {};
-    const cname = c.company || c.name || clientName || 'client';
+    const cname = csvAdmin ? 'all-clients' : (c.company || c.name || clientName || 'client');
     const slug = String(cname).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const today = new Date().toISOString().slice(0, 10);
     const csv = '\ufeff' + lines.join('\r\n');
@@ -1957,7 +2068,7 @@
     if (retMsg) retMsg.innerHTML = '';
     const fetchForUser = portalUser;
     try {
-      const res = await fetch(`${API_BASE}/portal-returns?portal_user=${encodeURIComponent(fetchForUser)}`);
+      const res = await fetch(`${API_BASE}/portal-returns?portal_user=${encodeURIComponent(fetchForUser)}${asClientQS()}`);
       const json = await res.json();
       if (portalUser !== fetchForUser) return;
       if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load returns');
