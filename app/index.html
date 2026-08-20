@@ -252,6 +252,7 @@
       <button class="tab" data-tab="orders">Orders</button>
       <button class="tab" data-tab="bulk">Bulk Upload</button>
       <button class="tab" data-tab="inventory">Inventory</button>
+      <button class="tab" data-tab="inbound">Inbound</button>
       <button class="tab" data-tab="tracking">Tracking</button>
     </div>
 
@@ -403,6 +404,67 @@
           </tbody>
         </table>
       </div>
+    </section>
+
+    <!-- ---- INBOUND TAB ---- -->
+    <section id="tab-inbound" class="hidden">
+      <h2 class="page-title">Inbound</h2>
+      <p class="page-sub">Every package received at our Miami warehouse, as scanned at the dock.</p>
+
+      <div id="inb-msg"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Packages Received</div><div class="kpi-value" id="inb-kpi-total">&mdash;</div></div>
+        <div class="kpi-card"><div class="kpi-label">Removals / Overstock</div><div class="kpi-value" id="inb-kpi-removal">&mdash;</div></div>
+        <div class="kpi-card pending"><div class="kpi-label">Customer Returns</div><div class="kpi-value" id="inb-kpi-return">&mdash;</div></div>
+        <div class="kpi-card"><div class="kpi-label">Last Received</div><div class="kpi-value" id="inb-kpi-last" style="font-size:20px;">&mdash;</div></div>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="inb-search" placeholder="Search tracking or reference&hellip;" style="margin-bottom: 0; max-width: 320px;" />
+        <select id="inb-type-filter" style="margin-bottom: 0;">
+          <option value="all">All types</option>
+          <option value="removal">Removals / Overstock</option>
+          <option value="return">Customer returns</option>
+          <option value="fba">FBA</option>
+          <option value="prep">Prep</option>
+          <option value="other">Other</option>
+        </select>
+        <select id="inb-days-filter" style="margin-bottom: 0;">
+          <option value="30">Last 30 days</option>
+          <option value="90" selected>Last 90 days</option>
+          <option value="180">Last 6 months</option>
+          <option value="365">Last 12 months</option>
+        </select>
+        <button class="btn-refresh" id="inb-refresh-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Refresh</button>
+        <button id="inb-export-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;" disabled>Export CSV</button>
+        <span style="margin-left: auto; font-size: 12px; color: var(--fr-gray);" id="inb-count-label">&mdash;</span>
+      </div>
+
+      <div class="panel" style="padding: 0;">
+        <table>
+          <thead>
+            <tr id="inb-thead-row">
+              <th>Date</th>
+              <th>Type</th>
+              <th>Carrier</th>
+              <th>Tracking #</th>
+              <th>Reference on package</th>
+              <th>Photos</th>
+            </tr>
+          </thead>
+          <tbody id="inb-tbody">
+            <tr><td colspan="6" class="empty-state">Loading inbound packages&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="muted" style="margin-top: 14px; font-size: 12px; line-height: 1.6;">
+        This log is <strong>package level</strong>: one row per box scanned at our dock, with the tracking
+        number printed on its label. It does not show units per SKU &mdash; unit-level stock lives in the
+        Inventory tab. To reconcile an Amazon removal order against what arrived, match your Removal Order
+        Detail report against the tracking numbers above.
+      </p>
     </section>
 
     <!-- ---- TRACKING TAB ---- -->
@@ -561,6 +623,8 @@
   let ordersCache = [];
   let inventoryCache = null;
   let inventoryLoaded = false;
+  let inboundCache = null;
+  let inboundLoaded = false;
   let trackingCache = null;
   let trackingLoaded = false;
   let returnsCache = null;
@@ -577,6 +641,8 @@
     ordersCache = [];
     inventoryCache = null;
     inventoryLoaded = false;
+    inboundCache = null;
+    inboundLoaded = false;
     trackingCache = null;
     trackingLoaded = false;
     returnsCache = null;
@@ -592,6 +658,15 @@
     });
     const invSync = document.getElementById('inv-last-sync');
     if (invSync) invSync.textContent = '—';
+
+    const inbTbody = document.getElementById('inb-tbody');
+    if (inbTbody) inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading inbound packages…</td></tr>';
+    ['inb-kpi-total','inb-kpi-removal','inb-kpi-return','inb-kpi-last'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    const inbCount = document.getElementById('inb-count-label');
+    if (inbCount) inbCount.textContent = '—';
 
     const trkTbody = document.getElementById('trk-tbody');
     if (trkTbody) trkTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading shipments…</td></tr>';
@@ -718,11 +793,13 @@
       document.getElementById('tab-orders').classList.toggle('hidden', target !== 'orders');
       document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
       document.getElementById('tab-inventory').classList.toggle('hidden', target !== 'inventory');
+      document.getElementById('tab-inbound').classList.toggle('hidden', target !== 'inbound');
       document.getElementById('tab-tracking').classList.toggle('hidden', target !== 'tracking');
       // Lazy load on first visit (within the current session). The
       // resetSessionState helper clears these flags at every login/logout
       // so the next user always triggers a fresh fetch.
       if (target === 'inventory' && !inventoryLoaded) loadInventory();
+      if (target === 'inbound' && !inboundLoaded) loadInbound();
       if (target === 'tracking' && !trackingLoaded) loadTracking();
       if (target === 'tracking' && !returnsLoaded) loadReturns();
     });
@@ -1673,6 +1750,173 @@
   trkSearch.addEventListener('input', renderTracking);
   trkCarrierFilter.addEventListener('change', renderTracking);
   document.getElementById('trk-refresh-btn').addEventListener('click', loadTracking);
+
+  // ---------- Inbound (packages received at the warehouse) ----------
+  // Source: /portal-inbound, which reads shipments_general filtered by
+  // client_id (never by the free-text client column) and normalizes the
+  // scanned barcode into a tracking number that actually resolves on the
+  // carrier site. One row = one box scanned at the dock.
+  const inbTbody = document.getElementById('inb-tbody');
+  const inbMsg = document.getElementById('inb-msg');
+  const inbSearch = document.getElementById('inb-search');
+  const inbTypeFilter = document.getElementById('inb-type-filter');
+  const inbDaysFilter = document.getElementById('inb-days-filter');
+  const inbExportBtn = document.getElementById('inb-export-btn');
+  let inbFilteredRows = [];
+
+  const INB_TYPE_LABEL = {
+    removal: 'Removal / Overstock',
+    return: 'Customer return',
+    fba: 'FBA',
+    prep: 'Prep',
+    other: 'Other',
+  };
+  const INB_BADGE = {
+    removal: 'processing',
+    return: 'pending',
+    fba: 'exported',
+    prep: 'exported',
+    other: 'ok',
+  };
+
+  function inbTrackingCell(p) {
+    if (!p.tracking) return '—';
+    const txt = '<span style="font-family: ui-monospace, Consolas, monospace; font-size: 12px;">' +
+      esc(p.tracking) + '</span>';
+    if (!p.tracking_url) return txt;
+    return '<a href="' + esc(p.tracking_url) + '" target="_blank" rel="noopener" ' +
+      'style="color: var(--fr-green); text-decoration: underline;">' + txt + '</a>';
+  }
+
+  function inbPhotoCell(p) {
+    if (!p.photos || !p.photos.length) return '<span class="muted">—</span>';
+    return '<a href="' + esc(p.photos[0]) + '" target="_blank" rel="noopener" ' +
+      'style="color: var(--fr-green); text-decoration: underline;">' +
+      (p.photos.length === 1 ? 'View' : 'View (' + p.photos.length + ')') + '</a>';
+  }
+
+  function renderInbound() {
+    if (!inboundCache) return;
+    const q = (inbSearch.value || '').trim().toLowerCase();
+    const type = inbTypeFilter.value;
+    let rows = inboundCache.packages || [];
+    if (type !== 'all') rows = rows.filter((p) => p.type_key === type);
+    if (q) {
+      rows = rows.filter((p) =>
+        (p.tracking || '').toLowerCase().includes(q) ||
+        (p.reference || '').toLowerCase().includes(q) ||
+        (p.type || '').toLowerCase().includes(q)
+      );
+    }
+    inbFilteredRows = rows;
+    inbExportBtn.disabled = rows.length === 0;
+    document.getElementById('inb-count-label').textContent =
+      rows.length === (inboundCache.packages || []).length
+        ? rows.length + ' packages'
+        : rows.length + ' of ' + (inboundCache.packages || []).length + ' packages';
+
+    if (!rows.length) {
+      inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">' +
+        'No packages received in this period.</td></tr>';
+      return;
+    }
+
+    inbTbody.innerHTML = rows.map((p) => {
+      const badge = INB_BADGE[p.type_key] || 'ok';
+      const label = INB_TYPE_LABEL[p.type_key] || p.type || '—';
+      const ref = p.reference
+        ? esc(p.reference)
+        : '<span class="muted">—</span>';
+      const warn = p.warning
+        ? '<div style="font-size:11px;color:var(--fr-orange);margin-top:2px;">' + esc(p.warning) + '</div>'
+        : '';
+      return '<tr>' +
+        '<td>' + esc(p.date || '—') + '</td>' +
+        '<td><span class="status-badge ' + badge + '">' + esc(label) + '</span></td>' +
+        '<td>' + esc(p.carrier || '—') + '</td>' +
+        '<td>' + inbTrackingCell(p) + warn + '</td>' +
+        '<td>' + ref + '</td>' +
+        '<td>' + inbPhotoCell(p) + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  async function loadInbound() {
+    inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading inbound packages…</td></tr>';
+    if (inbMsg) inbMsg.innerHTML = '';
+    inbExportBtn.disabled = true;
+    const days = inbDaysFilter.value || '90';
+    const fetchForUser = portalUser;
+    try {
+      const res = await fetch(`${API_BASE}/portal-inbound?portal_user=${encodeURIComponent(fetchForUser)}&days=${encodeURIComponent(days)}`);
+      const json = await res.json();
+      if (portalUser !== fetchForUser) return; // session changed mid-flight
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load inbound');
+
+      inboundCache = json;
+      inboundLoaded = true;
+
+      const byType = json.by_type || {};
+      document.getElementById('inb-kpi-total').textContent = json.count || 0;
+      document.getElementById('inb-kpi-removal').textContent = byType.removal || 0;
+      document.getElementById('inb-kpi-return').textContent = byType.return || 0;
+      const first = (json.packages || [])[0];
+      document.getElementById('inb-kpi-last').textContent = first && first.date ? first.date : '—';
+
+      renderInbound();
+    } catch (err) {
+      if (portalUser !== fetchForUser) return;
+      inbTbody.innerHTML = '<tr><td colspan="6" class="empty-state">' +
+        'Couldn\'t load inbound packages. Refresh in a moment, or contact support if this persists.' +
+        '</td></tr>';
+      ['inb-kpi-total','inb-kpi-removal','inb-kpi-return','inb-kpi-last'].forEach((id) => {
+        document.getElementById(id).textContent = '—';
+      });
+    }
+  }
+
+  // CSV export — exports what is on screen (current filters), UTF-8 + BOM
+  // so Excel renders it correctly. Same convention as the Inventory tab.
+  function exportInboundCSV() {
+    if (!inbFilteredRows.length) return;
+    const headers = ['Date', 'Type', 'Carrier', 'Tracking #', 'Reference on package', 'Note'];
+    const cell = (val) => {
+      if (val === null || val === undefined) return '';
+      const s = String(val);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+    const lines = [headers.join(',')];
+    inbFilteredRows.forEach((p) => {
+      lines.push([
+        cell(p.date),
+        cell(INB_TYPE_LABEL[p.type_key] || p.type || ''),
+        cell(p.carrier || ''),
+        cell(p.tracking || ''),
+        cell(p.reference || ''),
+        cell(p.warning || ''),
+      ].join(','));
+    });
+    const c = (inboundCache && inboundCache.client) || {};
+    const cname = c.company || c.name || clientName || 'client';
+    const slug = String(cname).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const today = new Date().toISOString().slice(0, 10);
+    const csv = '\ufeff' + lines.join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `fr-logistics-inbound-${slug}-${today}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  inbSearch.addEventListener('input', renderInbound);
+  inbTypeFilter.addEventListener('change', renderInbound);
+  inbDaysFilter.addEventListener('change', loadInbound);
+  document.getElementById('inb-refresh-btn').addEventListener('click', loadInbound);
+  inbExportBtn.addEventListener('click', exportInboundCSV);
 
   // ---------- Returns (inbound return labels) ----------
   // Two server-side modes in portal-returns.js, decided by the logged-in
