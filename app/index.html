@@ -450,6 +450,7 @@
         </select>
         <button class="btn-refresh" id="inb-refresh-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Refresh</button>
         <button id="inb-export-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;" disabled>Export CSV</button>
+        <button id="inb-detail-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Export detail (Excel)</button>
         <span style="margin-left: auto; font-size: 12px; color: var(--fr-gray);" id="inb-count-label">&mdash;</span>
       </div>
 
@@ -2028,6 +2029,144 @@
   inbDaysFilter.addEventListener('change', loadInbound);
   document.getElementById('inb-refresh-btn').addEventListener('click', loadInbound);
   inbExportBtn.addEventListener('click', exportInboundCSV);
+
+  // ---------- Inbound detail workbook (item level) ----------
+  // The table above is package level. This builds an .xlsx that is ITEM level,
+  // from the Amazon packing slips photographed at the dock and read
+  // automatically, with the client's own SKU resolved server-side.
+  //
+  // The quantity column is labelled "declared by Amazon" on purpose: it is what
+  // the slip printed, not a count we performed. The counted column ships empty
+  // so the workbook never certifies something nobody verified — the difference
+  // between the two is exactly what supports a reimbursement case.
+  //
+  // SheetJS is loaded lazily, only when the button is pressed, so it costs
+  // nothing to everyone who never exports.
+  const inbDetailBtn = document.getElementById('inb-detail-btn');
+  const SHEETJS_SRC = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  let sheetJsPromise = null;
+
+  function loadSheetJS() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (sheetJsPromise) return sheetJsPromise;
+    sheetJsPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = SHEETJS_SRC;
+      s.onload = () => (window.XLSX ? resolve(window.XLSX) : reject(new Error('XLSX missing')));
+      s.onerror = () => reject(new Error('Could not load the spreadsheet library'));
+      document.head.appendChild(s);
+    });
+    return sheetJsPromise;
+  }
+
+  async function exportInboundDetail() {
+    const original = inbDetailBtn.textContent;
+    inbDetailBtn.disabled = true;
+    inbDetailBtn.textContent = 'Building…';
+    const days = inbDaysFilter.value || '90';
+    const fetchForUser = portalUser;
+    try {
+      const [XLSX, res] = await Promise.all([
+        loadSheetJS(),
+        fetch(`${API_BASE}/portal-inbound-detail?portal_user=${encodeURIComponent(fetchForUser)}&days=${encodeURIComponent(days)}${asClientQS()}`),
+      ]);
+      const json = await res.json();
+      if (portalUser !== fetchForUser) return;
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to build the report');
+
+      const cov = json.coverage || {};
+      if (!json.lines || !json.lines.length) {
+        alert(
+          'No item-level data for this period yet.\n\n' +
+          'Item detail comes from the Amazon packing slip photographed when the package is received. ' +
+          (cov.packages_total
+            ? cov.packages_total + ' package(s) were received in this window and none has a slip reading yet.'
+            : 'No packages were received in this window.')
+        );
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1 — one row per product line.
+      const detail = json.lines.map((l) => ({
+        'Date': l.date,
+        'Tracking #': l.tracking,
+        'Type': l.type,
+        'SKU': l.sku || '',
+        'FNSKU': l.fnsku || '',
+        'Description': l.title || '',
+        'Qty declared by Amazon': l.qty_declared,
+        'Qty counted at warehouse': l.qty_counted,
+        'RA #': l.ra_number || '',
+        'VRET ID': l.vret_id || '',
+        'Origin FC': l.origin_fc || '',
+        'Amazon process date': l.process_date || '',
+        'Needs review': l.needs_review ? 'YES' : '',
+        'Slip photo': l.photo_url || '',
+      }));
+      const ws1 = XLSX.utils.json_to_sheet(detail);
+      ws1['!cols'] = [
+        { wch: 11 }, { wch: 24 }, { wch: 16 }, { wch: 30 }, { wch: 12 }, { wch: 38 },
+        { wch: 20 }, { wch: 22 }, { wch: 26 }, { wch: 18 }, { wch: 10 }, { wch: 18 },
+        { wch: 12 }, { wch: 40 },
+      ];
+      XLSX.utils.book_append_sheet(wb, ws1, 'Item detail');
+
+      // Sheet 2 — the view clients actually ask for.
+      const rollup = json.by_sku.map((r) => ({
+        'SKU': r.sku || '',
+        'FNSKU': r.fnsku || '',
+        'Description': r.title || '',
+        'Packages': r.packages,
+        'Units declared by Amazon': r.qty_declared,
+      }));
+      const ws2 = XLSX.utils.json_to_sheet(rollup);
+      ws2['!cols'] = [{ wch: 32 }, { wch: 12 }, { wch: 40 }, { wch: 11 }, { wch: 24 }];
+      XLSX.utils.book_append_sheet(wb, ws2, 'By SKU');
+
+      // Sheet 3 — how to read it, and how complete it is.
+      const c = json.client || {};
+      const notes = [
+        ['Inbound item detail — FR-Logistics Miami'],
+        [c.company || c.name || ''],
+        [''],
+        ['Period', 'Last ' + json.window_days + ' days'],
+        ['Generated', new Date().toLocaleString()],
+        [''],
+        ['Packages received in the period', cov.packages_total],
+        ['Packages with slip data', cov.packages_with_slip],
+        ['Packages without slip data', cov.packages_without_slip],
+        [''],
+        ['About the quantities'],
+        ['"Qty declared by Amazon" is the number printed on the packing slip that came with the box.'],
+        ['It is what Amazon says it shipped, not a count performed at our warehouse.'],
+        ['"Qty counted at warehouse" is left empty unless a physical count was performed.'],
+        ['A difference between the two is what supports a reimbursement case with Amazon.'],
+        [''],
+        ['About coverage'],
+        ['Item detail only exists for packages whose slip was photographed at receiving.'],
+        ['Packages without slip data still appear in the Inbound tab at package level.'],
+        [''],
+        ['Questions', 'warehouse@fr-logistics.net'],
+      ];
+      const ws3 = XLSX.utils.aoa_to_sheet(notes);
+      ws3['!cols'] = [{ wch: 46 }, { wch: 42 }];
+      XLSX.utils.book_append_sheet(wb, ws3, 'How to read this');
+
+      const cname = c.company || c.name || clientName || 'client';
+      const slug = String(cname).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `fr-logistics-inbound-detail-${slug}-${today}.xlsx`);
+    } catch (err) {
+      alert('Could not build the report: ' + (err.message || 'try again in a moment'));
+    } finally {
+      inbDetailBtn.disabled = false;
+      inbDetailBtn.textContent = original;
+    }
+  }
+
+  inbDetailBtn.addEventListener('click', exportInboundDetail);
 
   // ---------- Returns (inbound return labels) ----------
   // Two server-side modes in portal-returns.js, decided by the logged-in
