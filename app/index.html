@@ -812,11 +812,29 @@
       const res = await fetch(`${API_BASE}/portal-admin-clients?portal_user=${encodeURIComponent(portalUser)}`);
       const json = await res.json();
       if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load clients');
+      // Group by status so a dormant account is never one careless click away
+      // from a live one. Active first, then whatever else the roster carries.
+      const order = ['Active', 'Onboarding'];
+      const groups = new Map();
       json.clients.forEach((c) => {
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.has_portal ? c.label : c.label + ' (no portal login)';
-        viewAsSelect.appendChild(opt);
+        const key = c.status || 'Other';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(c);
+      });
+      const keys = [...groups.keys()].sort((a, b) => {
+        const ia = order.indexOf(a), ib = order.indexOf(b);
+        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.localeCompare(b);
+      });
+      keys.forEach((key) => {
+        const group = document.createElement('optgroup');
+        group.label = key;
+        groups.get(key).forEach((c) => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.has_portal ? c.label : c.label + ' (no portal login)';
+          group.appendChild(opt);
+        });
+        viewAsSelect.appendChild(group);
       });
     } catch (err) {
       viewAsNote.textContent = 'Could not load the client list.';
@@ -2095,6 +2113,7 @@
         'Type': l.type,
         'SKU': l.sku || '',
         'FNSKU': l.fnsku || '',
+        'LPN': l.lpn || '',
         'Description': l.title || '',
         'Qty declared by Amazon': l.qty_declared,
         'Qty counted at warehouse': l.qty_counted,
@@ -2107,9 +2126,9 @@
       }));
       const ws1 = XLSX.utils.json_to_sheet(detail);
       ws1['!cols'] = [
-        { wch: 11 }, { wch: 24 }, { wch: 16 }, { wch: 30 }, { wch: 12 }, { wch: 38 },
-        { wch: 20 }, { wch: 22 }, { wch: 26 }, { wch: 18 }, { wch: 10 }, { wch: 18 },
-        { wch: 12 }, { wch: 40 },
+        { wch: 11 }, { wch: 24 }, { wch: 16 }, { wch: 30 }, { wch: 12 }, { wch: 16 },
+        { wch: 38 }, { wch: 20 }, { wch: 22 }, { wch: 26 }, { wch: 18 }, { wch: 10 },
+        { wch: 18 }, { wch: 12 }, { wch: 40 },
       ];
       XLSX.utils.book_append_sheet(wb, ws1, 'Item detail');
 
@@ -2143,6 +2162,11 @@
         ['It is what Amazon says it shipped, not a count performed at our warehouse.'],
         ['"Qty counted at warehouse" is left empty unless a physical count was performed.'],
         ['A difference between the two is what supports a reimbursement case with Amazon.'],
+        [''],
+        ['About the LPN column'],
+        ['On customer returns Amazon puts an LPN sticker on the unit. That code is what identifies the'],
+        ['returned unit in your FBA Customer Returns report, where you can see the order and the reason.'],
+        ['Removals and vendor returns normally carry no LPN — those are identified by FNSKU.'],
         [''],
         ['About coverage'],
         ['Item detail only exists for packages whose slip was photographed at receiving.'],
