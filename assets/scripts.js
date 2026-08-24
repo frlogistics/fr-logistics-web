@@ -79,50 +79,17 @@
   }
 
   // -----------------------------------------------------------
-  // Tidio + LIAM integration
-  // LIAM button replaces Tidio's default launcher
-  // - Click LIAM → opens Tidio chat (Lyro AI + FR-Logistics team)
-  // - Tidio not loaded? → fallback to WhatsApp
-  // - On Tidio close → re-hide launcher to keep LIAM visible
-  // -----------------------------------------------------------
-  const liamBtn = document.getElementById('liamChatBtn');
-  if (liamBtn) {
-    const WHATSAPP_FALLBACK = 'https://api.whatsapp.com/send?phone=17863001443&text=Hi%20LIAM%2C%20I%27d%20like%20to%20chat%20with%20FR-Logistics';
+  // LIAM abre el chat propio (canal 'web' -> web-chat.js -> LIAM)
+const liamBtn = document.getElementById('liamChatBtn');
+if (liamBtn) {
+  const WHATSAPP_FALLBACK = 'https://api.whatsapp.com/send?phone=13052403172&text=Hola%20LIAM';
 
-    let tidioReady = false;
-
-    function hideTidioLauncher() {
-      if (window.tidioChatApi && typeof window.tidioChatApi.hide === 'function') {
-        try { window.tidioChatApi.hide(); } catch (e) {}
-      }
-    }
-
-    document.addEventListener('tidioChat-ready', () => {
-      tidioReady = true;
-      hideTidioLauncher();
-    });
-
-    document.addEventListener('tidioChat-close', () => {
-      setTimeout(hideTidioLauncher, 100);
-    });
-
-    liamBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      if (tidioReady && window.tidioChatApi) {
-        try {
-          window.tidioChatApi.show();
-          window.tidioChatApi.open();
-          return;
-        } catch (err) {}
-      }
-
-      window.open(WHATSAPP_FALLBACK, '_blank', 'noopener,noreferrer');
-    });
-
-    // Safety net: poll for Tidio up to 15 seconds
-    let attempts = 0;
-    const pollInterval = setInterval(() => {
+  liamBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (window.FRChat) { window.FRChat.open(); return; }
+    window.open(WHATSAPP_FALLBACK, '_blank', 'noopener,noreferrer');
+  });
+}
       if (window.tidioChatApi) {
         if (!tidioReady) tidioReady = true;
         hideTidioLauncher();
