@@ -2007,8 +2007,8 @@
     if (!inbFilteredRows.length) return;
     const csvAdmin = !!(inboundCache && inboundCache.isAdmin);
     const headers = csvAdmin
-      ? ['Date', 'Client', 'Type', 'Carrier', 'Tracking #', 'Reference on package', 'Note']
-      : ['Date', 'Type', 'Carrier', 'Tracking #', 'Reference on package', 'Note'];
+      ? ['Date', 'Client', 'Type', 'Carrier', 'Tracking #', 'Item code (FNSKU / LPN)', 'Qty declared by Amazon', 'Note']
+      : ['Date', 'Type', 'Carrier', 'Tracking #', 'Item code (FNSKU / LPN)', 'Qty declared by Amazon', 'Note'];
     const cell = (val) => {
       if (val === null || val === undefined) return '';
       const s = String(val);
@@ -2019,13 +2019,15 @@
     };
     const lines = [headers.join(',')];
     inbFilteredRows.forEach((p) => {
+      const ref = inbRefParts(p);
       const row = [cell(p.date)];
       if (csvAdmin) row.push(cell(p.client || ''));
       lines.push(row.concat([
         cell(INB_TYPE_LABEL[p.type_key] || p.type || ''),
         cell(p.carrier || ''),
         cell(p.tracking || ''),
-        cell(p.reference || ''),
+        cell(ref.code),
+        cell(ref.qty),
         cell(p.warning || ''),
       ]).join(','));
     });
@@ -2162,6 +2164,10 @@
         ['It is what Amazon says it shipped, not a count performed at our warehouse.'],
         ['"Qty counted at warehouse" is left empty unless a physical count was performed.'],
         ['A difference between the two is what supports a reimbursement case with Amazon.'],
+        [''],
+        ['About the SKU column'],
+        ['SKU is filled only for items we manage in our warehouse system. On accounts where we handle'],
+        ['returns or removals without holding inventory, the item is identified by its FNSKU instead.'],
         [''],
         ['About the LPN column'],
         ['On customer returns Amazon puts an LPN sticker on the unit. That code is what identifies the'],
