@@ -255,7 +255,7 @@
     <select id="viewas-select" style="margin:0;width:auto;min-width:240px;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:#fff;color:#1f2937;font-size:13px;">
       <option value="">— All clients (Inbound only) —</option>
     </select>
-    <span id="viewas-note" style="font-size:12px;opacity:.8;margin-left:auto;">Read-only. Order creation stays disabled in this mode.</span>
+    <span id="viewas-note" style="font-size:12px;opacity:.8;margin-left:auto;">Internal view. Pick a client before creating or uploading orders.</span>
   </div>
 
   <main>
@@ -636,9 +636,38 @@
   function isPortalAdmin() {
     return String(portalUser || '').trim().toLowerCase() === PORTAL_ADMIN_EMAIL;
   }
-  // Appended to every READ request. Never appended to a write.
+  // Appended to every READ request as a query string.
   function asClientQS() {
     return asClient ? '&as_client=' + encodeURIComponent(asClient) : '';
+  }
+  // Merged into the JSON body of a WRITE request. Writes carry as_client too
+  // (August 2026) so the internal account can file an order for a client that
+  // has no portal login of its own. The server re-checks that the caller is
+  // the admin email and stamps every such row in internal_notes — this is
+  // convenience here, the guard lives server-side.
+  function asClientBody() {
+    return asClient ? { as_client: asClient } : {};
+  }
+  // Human label of the client currently selected in "Viewing as", for
+  // confirmations. Empty string when not impersonating.
+  function viewAsLabel() {
+    if (!asClient) return '';
+    const opt = viewAsSelect && viewAsSelect.selectedIndex >= 0
+      ? viewAsSelect.options[viewAsSelect.selectedIndex]
+      : null;
+    const raw = opt ? opt.textContent : '';
+    return raw.replace(/\s*\(no portal login\)$/, '').trim();
+  }
+  // One place that decides whether a write may go ahead, and makes the
+  // operator read the client name out loud before it does. The August 2026
+  // misfiled-orders incident happened because nothing ever named the target
+  // client between picking a file and writing rows.
+  function confirmWriteTarget(what) {
+    if (!asClient) return true;
+    return window.confirm(
+      'You are working inside the internal view.\n\n' +
+      what + ' will be filed under:\n\n    ' + viewAsLabel() + '\n\nContinue?'
+    );
   }
   // Per-client config loaded at login from /portal-client-config. Lets the
   // Bulk Upload template pre-fill the fields agreed at onboarding
@@ -854,8 +883,9 @@
 
     const label = viewAsSelect.options[viewAsSelect.selectedIndex].textContent;
     viewAsNote.textContent = asClient
-      ? 'Read-only view of ' + label + '. Order creation stays disabled.'
-      : 'Read-only. Order creation stays disabled in this mode.';
+      ? 'Working as ' + label.replace(/\s*\(no portal login\)$/, '') +
+        '. Orders you create or upload will be filed under this client.'
+      : 'Internal view. Pick a client before creating or uploading orders.';
 
     await loadClientConfig();
     await loadDashboard();
@@ -1099,19 +1129,32 @@
       return;
     }
 
+    if (isPortalAdmin() && !asClient) {
+      modalError.textContent = 'Pick a client in the "Viewing as" selector first — the warehouse account is not a client itself.';
+      modalError.classList.remove('hidden');
+      return;
+    }
+    if (!confirmWriteTarget('This order')) return;
+
     const btn = document.getElementById('modal-submit');
     btn.disabled = true; btn.textContent = 'Submitting…';
     try {
       const res = await fetch(`${API_BASE}/portal-order-create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ portal_user: portalUser, order, items }),
+        body: JSON.stringify(Object.assign(
+          { portal_user: portalUser, order, items },
+          asClientBody()
+        )),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to create order');
       modal.classList.add('hidden');
       const msg = document.getElementById('orders-msg');
-      msg.innerHTML = `<div class="success-box">Order ${esc(json.order.order_number)} submitted successfully.</div>`;
+      const forWhom = json.on_behalf && json.client && json.client.label
+        ? ` for ${esc(json.client.label)}`
+        : '';
+      msg.innerHTML = `<div class="success-box">Order ${esc(json.order.order_number)} submitted successfully${forWhom}.</div>`;
       setTimeout(() => { msg.innerHTML = ''; }, 6000);
       await loadOrders();
       await loadDashboard();
@@ -1420,8 +1463,7 @@
 
     previewPanel.classList.remove('hidden');
     document.getElementById('bulk-submit-btn').disabled = validCount === 0;
-    document.getElementById('bulk-submit-btn').textContent =
-      validCount === 0 ? 'No valid rows' : `Submit ${validCount} valid row${validCount === 1 ? '' : 's'}`;
+    document.getElementById('bulk-submit-btn').textContent = bulkSubmitLabel(validCount);
   }
 
   // Cancel
@@ -1434,9 +1476,23 @@
   });
 
   // Submit
+  // The submit button always names the destination client when the internal
+  // account is filing for somebody else, so the operator can't reach the
+  // click without having read it.
+  function bulkSubmitLabel(validCount) {
+    if (validCount === 0) return 'No valid rows';
+    const rows = `${validCount} valid row${validCount === 1 ? '' : 's'}`;
+    return asClient ? `Submit ${rows} as ${viewAsLabel()}` : `Submit ${rows}`;
+  }
+
   document.getElementById('bulk-submit-btn').addEventListener('click', async () => {
     const validRows = parsedRows.filter((r) => r.errors.length === 0).map((r) => r.row);
     if (validRows.length === 0) return;
+    if (isPortalAdmin() && !asClient) {
+      showBulkMsg('Pick a client in the "Viewing as" selector before uploading — the warehouse account is not a client itself.', 'error');
+      return;
+    }
+    if (!confirmWriteTarget(`${validRows.length} row${validRows.length === 1 ? '' : 's'}`)) return;
     const btn = document.getElementById('bulk-submit-btn');
     btn.disabled = true; btn.textContent = 'Submitting…';
     clearBulkMsg();
@@ -1445,7 +1501,10 @@
       const res = await fetch(`${API_BASE}/portal-orders-bulk-create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ portal_user: portalUser, rows: validRows }),
+        body: JSON.stringify(Object.assign(
+          { portal_user: portalUser, rows: validRows },
+          asClientBody()
+        )),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Bulk upload failed');
@@ -1457,7 +1516,7 @@
       showBulkMsg(esc(err.message), 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = `Submit ${validRows.length} valid row${validRows.length === 1 ? '' : 's'}`;
+      btn.textContent = bulkSubmitLabel(validRows.length);
     }
   });
 
@@ -1470,7 +1529,10 @@
 
     let html = '';
     if (c.length) {
-      html += `<div class="success-box">Created <strong>${c.length}</strong> order${c.length === 1 ? '' : 's'} successfully.</div>`;
+      const forWhom = json.on_behalf && json.client && json.client.label
+        ? ` under <strong>${esc(json.client.label)}</strong>`
+        : '';
+      html += `<div class="success-box">Created <strong>${c.length}</strong> order${c.length === 1 ? '' : 's'}${forWhom}.</div>`;
       html += '<div style="margin-top:12px;"><strong>Created:</strong></div>';
       c.forEach((o) => {
         html += `<div class="result-row">✓ ${esc(o.order_number)} — ${o.item_count} item${o.item_count === 1 ? '' : 's'} (rows ${o.row_indices.join(', ')})</div>`;
