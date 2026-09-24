@@ -265,6 +265,7 @@
       <button class="tab" data-tab="bulk">Bulk Upload</button>
       <button class="tab" data-tab="inventory">Inventory</button>
       <button class="tab" data-tab="inbound">Inbound</button>
+      <button class="tab" data-tab="outbound">Outbound</button>
       <button class="tab" data-tab="tracking">Tracking</button>
     </div>
 
@@ -480,6 +481,73 @@
       </p>
     </section>
 
+    <!-- ---- OUTBOUND TAB ---- -->
+    <section id="tab-outbound" class="hidden">
+      <h2 class="page-title">Outbound</h2>
+      <p class="page-sub">Pickup and B2B orders packed at our warehouse, with the packing list of every box.</p>
+
+      <div id="out-msg"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Orders</div><div class="kpi-value" id="out-kpi-orders">&mdash;</div></div>
+        <div class="kpi-card"><div class="kpi-label">Boxes</div><div class="kpi-value" id="out-kpi-boxes">&mdash;</div></div>
+        <div class="kpi-card"><div class="kpi-label">Units Packed</div><div class="kpi-value" id="out-kpi-units">&mdash;</div></div>
+        <div class="kpi-card pending"><div class="kpi-label">Orders With Differences</div><div class="kpi-value" id="out-kpi-diff">&mdash;</div></div>
+      </div>
+
+      <div class="toolbar">
+        <button id="out-refresh-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Refresh</button>
+        <span style="margin-left: auto; font-size: 12px; color: var(--fr-gray);" id="out-count-label">&mdash;</span>
+      </div>
+
+      <div class="panel" style="padding: 0;">
+        <table>
+          <thead>
+            <tr id="out-thead-row">
+              <th>Order</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th style="text-align:right">Boxes</th>
+              <th style="text-align:right">Packed / Requested</th>
+              <th>Differences</th>
+              <th>Packing list</th>
+            </tr>
+          </thead>
+          <tbody id="out-tbody">
+            <tr><td colspan="8" class="empty-state">Loading orders&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel" id="out-detail" style="margin-top:16px;display:none;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+          <h3 style="margin:0;font-size:17px;" id="out-detail-title">&mdash;</h3>
+          <span style="font-size:12px;color:var(--fr-gray);" id="out-detail-sub"></span>
+          <span style="margin-left:auto;display:flex;gap:8px;">
+            <a id="out-detail-print" target="_blank" rel="noopener" style="border:1px solid var(--fr-border);color:var(--fr-gray);padding:7px 12px;border-radius:6px;font-size:13px;text-decoration:none;">Printable list</a>
+            <a id="out-detail-xlsx" style="border:1px solid var(--fr-border);color:var(--fr-gray);padding:7px 12px;border-radius:6px;font-size:13px;text-decoration:none;">Excel</a>
+            <button id="out-detail-close" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:7px 12px;border-radius:6px;font-size:13px;cursor:pointer;">Close</button>
+          </span>
+        </div>
+        <h4 style="margin:12px 0 6px;font-size:14px;">Requested vs packed</h4>
+        <table>
+          <thead><tr><th>SKU</th><th>Description</th><th style="text-align:right">Requested</th><th style="text-align:right">Packed</th><th>Status</th></tr></thead>
+          <tbody id="out-cmp-tbody"></tbody>
+        </table>
+        <h4 style="margin:18px 0 6px;font-size:14px;">Box detail</h4>
+        <table>
+          <thead><tr><th>Box</th><th>SKU</th><th>ASIN</th><th>FNSKU</th><th style="text-align:right">Qty</th></tr></thead>
+          <tbody id="out-box-tbody"></tbody>
+        </table>
+      </div>
+
+      <p class="muted" style="margin-top: 14px; font-size: 12px; line-height: 1.6;">
+        Quantities are what our team scanned into each box as it was packed. <strong>Requested</strong> is the list you sent us;
+        any line that does not match is marked so you can see it before the boxes leave.
+      </p>
+    </section>
+
     <!-- ---- TRACKING TAB ---- -->
     <section id="tab-tracking" class="hidden">
       <h2 class="page-title">Tracking</h2>
@@ -679,6 +747,8 @@
   let inventoryLoaded = false;
   let inboundCache = null;
   let inboundLoaded = false;
+  let outboundCache = null;
+  let outboundLoaded = false;
   let trackingCache = null;
   let trackingLoaded = false;
   let returnsCache = null;
@@ -698,6 +768,16 @@
     inventoryLoaded = false;
     inboundCache = null;
     inboundLoaded = false;
+    outboundCache = null;
+    outboundLoaded = false;
+    const outTbody = document.getElementById('out-tbody');
+    if (outTbody) outTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading orders…</td></tr>';
+    ['out-kpi-orders','out-kpi-boxes','out-kpi-units','out-kpi-diff'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    const outDetail = document.getElementById('out-detail');
+    if (outDetail) outDetail.style.display = 'none';
     trackingCache = null;
     trackingLoaded = false;
     returnsCache = null;
@@ -880,6 +960,8 @@
     trackingCache = null; trackingLoaded = false;
     returnsCache = null; returnsLoaded = false;
     inboundCache = null; inboundLoaded = false;
+    outboundCache = null; outboundLoaded = false;
+    document.getElementById('out-detail').style.display = 'none';
 
     const label = viewAsSelect.options[viewAsSelect.selectedIndex].textContent;
     viewAsNote.textContent = asClient
@@ -896,6 +978,7 @@
     const target = active ? active.dataset.tab : 'dashboard';
     if (target === 'inventory') loadInventory();
     if (target === 'inbound') loadInbound();
+    if (target === 'outbound') loadOutbound();
     if (target === 'tracking') { loadTracking(); loadReturns(); }
   }
 
@@ -932,12 +1015,14 @@
       document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
       document.getElementById('tab-inventory').classList.toggle('hidden', target !== 'inventory');
       document.getElementById('tab-inbound').classList.toggle('hidden', target !== 'inbound');
+      document.getElementById('tab-outbound').classList.toggle('hidden', target !== 'outbound');
       document.getElementById('tab-tracking').classList.toggle('hidden', target !== 'tracking');
       // Lazy load on first visit (within the current session). The
       // resetSessionState helper clears these flags at every login/logout
       // so the next user always triggers a fresh fetch.
       if (target === 'inventory' && !inventoryLoaded) loadInventory();
       if (target === 'inbound' && !inboundLoaded) loadInbound();
+      if (target === 'outbound' && !outboundLoaded) loadOutbound();
       if (target === 'tracking' && !trackingLoaded) loadTracking();
       if (target === 'tracking' && !returnsLoaded) loadReturns();
     });
@@ -2028,6 +2113,115 @@
         '</tr>';
     }).join('');
   }
+
+  // ---------- Outbound (pickup / B2B packing lists) ----------
+  // Source: /portal-outbound, which builds the packing list with the same
+  // code the warehouse uses (frm-packlist core), filtered to this client.
+  const OUT_STATE = {
+    OK: ['#DCFCE7', '#166534', 'OK'],
+    SHORT: ['#FEE2E2', '#991B1B', 'Short'],
+    MISSING: ['#FEE2E2', '#991B1B', 'Not packed'],
+    OVER: ['#FEF3C7', '#92400E', 'Over'],
+    NOT_REQUESTED: ['#FEF3C7', '#92400E', 'Not requested'],
+  };
+  function outBadge(state) {
+    const c = OUT_STATE[state] || ['#F1F5F9', '#334155', state];
+    return '<span style="background:' + c[0] + ';color:' + c[1] + ';font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;">' + esc(c[2]) + '</span>';
+  }
+  function outUrl(extra) {
+    return `${API_BASE}/portal-outbound?portal_user=${encodeURIComponent(portalUser)}${asClientQS()}${extra || ''}`;
+  }
+
+  async function loadOutbound() {
+    const tbody = document.getElementById('out-tbody');
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading orders…</td></tr>';
+    const fetchForUser = portalUser;
+    try {
+      const res = await fetch(outUrl());
+      const json = await res.json();
+      if (portalUser !== fetchForUser) return; // session changed mid-flight
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load orders');
+      outboundCache = json;
+      outboundLoaded = true;
+
+      const orders = json.orders || [];
+      document.getElementById('out-kpi-orders').textContent = orders.length;
+      document.getElementById('out-kpi-boxes').textContent = orders.reduce((n, o) => n + (o.boxes || 0), 0);
+      document.getElementById('out-kpi-units').textContent = orders.reduce((n, o) => n + (o.units_packed || 0), 0);
+      document.getElementById('out-kpi-diff').textContent = orders.filter((o) => o.differences > 0).length;
+      document.getElementById('out-count-label').textContent = orders.length + ' order' + (orders.length === 1 ? '' : 's');
+
+      // Admin all-clients view gets a Client column in front.
+      const thead = document.getElementById('out-thead-row');
+      const hasClientCol = thead.firstElementChild && thead.firstElementChild.dataset.client === '1';
+      if (json.isAdmin && !hasClientCol) thead.insertAdjacentHTML('afterbegin', '<th data-client="1">Client</th>');
+      if (!json.isAdmin && hasClientCol) thead.firstElementChild.remove();
+      const cols = json.isAdmin ? 9 : 8;
+
+      if (!orders.length) {
+        tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty-state">No pickup or B2B orders yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = orders.map((o) => {
+        const status = o.status === 'closed' || o.status === 'shipped' ? 'Completed' : 'In progress';
+        const date = (o.closed_at || o.created_at || '').slice(0, 10);
+        const diff = !o.units_requested ? '<span class="muted">—</span>'
+          : o.differences ? outBadge('SHORT').replace('Short', o.differences + ' line' + (o.differences === 1 ? '' : 's'))
+          : outBadge('OK');
+        return '<tr>' +
+          (json.isAdmin ? '<td>' + esc(o.client || '') + '</td>' : '') +
+          '<td style="font-family:Consolas,Menlo,monospace;font-size:12px;"><a href="#" data-out-id="' + esc(o.id) + '">' + esc(o.reference) + '</a></td>' +
+          '<td>' + (o.kind === 'pickup' ? 'Pickup' : 'B2B') + '</td>' +
+          '<td>' + status + '</td>' +
+          '<td>' + esc(date) + '</td>' +
+          '<td style="text-align:right">' + (o.boxes || 0) + '</td>' +
+          '<td style="text-align:right">' + (o.units_packed || 0) + ' / ' + (o.units_requested || '—') + '</td>' +
+          '<td>' + diff + '</td>' +
+          '<td><a href="#" data-out-id="' + esc(o.id) + '">View</a> · <a href="' + outUrl('&id=' + encodeURIComponent(o.id) + '&format=xlsx') + '">Excel</a></td>' +
+          '</tr>';
+      }).join('');
+      tbody.querySelectorAll('[data-out-id]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); openOutbound(a.dataset.outId); }));
+    } catch (err) {
+      if (portalUser !== fetchForUser) return;
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Couldn\'t load orders. Refresh in a moment, or contact support if this persists.</td></tr>';
+    }
+  }
+
+  async function openOutbound(id) {
+    const box = document.getElementById('out-detail');
+    const fetchForUser = portalUser;
+    box.style.display = 'block';
+    document.getElementById('out-detail-title').textContent = 'Loading…';
+    document.getElementById('out-cmp-tbody').innerHTML = '';
+    document.getElementById('out-box-tbody').innerHTML = '';
+    try {
+      const res = await fetch(outUrl('&id=' + encodeURIComponent(id)));
+      const j = await res.json();
+      if (portalUser !== fetchForUser) return;
+      if (!res.ok || !j.ok) throw new Error(j.error || 'Failed');
+      const t = j.totals || {};
+      document.getElementById('out-detail-title').textContent = j.ref.reference;
+      document.getElementById('out-detail-sub').textContent =
+        j.boxes.length + ' boxes · ' + t.packed + ' of ' + t.requested + ' units' + (j.total_weight_lb ? ' · ' + j.total_weight_lb + ' lb' : '');
+      document.getElementById('out-detail-print').href = outUrl('&id=' + encodeURIComponent(id) + '&format=html');
+      document.getElementById('out-detail-xlsx').href = outUrl('&id=' + encodeURIComponent(id) + '&format=xlsx');
+      document.getElementById('out-cmp-tbody').innerHTML = (j.compare || []).map((r) =>
+        '<tr><td style="font-family:Consolas,Menlo,monospace;font-size:12px;">' + esc(r.sku) + '</td><td>' + esc(r.description || '') + '</td>' +
+        '<td style="text-align:right">' + r.qty_requested + '</td><td style="text-align:right">' + r.qty_packed + '</td><td>' + outBadge(r.state) + '</td></tr>'
+      ).join('') || '<tr><td colspan="5" class="empty-state">No lines.</td></tr>';
+      document.getElementById('out-box-tbody').innerHTML = (j.boxes || []).map((b, i) => b.lines.map((l, k) =>
+        '<tr>' + (k === 0 ? '<td rowspan="' + b.lines.length + '" style="vertical-align:top;font-family:Consolas,Menlo,monospace;font-size:12px;"><strong>' + esc(b.code) + '</strong><br><span class="muted">Box ' + (i + 1) + ' of ' + j.boxes.length + '</span></td>' : '') +
+        '<td style="font-family:Consolas,Menlo,monospace;font-size:12px;">' + esc(l.sku) + '</td><td>' + esc(l.asin || '') + '</td><td>' + esc(l.fnsku || '') + '</td><td style="text-align:right">' + l.qty + '</td></tr>'
+      ).join('')).join('') || '<tr><td colspan="5" class="empty-state">No boxes yet.</td></tr>';
+      box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      if (portalUser !== fetchForUser) return;
+      document.getElementById('out-detail-title').textContent = 'Couldn\'t load this order.';
+    }
+  }
+
+  document.getElementById('out-refresh-btn').addEventListener('click', () => loadOutbound());
+  document.getElementById('out-detail-close').addEventListener('click', () => { document.getElementById('out-detail').style.display = 'none'; });
 
   async function loadInbound() {
     inbTbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading inbound packages…</td></tr>';
