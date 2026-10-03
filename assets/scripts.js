@@ -135,7 +135,7 @@
       outbound:     2.00,   // FUL_OUT_CART (D7 — was $1, now $2)
       bubble:       0.80,   // PRP_BUBBLE (was $0.15 in v1, now $0.80)
       sticker:      0.25,   // PRP_ROL (was $0.20)
-      dropshipment: 6.00,   // FUL_OUT_DROP
+      dropshipment: 10.00,  // FUL_OUT_DROP — flat all-in Mercado Libre / cross-border (since 2026-10-03)
       // FUL_PP1 weight tiers (small≤1.5lb $3, standard 1.5-3lb $4, oversized >3lb $5)
       fulfillment:  { small: 3.00, standard: 4.00, oversized: 5.00 },
     };
@@ -263,18 +263,18 @@
       fulfillmentUnit: 'Órdenes por mes', fulfillmentWord: ' órdenes',
       fbaNote: 'Preparación Amazon FBA — etiquetado FNSKU ($0.55/unidad) + recepción entrante ($2.50/caja). Certificado SPN.',
       fbaUnit: 'Unidades por mes', fbaWord: ' unidades',
-      dropNote: 'Drop-Shipment (LATAM) — $6.00 por paquete: inspección, impresión de etiqueta y entrega al transportista.',
-      dropUnit: 'Paquetes por mes', dropWord: ' paquetes',
-      dropResultNote: 'La tarifa plana de $6/paquete aplica solo a órdenes de MercadoLibre. Otros destinos LATAM — contáctanos para una cotización personalizada.',
+      dropNote: 'Mercado Libre / Cross-Border — $10.00 por orden, todo incluido: recepción, empaque, etiqueta y entrega en el hub. Mínimo $150/mes.',
+      dropUnit: 'Órdenes por mes', dropWord: ' órdenes',
+      dropResultNote: 'Tarifa plana todo incluido de $10/orden con mínimo de $150/mes; el almacenaje se cobra desde el día de recepción. Otros canales cross-border — contáctanos para cotizar.',
       defaultResultNote: 'excluye costos de envío y servicios especializados opcionales',
     } : {
       fulfillmentNote: 'Shopify / DTC Fulfillment — pick, pack & label priced by order weight: $3.00 (≤1.5 lb) · $4.00 (1.5–3 lb) · $5.00 (>3 lb).',
       fulfillmentUnit: 'Orders per month', fulfillmentWord: ' orders',
       fbaNote: 'Amazon FBA Prep — FNSKU labeling ($0.55/unit) + inbound receiving ($2.50/carton). SPN-certified.',
       fbaUnit: 'Units per month', fbaWord: ' units',
-      dropNote: 'Drop-Shipment (LATAM) — $6.00 per package: inspection, label print & carrier handoff.',
-      dropUnit: 'Packages per month', dropWord: ' packages',
-      dropResultNote: 'Flat $6/package applies to MercadoLibre orders only. Other LATAM destinations — contact us for a custom quote.',
+      dropNote: 'Mercado Libre / Cross-Border — $10.00 per order, all-in: receiving, pack, label & hub drop-off. $150/month minimum.',
+      dropUnit: 'Orders per month', dropWord: ' orders',
+      dropResultNote: 'Flat all-in $10/order with a $150 monthly minimum; storage is billed from the day of receipt. Other cross-border channels — contact us for a quote.',
       defaultResultNote: DEFAULT_NOTE,
     };
 
@@ -357,8 +357,8 @@
         });
 
       } else if (service === 'dropshipment') {
-        // Flat $6/package (MercadoLibre). No size, no addons.
-        total += units * RATES.dropshipment;
+        // Flat all-in rate per order (Mercado Libre / cross-border), $150 monthly minimum.
+        total += Math.max(units * RATES.dropshipment, 150);
       }
 
       // Optional storage estimate (any service that allows it, when toggled on).
