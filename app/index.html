@@ -206,6 +206,25 @@
     background: #fef2f2; border-bottom: 1px solid var(--fr-border);
   }
   .result-row { padding: 8px 0; border-bottom: 1px solid var(--fr-border); font-size: 13px; }
+  /* ---- Exceptions (Delivery Guard) ---- */
+  .tab-badge { display:inline-block; min-width:18px; padding:1px 6px; margin-left:6px; border-radius:999px; background:#b91c1c; color:#fff; font-size:11px; font-weight:700; line-height:16px; }
+  .exc-card { background:#fff; border:1px solid var(--fr-border); border-left:4px solid #b45309; border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+  .exc-card.decided { border-left-color: var(--fr-blue); }
+  .exc-card h4 { font-size:16px; margin-bottom:4px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .exc-kind { display:inline-block; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:700; background:#fef3c7; color:#b45309; text-transform:uppercase; letter-spacing:.4px; }
+  .exc-meta { font-size:13px; color:var(--fr-gray); margin:6px 0 10px; line-height:1.6; }
+  .exc-explain { font-size:13px; background:#f8fafc; border:1px solid var(--fr-border); border-radius:8px; padding:10px 12px; margin-bottom:12px; line-height:1.55; }
+  .exc-due { font-size:12px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:6px 10px; display:inline-block; margin-bottom:12px; }
+  .exc-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .exc-actions button { width:auto; }
+  .btn-outline { background:#fff; border:1px solid var(--fr-border); color:var(--fr-dark); padding:9px 14px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; }
+  .btn-outline:hover { border-color: var(--fr-green); color: var(--fr-green); }
+  .exc-form { margin-top:12px; padding-top:12px; border-top:1px dashed var(--fr-border); }
+  .exc-form input, .exc-form textarea { margin-bottom:10px; }
+  .exc-opt { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid var(--fr-border); border-radius:8px; margin-bottom:8px; cursor:pointer; font-size:13px; }
+  .exc-opt input { width:auto; margin:3px 0 0; }
+  .exc-opt:hover { background: var(--fr-bg); }
+  .addr-flag { display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; font-size:10px; font-weight:700; background:#fef3c7; color:#b45309; text-transform:uppercase; }
   .result-row:last-child { border-bottom: none; }
   @media (max-width: 720px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
@@ -262,6 +281,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="dashboard">Dashboard</button>
       <button class="tab" data-tab="orders">Orders</button>
+      <button class="tab" data-tab="exceptions">Exceptions<span class="tab-badge hidden" id="exc-badge">0</span></button>
       <button class="tab" data-tab="bulk">Bulk Upload</button>
       <button class="tab" data-tab="inventory">Inventory</button>
       <button class="tab" data-tab="inbound">Inbound</button>
@@ -330,7 +350,9 @@
           <div style="margin-top: 10px; font-size: 12px; color: var(--fr-gray);">
             <p style="margin-bottom: 8px;"><strong>Format:</strong> ShipStation standard export (47-column layout). You can upload the file you already export from ShipStation — no reformatting needed.</p>
             <p style="margin-bottom: 8px;"><strong>Required columns:</strong> Order #, Recipient Full Name, Address Line 1, City, State, Postal Code, Country Code, Item SKU, Item Quantity</p>
-            <p style="margin-bottom: 8px;"><strong>Optional columns we use:</strong> Recipient Phone, Address Line 2, Shipping Service, Notes to the Buyer, Item Name / Title, Item Unit Price</p>
+            <p style="margin-bottom: 8px;"><strong>Optional columns we use:</strong> Recipient Phone, <strong>Buyer Email</strong>, Address Line 2, Shipping Service, Notes to the Buyer, Item Name / Title, Item Unit Price</p>
+            <p style="margin-bottom: 8px;"><strong>Buyer Email = your END CUSTOMER's email.</strong> It is where the carrier's shipping, out-for-delivery and delivery notices go, with the link where the customer can sign digitally or change the delivery. Strongly recommended.</p>
+            <p style="margin-bottom: 8px;"><strong>Address Line 2:</strong> only a real apartment, suite, unit or floor. <strong>Leave it blank for a house</strong> — values like "N/A", "House" or "-" are removed automatically because carriers read them as a wrong unit number.</p>
             <p><strong>Notes:</strong> Country Code accepts "United States" or "US". Item Quantity must be 1 or more. For an order with multiple items, repeat the Order # on each row with different Item SKU. The other 32 ShipStation columns (Order Total, Buyer info, weights, etc.) are accepted but ignored.</p>
           </div>
         </details>
@@ -548,6 +570,40 @@
       </p>
     </section>
 
+    <!-- ---- EXCEPTIONS TAB (Delivery Guard, Nov 2026) ---- -->
+    <section id="tab-exceptions" class="hidden">
+      <h2 class="page-title">Exceptions</h2>
+      <p class="page-sub">Orders that need a decision from you: an address the carrier could not validate before shipping, or a package the carrier could not deliver.</p>
+
+      <div id="exc-msg"></div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card pending"><div class="kpi-label">Waiting for you</div><div class="kpi-value" id="exc-kpi-waiting">&mdash;</div></div>
+        <div class="kpi-card processing"><div class="kpi-label">In progress at FR</div><div class="kpi-value" id="exc-kpi-progress">&mdash;</div></div>
+        <div class="kpi-card exported"><div class="kpi-label">Resolved (60 days)</div><div class="kpi-value" id="exc-kpi-resolved">&mdash;</div></div>
+        <div class="kpi-card"><div class="kpi-label">Decide within</div><div class="kpi-value" style="font-size:20px">2 business days</div></div>
+      </div>
+
+      <div class="toolbar">
+        <button id="exc-refresh-btn" type="button" style="background:none;border:1px solid var(--fr-border);color:var(--fr-gray);padding:9px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Refresh</button>
+        <span style="margin-left:auto;font-size:12px;color:var(--fr-gray);" id="exc-count-label">&mdash;</span>
+      </div>
+
+      <div id="exc-open"><div class="panel"><p class="empty-state">Loading&hellip;</p></div></div>
+
+      <h3 style="font-size:16px;margin:24px 0 8px;">Resolved</h3>
+      <div class="panel" style="padding:0;">
+        <table>
+          <thead><tr id="exc-thead-row"><th>Order</th><th>Case</th><th>Tracking</th><th>Decision</th><th>Resolved</th></tr></thead>
+          <tbody id="exc-recent-tbody"><tr><td colspan="5" class="empty-state">&mdash;</td></tr></tbody>
+        </table>
+      </div>
+
+      <p class="muted" style="margin-top:14px;font-size:12px;line-height:1.6;">
+        <strong>How it works.</strong> Before shipping, an order whose address does not pass the carrier's validation is held and shown here: confirm it if it is right (for example, a house with no apartment number) or correct it, and it ships. After shipping, we follow every package; when the carrier reports a problem we email you and the case appears here. If we do not receive a decision within 2 business days, the package is left to return and goes back to your inventory. Carrier charges for any action are billed at carrier cost plus the agreed percentage.
+      </p>
+    </section>
+
     <!-- ---- TRACKING TAB ---- -->
     <section id="tab-tracking" class="hidden">
       <h2 class="page-title">Tracking</h2>
@@ -639,10 +695,13 @@
       </div>
     </div>
 
+    <label>Recipient email <span style="font-weight:400">(end customer — receives the tracking and delivery notices)</span></label>
+    <input type="email" id="f-recipient_email" placeholder="customer@example.com" />
+
     <div class="section-label">Shipping Address</div>
     <label>Address line 1 *</label>
     <input type="text" id="f-address_line1" />
-    <label>Address line 2</label>
+    <label>Address line 2 <span style="font-weight:400">(apartment / suite / unit — leave blank for a house)</span></label>
     <input type="text" id="f-address_line2" />
     <div class="form-row">
       <div>
@@ -778,6 +837,7 @@
   let trackingLoaded = false;
   let returnsCache = null;
   let returnsLoaded = false;
+  let excCache = null;
 
   // ---------- Helper: reset ALL per-session state so cross-user leakage
   // is impossible. Called on logout AND at the start of every login so that
@@ -807,6 +867,11 @@
     trackingLoaded = false;
     returnsCache = null;
     returnsLoaded = false;
+    excCache = null;
+    const excOpen = document.getElementById('exc-open');
+    if (excOpen) excOpen.innerHTML = '<div class="panel"><p class="empty-state">Loading…</p></div>';
+    const excBadge = document.getElementById('exc-badge');
+    if (excBadge) excBadge.classList.add('hidden');
 
     // Wipe UI for the data-bearing tabs so a flash of stale content can't
     // appear between the new user clicking a tab and the fetch returning.
@@ -893,6 +958,7 @@
     document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
     document.getElementById('tab-dashboard').classList.remove('hidden');
     document.getElementById('tab-orders').classList.add('hidden');
+    document.getElementById('tab-exceptions').classList.add('hidden');
     document.getElementById('tab-bulk').classList.add('hidden');
     document.getElementById('tab-inventory').classList.add('hidden');
     document.getElementById('tab-tracking').classList.add('hidden');
@@ -922,6 +988,7 @@
     await loadClientConfig();
     await loadDashboard();
     await loadOrders();
+    refreshExceptionsBadge();
   }
 
   // ---------- Internal "View as client" ----------
@@ -986,6 +1053,7 @@
     returnsCache = null; returnsLoaded = false;
     inboundCache = null; inboundLoaded = false;
     outboundCache = null; outboundLoaded = false;
+    excCache = null;
     document.getElementById('out-detail').style.display = 'none';
 
     const label = viewAsSelect.options[viewAsSelect.selectedIndex].textContent;
@@ -1005,6 +1073,7 @@
     if (target === 'inbound') loadInbound();
     if (target === 'outbound') loadOutbound();
     if (target === 'tracking') { loadTracking(); loadReturns(); }
+    if (target === 'exceptions') loadExceptions(); else refreshExceptionsBadge();
   }
 
   viewAsSelect.addEventListener('change', () => { applyViewAs(); });
@@ -1037,6 +1106,7 @@
       const target = tab.dataset.tab;
       document.getElementById('tab-dashboard').classList.toggle('hidden', target !== 'dashboard');
       document.getElementById('tab-orders').classList.toggle('hidden', target !== 'orders');
+      document.getElementById('tab-exceptions').classList.toggle('hidden', target !== 'exceptions');
       document.getElementById('tab-bulk').classList.toggle('hidden', target !== 'bulk');
       document.getElementById('tab-inventory').classList.toggle('hidden', target !== 'inventory');
       document.getElementById('tab-inbound').classList.toggle('hidden', target !== 'inbound');
@@ -1048,6 +1118,7 @@
       if (target === 'inventory' && !inventoryLoaded) loadInventory();
       if (target === 'inbound' && !inboundLoaded) loadInbound();
       if (target === 'outbound' && !outboundLoaded) loadOutbound();
+      if (target === 'exceptions') loadExceptions();
       if (target === 'tracking' && !trackingLoaded) loadTracking();
       if (target === 'tracking' && !returnsLoaded) loadReturns();
     });
@@ -1125,7 +1196,7 @@
       tr.className = 'order-row';
       tr.innerHTML = `
         <td><strong>${esc(o.order_number)}</strong></td>
-        <td><span class="status-badge ${o.status}">${esc(o.status)}</span></td>
+        <td><span class="status-badge ${o.status}">${esc(o.status)}</span>${o.address_check === 'warning' ? '<span class="addr-flag" title="Address held — see the Exceptions tab">Check address</span>' : ''}</td>
         <td>${esc(o.recipient_name)}</td>
         <td>${esc(dest)}</td>
         <td>${itemCount} (${items.length} SKU${items.length === 1 ? '' : 's'})</td>
@@ -1145,6 +1216,8 @@
       .filter(Boolean).join(' · ');
     let html = `<p style="font-size:12px;color:var(--fr-gray);margin-bottom:10px;">Ship to: ${esc(addr)}`;
     if (order.shipping_service) html += ` &nbsp;|&nbsp; ${esc(order.shipping_service)}`;
+    if (order.recipient_email) html += ` &nbsp;|&nbsp; ${esc(order.recipient_email)}`;
+    if (order.ss_tracking_number) html += ` &nbsp;|&nbsp; Tracking ${esc(order.ss_tracking_number)}`;
     html += `</p>`;
     if (items.length === 0) return html + '<p style="font-size:12px;color:var(--fr-gray);">No items.</p>';
     html += '<table><thead><tr><th>SKU</th><th>Name</th><th>Qty</th><th>Unit Price</th><th>Validated</th></tr></thead><tbody>';
@@ -1190,7 +1263,7 @@
 
   document.getElementById('new-order-btn').addEventListener('click', () => {
     document.getElementById('modal-error').classList.add('hidden');
-    ['recipient_name','recipient_phone','shipping_service','address_line1','address_line2','city','state','postal_code','notes_to_buyer']
+    ['recipient_name','recipient_phone','recipient_email','shipping_service','address_line1','address_line2','city','state','postal_code','notes_to_buyer']
       .forEach((f) => { document.getElementById('f-' + f).value = ''; });
     document.getElementById('f-country_code').value = 'US';
     itemsContainer.innerHTML = '';
@@ -1205,8 +1278,13 @@
     modalError.classList.add('hidden');
 
     const order = {};
-    ['recipient_name','recipient_phone','shipping_service','address_line1','address_line2','city','state','postal_code','country_code','notes_to_buyer']
+    ['recipient_name','recipient_phone','recipient_email','shipping_service','address_line1','address_line2','city','state','postal_code','country_code','notes_to_buyer']
       .forEach((f) => { order[f] = document.getElementById('f-' + f).value.trim(); });
+    if (order.recipient_email && !EMAIL_RE.test(order.recipient_email)) {
+      modalError.textContent = 'Recipient email is not a valid email address (leave it blank if you do not have it).';
+      modalError.classList.remove('hidden');
+      return;
+    }
 
     const required = ['recipient_name','address_line1','city','state','postal_code','country_code'];
     for (const f of required) {
@@ -1317,6 +1395,8 @@
     return trimmed;
   }
   const MAX_ROWS = 500;
+  const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[a-z]{2,}$/i;
+  const LINE2_PLACEHOLDER_RE = /^\s*(n\/?a|none|null|house|home|no|nil|-+|\.+|0|#)\s*$/i;
 
   let parsedRows = [];   // [{row:{}, row_index:N, errors:[]}]
 
@@ -1382,6 +1462,10 @@
       const p = parseFloat(row['Item Unit Price']);
       if (Number.isNaN(p) || p < 0) errors.push('Item Unit Price must be a non-negative number');
     }
+    // Delivery Guard: same cleanup the server applies, shown in the preview.
+    if (row['Address Line 2'] && LINE2_PLACEHOLDER_RE.test(row['Address Line 2'])) row['Address Line 2'] = '';
+    const em = String(row['Buyer Email'] || row['Recipient Email'] || '').trim();
+    if (em && !EMAIL_RE.test(em)) errors.push('Buyer Email is not a valid email address');
     return errors;
   }
 
@@ -1417,7 +1501,9 @@
       const PREFILLED_ROWS = 20;
       const rows = [TEMPLATE_HEADERS.join(',')];
       for (let i = 0; i < PREFILLED_ROWS; i++) {
-        rows.push(TEMPLATE_HEADERS.map((h) => csvCell(defaults[h] || '')).join(','));
+        // Buyer Email is left blank on purpose: it must be the END CUSTOMER's
+        // email, not the client's own default (Delivery Guard, Nov 2026).
+        rows.push(TEMPLATE_HEADERS.map((h) => csvCell(h === 'Buyer Email' ? '' : (defaults[h] || ''))).join(','));
       }
       lines = rows;
       const company = (clientConfig.client && clientConfig.client.company) || '';
@@ -1675,6 +1761,256 @@
     // Jump user to Orders tab to see their new entries.
     document.querySelector('.tab[data-tab="orders"]').click();
   });
+
+  // ---------- Exceptions (Delivery Guard, Nov 2026) ----------
+  // Cases come from portal-exceptions (shipment_exceptions). Two families:
+  //   address_pre_ship → the order is ON HOLD in ShipStation; the client
+  //     confirms or corrects the address and the hold is released.
+  //   after shipping   → reship / return to stock / reroute, approving the
+  //     carrier cost; FR carries it out.
+  const EXC_KIND_LABEL = {
+    address_pre_ship: 'Address check before shipping',
+    address: 'Address problem',
+    access_point: 'Held at UPS Access Point',
+    attempt: 'Delivery attempt failed',
+    return_to_sender: 'Returning to sender',
+    exception: 'Delivery exception',
+  };
+  const EXC_STATE_LABEL = {
+    awaiting_client: 'Waiting for your decision',
+    decided: 'Decision received — FR is working on it',
+    in_progress: 'In progress at FR',
+    resolved: 'Resolved',
+    closed: 'Closed',
+  };
+  const EXC_DECISION_HELP = {
+    reship: ['Reship a new unit now', 'We ship another unit from your stock right away (to the same address, or to the address you enter below). The original package comes back to stock when the carrier returns it.'],
+    return_to_stock: ['Let it return and put it back in stock', 'We do nothing with the carrier; when the package arrives we receive it against this order and it returns to your inventory.'],
+    reroute: ['Send it to a new address', 'We ask the carrier to deliver the same package to the new address you enter below. If the carrier no longer allows it, we ship a new unit there instead and tell you.'],
+  };
+  const excMsg = () => document.getElementById('exc-msg');
+  function fmtDate(iso, withTime) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return withTime
+      ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+      : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  function excUrl() {
+    return `${API_BASE}/portal-exceptions?portal_user=${encodeURIComponent(portalUser)}${asClientQS()}`;
+  }
+
+  async function refreshExceptionsBadge() {
+    try {
+      const res = await fetch(excUrl());
+      const json = await res.json();
+      if (!res.ok || !json.ok) return;
+      excCache = json;
+      setExcBadge(json);
+    } catch (e) { /* badge is a convenience */ }
+  }
+  function setExcBadge(json) {
+    const n = (json.open || []).filter((e) => e.state === 'awaiting_client').length;
+    const b = document.getElementById('exc-badge');
+    b.textContent = n;
+    b.classList.toggle('hidden', n === 0);
+  }
+
+  async function loadExceptions() {
+    const box = document.getElementById('exc-open');
+    box.innerHTML = '<div class="panel"><p class="empty-state">Loading…</p></div>';
+    excMsg().innerHTML = '';
+    try {
+      const res = await fetch(excUrl());
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load exceptions');
+      excCache = json;
+      setExcBadge(json);
+      renderExceptions();
+    } catch (err) {
+      box.innerHTML = `<div class="panel"><p class="empty-state">${esc(err.message)}</p></div>`;
+    }
+  }
+
+  function renderExceptions() {
+    const json = excCache || { open: [], recent: [] };
+    const open = json.open || [];
+    const recent = json.recent || [];
+    const waiting = open.filter((e) => e.state === 'awaiting_client');
+    document.getElementById('exc-kpi-waiting').textContent = waiting.length;
+    document.getElementById('exc-kpi-progress').textContent = open.length - waiting.length;
+    document.getElementById('exc-kpi-resolved').textContent = recent.length;
+    document.getElementById('exc-count-label').textContent = `${open.length} open · ${recent.length} resolved`;
+    const showClient = !!json.isAdmin;
+
+    const box = document.getElementById('exc-open');
+    if (!open.length) {
+      box.innerHTML = `<div class="panel"><p class="empty-state">${json.mode === 'no_client'
+        ? 'No client linked to this login.'
+        : 'Nothing needs your attention. 👍'}</p></div>`;
+    } else {
+      box.innerHTML = open.map((e) => excCardHtml(e, showClient)).join('');
+      open.forEach((e) => wireExcCard(e));
+    }
+
+    const tb = document.getElementById('exc-recent-tbody');
+    tb.innerHTML = recent.length ? recent.map((e) => `<tr>
+        <td><strong>${esc(e.order_number)}</strong>${showClient && e.client ? `<div class="muted" style="font-size:11px">${esc(e.client)}</div>` : ''}</td>
+        <td>${esc(EXC_KIND_LABEL[e.kind] || e.kind)}</td>
+        <td>${e.tracking_number ? (e.tracking_url ? `<a href="${esc(e.tracking_url)}" target="_blank" rel="noopener">${esc(e.tracking_number)}</a>` : esc(e.tracking_number)) : '—'}</td>
+        <td>${esc(e.decision_label || e.resolution_note || '—')}</td>
+        <td>${fmtDate(e.resolved_at, true)}</td>
+      </tr>`).join('') : '<tr><td colspan="5" class="empty-state">No resolved cases in the last 60 days.</td></tr>';
+  }
+
+  function addrLine(st) {
+    if (!st) return '';
+    return [st.name, st.street1, st.street2, [st.city, st.state, st.postalCode].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+  }
+
+  function excCardHtml(e, showClient) {
+    const id = esc(e.id);
+    const trk = e.tracking_number
+      ? `${esc(e.carrier || '')} ${e.tracking_url ? `<a href="${esc(e.tracking_url)}" target="_blank" rel="noopener">${esc(e.tracking_number)}</a>` : esc(e.tracking_number)}`
+      : '';
+    const meta = [
+      showClient && e.client ? `<strong>${esc(e.client)}</strong>` : '',
+      trk ? `Tracking: ${trk}` : '',
+      e.carrier_status ? `Carrier: ${esc(e.carrier_status)}` : '',
+      e.carrier_detail ? `Detail: ${esc(e.carrier_detail)}` : '',
+      e.ship_to ? `Ship to: ${esc(addrLine(e.ship_to))}` : '',
+      `Detected: ${fmtDate(e.detected_at, true)}`,
+    ].filter(Boolean).join('<br>');
+
+    let body = '';
+    if (e.state !== 'awaiting_client') {
+      body = `<div class="exc-explain"><strong>${esc(EXC_STATE_LABEL[e.state] || e.state)}.</strong> ${e.decision_label ? 'Decision: ' + esc(e.decision_label) + '.' : ''} ${e.decided_at ? 'On ' + fmtDate(e.decided_at, true) + '.' : ''}</div>`;
+    } else if (e.kind === 'address_pre_ship') {
+      const st = e.ship_to || {};
+      body = `
+        <div class="exc-due">Order on hold — it ships as soon as you decide. Please answer by ${fmtDate(e.due_at)}.</div>
+        <div class="exc-actions">
+          <button class="btn-secondary" data-exc-confirm="${id}">The address is correct — ship it</button>
+          <button class="btn-outline" data-exc-showfix="${id}">Correct the address</button>
+        </div>
+        <div class="exc-form hidden" id="exc-fix-${id}">
+          <label>Recipient name</label><input type="text" data-f="name" value="${esc(st.name || '')}">
+          <label>Address line 1 *</label><input type="text" data-f="street1" value="${esc(st.street1 || '')}">
+          <label>Address line 2 <span style="font-weight:400">(apartment / suite / unit — blank for a house)</span></label><input type="text" data-f="street2" value="${esc(st.street2 || '')}">
+          <div class="form-row">
+            <div><label>City *</label><input type="text" data-f="city" value="${esc(st.city || '')}"></div>
+            <div><label>State * (2 letters)</label><input type="text" data-f="state" maxlength="2" value="${esc(st.state || '')}"></div>
+          </div>
+          <div class="form-row">
+            <div><label>ZIP code *</label><input type="text" data-f="postalCode" value="${esc(st.postalCode || '')}"></div>
+            <div><label>Phone</label><input type="text" data-f="phone" value="${esc(st.phone || '')}"></div>
+          </div>
+          <button class="btn-secondary" data-exc-fix="${id}">Save the corrected address and ship</button>
+        </div>`;
+    } else {
+      const opts = (e.allowed_decisions || []).map((d) => `
+        <label class="exc-opt"><input type="radio" name="exc-dec-${id}" value="${esc(d)}">
+          <span><strong>${esc((EXC_DECISION_HELP[d] || [d])[0])}</strong><br><span class="muted">${esc((EXC_DECISION_HELP[d] || ['', ''])[1])}</span></span></label>`).join('');
+      body = `
+        <div class="exc-due">Please decide by ${fmtDate(e.due_at)}. Without a decision, the package is left to return and goes back to your inventory.</div>
+        ${opts}
+        <div class="exc-form hidden" id="exc-addr-${id}">
+          <p class="muted" style="font-size:12px;margin-bottom:8px">New delivery address. Use the recipient name <strong>exactly as it appears on their ID</strong>.</p>
+          <label>Recipient name *</label><input type="text" data-f="name">
+          <label>Address line 1 *</label><input type="text" data-f="street1">
+          <label>Address line 2 <span style="font-weight:400">(apartment / suite / unit — blank for a house)</span></label><input type="text" data-f="street2">
+          <div class="form-row">
+            <div><label>City *</label><input type="text" data-f="city"></div>
+            <div><label>State * (2 letters)</label><input type="text" data-f="state" maxlength="2"></div>
+          </div>
+          <div class="form-row">
+            <div><label>ZIP code *</label><input type="text" data-f="postalCode"></div>
+            <div><label>Phone</label><input type="text" data-f="phone"></div>
+          </div>
+        </div>
+        <label style="margin-top:6px">Note for our team (optional)</label>
+        <textarea id="exc-note-${id}" placeholder="Anything we should know"></textarea>
+        <label class="exc-opt" style="border-color:#fde68a;background:#fffbeb"><input type="checkbox" id="exc-cost-${id}">
+          <span>I approve the carrier charges for this action (new label, return or change fees), billed at carrier cost plus the agreed percentage.</span></label>
+        <div class="exc-actions"><button class="btn-secondary" data-exc-decide="${id}">Send decision</button></div>`;
+    }
+
+    return `<div class="exc-card${e.state !== 'awaiting_client' ? ' decided' : ''}" id="exc-card-${id}">
+      <h4>Order ${esc(e.order_number)} <span class="exc-kind">${esc(EXC_KIND_LABEL[e.kind] || e.kind)}</span></h4>
+      <div class="exc-meta">${meta}</div>
+      <div class="exc-explain">${esc(e.explanation || '')}</div>
+      ${body}
+    </div>`;
+  }
+
+  function readAddr(container) {
+    const out = {};
+    container.querySelectorAll('[data-f]').forEach((el) => { out[el.dataset.f] = el.value.trim(); });
+    if (out.state) out.state = out.state.toUpperCase();
+    return out;
+  }
+
+  async function sendExcDecision(id, decision, data, costApproved, btn) {
+    if (isPortalAdmin() && !asClient && !window.confirm('You are deciding from the internal view for ALL clients. Continue?')) return;
+    if (!confirmWriteTarget('This decision')) return;
+    const label = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    try {
+      const res = await fetch(`${API_BASE}/portal-exceptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ portal_user: portalUser, id, decision, data, cost_approved: costApproved }, asClientBody())),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Could not send the decision');
+      excMsg().innerHTML = `<div class="success-box">Thank you — ${esc(json.exception.decision_label || 'decision received')} (order ${esc(json.exception.order_number)}).</div>`;
+      await loadExceptions();
+      loadOrders();
+    } catch (err) {
+      excMsg().innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
+      if (btn) { btn.disabled = false; btn.textContent = label; }
+    }
+  }
+
+  function wireExcCard(e) {
+    const card = document.getElementById('exc-card-' + e.id);
+    if (!card || e.state !== 'awaiting_client') return;
+    const q = (sel) => card.querySelector(sel);
+    if (e.kind === 'address_pre_ship') {
+      q('[data-exc-confirm]').addEventListener('click', (ev) => {
+        if (!window.confirm(`Ship order ${e.order_number} to this address as it is?\n\n${addrLine(e.ship_to)}`)) return;
+        sendExcDecision(e.id, 'confirm_address', {}, null, ev.currentTarget);
+      });
+      q('[data-exc-showfix]').addEventListener('click', () => document.getElementById('exc-fix-' + e.id).classList.toggle('hidden'));
+      q('[data-exc-fix]').addEventListener('click', (ev) => {
+        const a = readAddr(document.getElementById('exc-fix-' + e.id));
+        if (!a.street1 || !a.city || !a.state || !a.postalCode) { excMsg().innerHTML = '<div class="error-box">Address line 1, city, state and ZIP code are required.</div>'; return; }
+        sendExcDecision(e.id, 'correct_address', a, null, ev.currentTarget);
+      });
+      return;
+    }
+    const addrBox = document.getElementById('exc-addr-' + e.id);
+    card.querySelectorAll(`input[name="exc-dec-${e.id}"]`).forEach((r) => {
+      r.addEventListener('change', () => addrBox.classList.toggle('hidden', !(r.checked && (r.value === 'reroute' || r.value === 'reship'))));
+    });
+    q('[data-exc-decide]').addEventListener('click', (ev) => {
+      const chosen = card.querySelector(`input[name="exc-dec-${e.id}"]:checked`);
+      if (!chosen) { excMsg().innerHTML = '<div class="error-box">Choose one of the options.</div>'; return; }
+      if (!document.getElementById('exc-cost-' + e.id).checked) { excMsg().innerHTML = '<div class="error-box">Please approve the carrier charges to continue.</div>'; return; }
+      const data = {};
+      const a = readAddr(addrBox);
+      if (chosen.value === 'reroute' || (chosen.value === 'reship' && (a.street1 || a.city || a.postalCode))) {
+        if (!a.name || !a.street1 || !a.city || !a.state || !a.postalCode) { excMsg().innerHTML = '<div class="error-box">Recipient name, address line 1, city, state and ZIP code are required for the new address.</div>'; return; }
+        Object.assign(data, a);
+      }
+      const note = document.getElementById('exc-note-' + e.id).value.trim();
+      if (note) data.note = note;
+      sendExcDecision(e.id, chosen.value, data, true, ev.currentTarget);
+    });
+  }
+
+  document.getElementById('exc-refresh-btn').addEventListener('click', loadExceptions);
 
   // ---------- Inventory ----------
   const invTbody = document.getElementById('inv-tbody');
