@@ -226,9 +226,35 @@
   .exc-opt:hover { background: var(--fr-bg); }
   .addr-flag { display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; font-size:10px; font-weight:700; background:#fef3c7; color:#b45309; text-transform:uppercase; }
   .result-row:last-child { border-bottom: none; }
+  /* ---- Returns: pickup requests (24-nov-2026) ---- */
+  .pr-pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .pr-pill.green { background:#16a34a; color:#fff; }
+  .pr-pill.yellow { background:#facc15; color:#1f2937; }
+  .pr-pill.red { background:#dc2626; color:#fff; }
+  .pr-row { cursor:pointer; }
+  .pr-row:hover { background: var(--fr-bg); }
+  .pr-detail { background:#f9fafb; }
+  .pr-detail td { padding:14px 24px; font-size:13px; line-height:1.7; }
+  .field-err { font-size:12px; color:var(--fr-red); margin:-10px 0 12px; }
+  .field-err:empty { display:none; }
+  .input-err { border-color: var(--fr-red) !important; background:#fff7f7; }
+  .pr-hint { font-size:12px; color:var(--fr-gray); margin:-6px 0 14px; line-height:1.5; }
+  .pr-choice { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid var(--fr-border); border-radius:8px; margin-bottom:8px; cursor:pointer; font-size:13px; font-weight:400; color:var(--fr-dark); }
+  .pr-choice input { width:auto; margin:3px 0 0; }
+  .pr-choice:hover { background: var(--fr-bg); }
+  .pr-check { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--fr-dark); font-weight:500; margin:-4px 0 14px; }
+  .pr-check input { width:auto; margin:0; }
+  .pr-item { display:grid; grid-template-columns: 1.3fr 2fr 0.6fr auto; gap:8px; align-items:start; }
+  .pr-item input { margin-bottom:8px; }
+  .pr-dims { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; }
+  .btn-link { background:none; border:1px solid var(--fr-border); color:var(--fr-dark); padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; }
+  .btn-link:hover { border-color: var(--fr-green); color: var(--fr-green); }
+  .btn-link.danger:hover { border-color: var(--fr-red); color: var(--fr-red); }
+  #pr-new-btn:disabled { opacity:.55; cursor:not-allowed; }
   @media (max-width: 720px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .form-row { grid-template-columns: 1fr; }
+    .pr-item { grid-template-columns: 1fr 1fr; }
     main, header { padding: 16px; }
   }
 </style>
@@ -287,6 +313,7 @@
       <button class="tab" data-tab="inbound">Inbound</button>
       <button class="tab" data-tab="outbound">Outbound</button>
       <button class="tab" data-tab="tracking">Tracking</button>
+      <button class="tab" data-tab="returns">Returns</button>
     </div>
 
     <!-- ---- DASHBOARD TAB ---- -->
@@ -644,11 +671,41 @@
           </tbody>
         </table>
       </div>
+    </section>
 
-      <!-- ---- Returns sub-section (inbound return labels) ---- -->
+    <!-- ---- RETURNS TAB (24-nov-2026) ---- -->
+    <section id="tab-returns" class="hidden">
+      <h2 class="page-title">Returns</h2>
+      <p class="page-sub">Request a UPS pickup for a customer return and follow it until it is back at our warehouse.</p>
+
+      <div id="pr-msg"></div>
+
+      <div class="toolbar">
+        <span id="pr-note" style="font-size: 13px; color: var(--fr-gray);">—</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-outline" id="pr-refresh-btn" type="button">Refresh</button>
+          <button class="btn-secondary" id="pr-new-btn" type="button">+ Request a return pickup</button>
+        </div>
+      </div>
+
+      <div class="panel" style="padding: 0;">
+        <table>
+          <thead>
+            <tr id="pr-thead-row">
+              <th>Request</th><th>Reference</th><th>Customer</th><th>Pickup</th><th>Status</th><th>Tracking</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="pr-tbody">
+            <tr><td colspan="7" class="empty-state">Loading requests…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="font-size:12px;margin-top:-6px;">Click a row to see the items, the box and what we do when it arrives.</p>
+
+      <!-- ---- Return labels (inbound), moved here from Tracking 24-nov-2026 ---- -->
       <div style="margin-top: 36px;">
-        <h2 class="page-title" style="font-size: 20px;">Returns</h2>
-        <p class="page-sub" id="ret-sub">Inbound return labels created for end customers. Last 30 days.</p>
+        <h2 class="page-title" style="font-size: 20px;">Return labels</h2>
+        <p class="page-sub" id="ret-sub">Every return label created for your customers, including the ones from your requests. Last 30 days.</p>
 
         <div id="ret-msg"></div>
 
@@ -733,6 +790,153 @@
     <div class="modal-actions">
       <button class="btn-cancel" id="modal-cancel">Cancel</button>
       <button class="btn-primary" id="modal-submit" style="width:auto;">Submit Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RETURN PICKUP REQUEST MODAL (24-nov-2026) ============ -->
+<div id="pr-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:640px;">
+    <h3>Request a return pickup</h3>
+    <p class="sub">UPS picks the box up at your customer's address and brings it to our warehouse. Fields with * are required.</p>
+    <div id="pr-error" class="error-box hidden"></div>
+
+    <div class="section-label">Return</div>
+    <div class="form-row">
+      <div>
+        <label for="pr-reference">RMA / return reference *</label>
+        <input type="text" id="pr-reference" maxlength="60" placeholder="e.g. RMA-24641118" autocomplete="off" />
+        <div class="field-err" data-err="reference"></div>
+      </div>
+      <div>
+        <label for="pr-order_ref">Original order #</label>
+        <input type="text" id="pr-order_ref" maxlength="40" placeholder="e.g. WS4B235630" autocomplete="off" />
+        <div class="field-err" data-err="order_ref"></div>
+      </div>
+    </div>
+
+    <div class="section-label">Customer — pickup address</div>
+    <div class="form-row">
+      <div>
+        <label for="pr-name">Name *</label>
+        <input type="text" id="pr-name" maxlength="35" autocomplete="off" />
+        <div class="field-err" data-err="customer.name"></div>
+      </div>
+      <div>
+        <label for="pr-company">Company</label>
+        <input type="text" id="pr-company" maxlength="35" placeholder="Leave blank for a home" autocomplete="off" />
+        <div class="field-err" data-err="customer.company"></div>
+      </div>
+    </div>
+    <label for="pr-line1">Address line 1 *</label>
+    <input type="text" id="pr-line1" maxlength="35" placeholder="Number and street" autocomplete="off" />
+    <div class="field-err" data-err="customer.line1"></div>
+    <label for="pr-line2">Address line 2 <span style="font-weight:400">(apartment / suite / unit — leave blank for a house)</span></label>
+    <input type="text" id="pr-line2" maxlength="35" autocomplete="off" />
+    <div class="field-err" data-err="customer.line2"></div>
+    <div class="form-row">
+      <div>
+        <label for="pr-city">City *</label>
+        <input type="text" id="pr-city" maxlength="30" autocomplete="off" />
+        <div class="field-err" data-err="customer.city"></div>
+      </div>
+      <div class="form-row" style="gap:8px;">
+        <div>
+          <label for="pr-state">State *</label>
+          <input type="text" id="pr-state" maxlength="2" placeholder="NJ" autocomplete="off" style="text-transform:uppercase;" />
+          <div class="field-err" data-err="customer.state"></div>
+        </div>
+        <div>
+          <label for="pr-zip">ZIP *</label>
+          <input type="text" id="pr-zip" maxlength="10" inputmode="numeric" autocomplete="off" />
+          <div class="field-err" data-err="customer.zip"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label for="pr-phone">Phone *</label>
+        <input type="tel" id="pr-phone" maxlength="20" placeholder="10-digit US number" autocomplete="off" />
+        <div class="field-err" data-err="customer.phone"></div>
+      </div>
+      <div>
+        <label for="pr-email">Customer email</label>
+        <input type="email" id="pr-email" maxlength="80" autocomplete="off" />
+        <div class="field-err" data-err="customer.email"></div>
+      </div>
+    </div>
+    <label class="pr-check"><input type="checkbox" id="pr-email_customer" checked /> Email the label and pickup details to the customer</label>
+
+    <div class="section-label">Items in the box</div>
+    <div id="pr-items"></div>
+    <div class="field-err" data-err="items"></div>
+    <button class="add-item-btn" id="pr-add-item" type="button">+ Add another item</button>
+
+    <div class="section-label">Box</div>
+    <div class="form-row">
+      <div>
+        <label for="pr-weight">Packed weight (lb) *</label>
+        <input type="number" id="pr-weight" min="0.1" max="150" step="0.1" />
+        <div class="field-err" data-err="package.weight_lb"></div>
+      </div>
+      <div>
+        <label for="pr-l">Box size L × W × H (in) *</label>
+        <div class="pr-dims" id="pr-dims">
+          <input type="number" id="pr-l" min="1" step="0.5" placeholder="L" />
+          <input type="number" id="pr-w" min="1" step="0.5" placeholder="W" />
+          <input type="number" id="pr-h" min="1" step="0.5" placeholder="H" />
+        </div>
+        <div class="field-err" data-err="package.dims"></div>
+      </div>
+    </div>
+    <p class="pr-hint">Use the real packed weight and size: UPS measures the box, and its corrections are billed at carrier cost plus the agreed percentage.</p>
+
+    <div class="section-label">Pickup</div>
+    <label class="pr-choice"><input type="radio" name="pr-method" value="pickup" checked /> <span><b>UPS picks it up</b> at the customer's address on the date below</span></label>
+    <label class="pr-choice"><input type="radio" name="pr-method" value="dropoff" /> <span><b>The customer drops it off</b> at any UPS location (label only)</span></label>
+    <div id="pr-pickup-fields">
+      <div class="form-row">
+        <div>
+          <label for="pr-date">Pickup date *</label>
+          <input type="date" id="pr-date" />
+          <div class="field-err" data-err="pickup_date"></div>
+        </div>
+        <div>
+          <label for="pr-start">Window * <span style="font-weight:400">(customer's local time)</span></label>
+          <div class="form-row" style="gap:8px;">
+            <input type="time" id="pr-start" value="09:00" step="900" />
+            <input type="time" id="pr-end" value="17:00" step="900" />
+          </div>
+          <div class="field-err" data-err="window"></div>
+        </div>
+      </div>
+      <p class="pr-hint" id="pr-date-hint">Next business day at the earliest. No weekends or UPS holidays. The window must end at 12:00 PM or later and be at least 2 hours long.</p>
+    </div>
+
+    <div class="section-label">When it arrives at our warehouse</div>
+    <label class="pr-choice"><input type="radio" name="pr-disp" value="restock" checked /> <span><b>Restock it</b> if it is sealed and saleable — if not, we photograph it and ask you</span></label>
+    <label class="pr-choice"><input type="radio" name="pr-disp" value="inspect_hold" /> <span><b>Inspect, photograph and hold it</b> until you tell us what to do</span></label>
+    <label class="pr-choice"><input type="radio" name="pr-disp" value="fulfill_order" /> <span><b>Use it to fulfill an order</b></span></label>
+    <div id="pr-disp-order-wrap" class="hidden">
+      <label for="pr-disp-order">Order to fulfill *</label>
+      <input type="text" id="pr-disp-order" maxlength="40" placeholder="e.g. WS4B235630" autocomplete="off" />
+      <div class="field-err" data-err="disposition_order_ref"></div>
+    </div>
+    <label class="pr-choice"><input type="radio" name="pr-disp" value="other" /> <span><b>Other</b> — write the instructions below</span></label>
+    <div class="field-err" data-err="disposition"></div>
+    <label for="pr-notes">Instructions <span style="font-weight:400" id="pr-notes-req">(optional)</span></label>
+    <textarea id="pr-notes" maxlength="500"></textarea>
+    <div class="field-err" data-err="disposition_notes"></div>
+
+    <div class="section-label">Notifications</div>
+    <label for="pr-notify">Also email the confirmations to <span style="font-weight:400">(optional, separate with commas)</span></label>
+    <input type="text" id="pr-notify" placeholder="name@company.com, other@company.com" autocomplete="off" />
+    <div class="field-err" data-err="notify_emails"></div>
+    <p class="pr-hint" id="pr-notify-hint">Confirmations always go to the email you signed in with.</p>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="pr-cancel" type="button">Cancel</button>
+      <button class="btn-primary" id="pr-submit" type="button" style="width:auto;">Submit request</button>
     </div>
   </div>
 </div>
@@ -837,6 +1041,8 @@
   let trackingLoaded = false;
   let returnsCache = null;
   let returnsLoaded = false;
+  let prCache = null;      // return pickup requests (Returns tab)
+  let prLoaded = false;
   let excCache = null;
 
   // ---------- Helper: reset ALL per-session state so cross-user leakage
@@ -867,6 +1073,14 @@
     trackingLoaded = false;
     returnsCache = null;
     returnsLoaded = false;
+    prCache = null;
+    prLoaded = false;
+    const prTbodyEl = document.getElementById('pr-tbody');
+    if (prTbodyEl) prTbodyEl.innerHTML = '<tr><td colspan="8" class="empty-state">Loading requests…</td></tr>';
+    const prMsgEl = document.getElementById('pr-msg');
+    if (prMsgEl) prMsgEl.innerHTML = '';
+    const prModalEl = document.getElementById('pr-modal');
+    if (prModalEl) prModalEl.classList.add('hidden');
     excCache = null;
     const excOpen = document.getElementById('exc-open');
     if (excOpen) excOpen.innerHTML = '<div class="panel"><p class="empty-state">Loading…</p></div>';
@@ -961,7 +1175,10 @@
     document.getElementById('tab-exceptions').classList.add('hidden');
     document.getElementById('tab-bulk').classList.add('hidden');
     document.getElementById('tab-inventory').classList.add('hidden');
+    document.getElementById('tab-inbound').classList.add('hidden');
+    document.getElementById('tab-outbound').classList.add('hidden');
     document.getElementById('tab-tracking').classList.add('hidden');
+    document.getElementById('tab-returns').classList.add('hidden');
   });
 
   // Restore session on load
@@ -1051,6 +1268,7 @@
     inventoryCache = null; inventoryLoaded = false;
     trackingCache = null; trackingLoaded = false;
     returnsCache = null; returnsLoaded = false;
+    prCache = null; prLoaded = false;
     inboundCache = null; inboundLoaded = false;
     outboundCache = null; outboundLoaded = false;
     excCache = null;
@@ -1072,7 +1290,8 @@
     if (target === 'inventory') loadInventory();
     if (target === 'inbound') loadInbound();
     if (target === 'outbound') loadOutbound();
-    if (target === 'tracking') { loadTracking(); loadReturns(); }
+    if (target === 'tracking') loadTracking();
+    if (target === 'returns') { loadPickupRequests(); loadReturns(); }
     if (target === 'exceptions') loadExceptions(); else refreshExceptionsBadge();
   }
 
@@ -1112,6 +1331,7 @@
       document.getElementById('tab-inbound').classList.toggle('hidden', target !== 'inbound');
       document.getElementById('tab-outbound').classList.toggle('hidden', target !== 'outbound');
       document.getElementById('tab-tracking').classList.toggle('hidden', target !== 'tracking');
+      document.getElementById('tab-returns').classList.toggle('hidden', target !== 'returns');
       // Lazy load on first visit (within the current session). The
       // resetSessionState helper clears these flags at every login/logout
       // so the next user always triggers a fresh fetch.
@@ -1120,7 +1340,8 @@
       if (target === 'outbound' && !outboundLoaded) loadOutbound();
       if (target === 'exceptions') loadExceptions();
       if (target === 'tracking' && !trackingLoaded) loadTracking();
-      if (target === 'tracking' && !returnsLoaded) loadReturns();
+      if (target === 'returns' && !prLoaded) loadPickupRequests();
+      if (target === 'returns' && !returnsLoaded) loadReturns();
     });
   });
 
@@ -2909,6 +3130,416 @@
       retTbody.innerHTML = '<tr><td colspan="8" class="empty-state">' + esc(err.message) + '</td></tr>';
     }
   }
+
+  // ---------- Returns: return pickup requests (24-nov-2026) ----------
+  // portal-pickup-requests.js validates every request. Accounts set to
+  // "auto" get the UPS label + pickup at once; anything flagged (possible
+  // duplicate, oversize box, Alaska/Hawaii…) waits for the warehouse.
+  // The label PDF comes through the function (owner check) — the raw
+  // carrier URL never reaches the browser.
+  const prTbody = document.getElementById('pr-tbody');
+  const prMsg = document.getElementById('pr-msg');
+  const prNote = document.getElementById('pr-note');
+  const prNewBtn = document.getElementById('pr-new-btn');
+  const prModal = document.getElementById('pr-modal');
+  const prError = document.getElementById('pr-error');
+  const prTheadRow = document.getElementById('pr-thead-row');
+
+  const PR_TONE = {
+    processing: 'yellow', needs_review: 'yellow', pickup_failed: 'yellow',
+    scheduled: 'green', label_sent: 'green', received: 'green', processed: 'green',
+    cancelled: 'red',
+  };
+  const PR_FIELDS = {
+    'reference': 'pr-reference', 'order_ref': 'pr-order_ref',
+    'customer.name': 'pr-name', 'customer.company': 'pr-company', 'customer.line1': 'pr-line1',
+    'customer.line2': 'pr-line2', 'customer.city': 'pr-city', 'customer.state': 'pr-state',
+    'customer.zip': 'pr-zip', 'customer.phone': 'pr-phone', 'customer.email': 'pr-email',
+    'package.weight_lb': 'pr-weight', 'pickup_date': 'pr-date',
+    'disposition_order_ref': 'pr-disp-order', 'disposition_notes': 'pr-notes', 'notify_emails': 'pr-notify',
+  };
+
+  function prDay(ymd) {
+    if (!ymd) return '—';
+    const p = String(ymd).slice(0, 10).split('-').map(Number);
+    return new Date(Date.UTC(p[0], p[1] - 1, p[2])).toLocaleDateString('en-US',
+      { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  }
+  function prClock(hhmm) {
+    const p = String(hhmm || '').split(':').map(Number);
+    if (!Number.isFinite(p[0])) return '';
+    return ((p[0] + 11) % 12 + 1) + ':' + String(p[1] || 0).padStart(2, '0') + (p[0] >= 12 ? ' PM' : ' AM');
+  }
+  function prWhen(r) {
+    if (r.method === 'dropoff') return 'Drop-off at UPS';
+    return prDay(r.pickup_date) + ' · ' + prClock(r.window_start) + '–' + prClock(r.window_end);
+  }
+  function prFlash(html, isError) {
+    if (!prMsg) return;
+    prMsg.innerHTML = '<div class="' + (isError ? 'error-box' : 'success-box') + '">' + html + '</div>';
+    if (!isError) setTimeout(() => { if (prMsg) prMsg.innerHTML = ''; }, 12000);
+  }
+  function prNewToken() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+
+  async function loadPickupRequests() {
+    if (!prTbody) return;
+    prTbody.innerHTML = '<tr><td colspan="8" class="empty-state">Loading requests…</td></tr>';
+    const fetchForUser = portalUser;
+    try {
+      const res = await fetch(`${API_BASE}/portal-pickup-requests?portal_user=${encodeURIComponent(fetchForUser)}${asClientQS()}`);
+      const json = await res.json();
+      if (portalUser !== fetchForUser) return;
+      if (!res.ok || !json.ok) throw new Error((json && json.error) || 'Failed to load return requests');
+      prCache = json;
+      prLoaded = true;
+      renderPickupRequests();
+    } catch (err) {
+      if (portalUser !== fetchForUser) return;
+      prTbody.innerHTML = '<tr><td colspan="8" class="empty-state">' + esc(err.message) + '</td></tr>';
+    }
+  }
+
+  function renderPickupRequests() {
+    const json = prCache || { requests: [] };
+    const rows = json.requests || [];
+    const showClient = json.mode === 'admin_all';
+
+    if (json.mode === 'admin_all') {
+      prNewBtn.classList.remove('hidden');
+      prNewBtn.disabled = true;
+      prNote.textContent = 'Internal view — pick a client in “Viewing as” to file a request for it.';
+    } else if (!json.enabled) {
+      prNewBtn.classList.add('hidden');
+      prNote.textContent = 'Return pickups are not enabled for your account yet. Write to warehouse@fr-logistics.net and we will turn them on.';
+    } else {
+      prNewBtn.classList.remove('hidden');
+      prNewBtn.disabled = false;
+      prNote.textContent = json.mode === 'auto'
+        ? 'Requests that pass every check get their UPS label and pickup right away.'
+        : 'Our team confirms each request within 1 business day.';
+    }
+
+    prTheadRow.innerHTML = '<th>Request</th>' + (showClient ? '<th>Client</th>' : '') +
+      '<th>Reference</th><th>Customer</th><th>Pickup</th><th>Status</th><th>Tracking</th><th></th>';
+    const cols = showClient ? 8 : 7;
+
+    if (!rows.length) {
+      prTbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty-state">' +
+        (json.enabled ? 'No return requests yet. Use “Request a return pickup” to file the first one.' : 'No return requests in the last 90 days.') +
+        '</td></tr>';
+      return;
+    }
+    prTbody.innerHTML = '';
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.className = 'pr-row';
+      const tone = PR_TONE[r.status] || 'yellow';
+      const trk = r.tracking
+        ? '<a href="' + esc(r.tracking_url) + '" target="_blank" rel="noopener" style="color: var(--fr-green); text-decoration: underline;">' + esc(r.tracking) + '</a>'
+        : '—';
+      const acts = [
+        r.label_available ? '<button class="btn-link" type="button" data-pr="label" data-id="' + esc(r.id) + '">Label PDF</button>' : '',
+        r.can_cancel ? '<button class="btn-link danger" type="button" data-pr="cancel" data-id="' + esc(r.id) + '">Cancel</button>' : '',
+      ].join(' ');
+      tr.innerHTML =
+        '<td><strong>' + esc(r.request_code) + '</strong><div class="muted" style="font-size:11px;">' + esc(fmtDate(r.created_at)) + '</div></td>' +
+        (showClient ? '<td>' + esc(r.client || '—') + '</td>' : '') +
+        '<td>' + esc(r.reference) + (r.order_ref ? '<div class="muted" style="font-size:11px;">' + esc(r.order_ref) + '</div>' : '') + '</td>' +
+        '<td>' + esc(r.customer.name) + '<div class="muted" style="font-size:11px;">' + esc([r.customer.city, r.customer.state].filter(Boolean).join(', ')) + '</div></td>' +
+        '<td>' + esc(prWhen(r)) + (r.pickup_confirm ? '<div class="muted" style="font-size:11px;">UPS # ' + esc(r.pickup_confirm) + '</div>' : '') + '</td>' +
+        '<td><span class="pr-pill ' + tone + '">' + esc(r.status_label) + '</span>' +
+          (r.received_at ? '<div class="muted" style="font-size:11px;">' + esc(prDay(String(r.received_at).slice(0, 10))) + '</div>' : '') + '</td>' +
+        '<td>' + trk + '</td>' +
+        '<td style="white-space:nowrap;text-align:right;">' + acts + '</td>';
+
+      const detail = document.createElement('tr');
+      detail.className = 'pr-detail hidden';
+      const items = (r.items || []).map((it) =>
+        esc(it.qty) + ' × ' + esc([it.sku, it.description].filter(Boolean).join(' — '))).join('<br>');
+      const lines = [
+        ['Items', items || '—'],
+        ['Box', esc(r.package.weight_lb) + ' lb · ' + esc(r.package.length_in) + ' × ' + esc(r.package.width_in) + ' × ' + esc(r.package.height_in) + ' in'],
+        ['On arrival', esc(r.disposition_label) + (r.disposition_notes ? '<br><span class="muted">' + esc(r.disposition_notes) + '</span>' : '')],
+        r.review_reasons && r.review_reasons.length ? ['Under review because', r.review_reasons.map(esc).join('<br>')] : null,
+        r.received_at ? ['Received', esc(prDay(String(r.received_at).slice(0, 10)))] : null,
+        r.outcome_label ? ['Result', '<strong>' + esc(r.outcome_label) + '</strong>' + (r.outcome_note ? ' — ' + esc(r.outcome_note) : '')] : null,
+        r.cancel_reason ? ['Cancelled', esc(r.cancel_reason)] : null,
+      ].filter(Boolean);
+      detail.innerHTML = '<td colspan="' + cols + '">' + lines.map(([k, v]) =>
+        '<div><span class="muted" style="display:inline-block;min-width:150px;">' + esc(k) + '</span>' + v + '</div>').join('') + '</td>';
+
+      tr.addEventListener('click', (ev) => {
+        if (ev.target.closest('button,a')) return;
+        detail.classList.toggle('hidden');
+      });
+      prTbody.appendChild(tr);
+      prTbody.appendChild(detail);
+    });
+  }
+
+  if (prTbody) prTbody.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button[data-pr]');
+    if (!btn) return;
+    ev.stopPropagation();
+    if (btn.dataset.pr === 'label') prDownloadLabel(btn.dataset.id, btn);
+    if (btn.dataset.pr === 'cancel') prCancel(btn.dataset.id, btn);
+  });
+
+  async function prDownloadLabel(id, btn) {
+    const r = ((prCache && prCache.requests) || []).find((x) => x.id === id);
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Downloading…';
+    try {
+      const res = await fetch(`${API_BASE}/portal-pickup-requests?portal_user=${encodeURIComponent(portalUser)}&action=label&id=${encodeURIComponent(id)}${asClientQS()}`);
+      if (!res.ok) {
+        let m = 'Could not download the label.';
+        try { const j = await res.json(); m = j.error || m; } catch (e) { /* not json */ }
+        throw new Error(m);
+      }
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'return-label-' + ((r && (r.tracking || r.request_code)) || 'fr-logistics') + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    } catch (err) {
+      prFlash(esc(err.message), true);
+    } finally {
+      btn.disabled = false; btn.textContent = original;
+    }
+  }
+
+  async function prCancel(id, btn) {
+    const r = ((prCache && prCache.requests) || []).find((x) => x.id === id);
+    if (!window.confirm('Cancel request ' + (r ? r.request_code + ' (' + r.reference + ')' : '') + '?')) return;
+    if (!confirmWriteTarget('This cancellation')) return;
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${API_BASE}/portal-pickup-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ portal_user: portalUser, action: 'cancel', id }, asClientBody())),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error(json.error || 'Could not cancel the request.');
+      prFlash('Request ' + esc(json.request.request_code) + ' cancelled.');
+      await loadPickupRequests();
+    } catch (err) {
+      prFlash(esc(err.message), true);
+      btn.disabled = false;
+    }
+  }
+
+  // ---- Form ----
+  let prToken = null;
+  function prItemLine(it) {
+    const div = document.createElement('div');
+    div.className = 'pr-item';
+    div.innerHTML =
+      '<input type="text" class="pr-sku" maxlength="60" placeholder="SKU" />' +
+      '<input type="text" class="pr-desc" maxlength="120" placeholder="Description" />' +
+      '<input type="number" class="pr-qty" min="1" max="999" step="1" placeholder="Qty" />' +
+      '<button class="remove-item" type="button" title="Remove line">✕</button>';
+    div.querySelector('.pr-sku').value = (it && it.sku) || '';
+    div.querySelector('.pr-desc').value = (it && it.description) || '';
+    div.querySelector('.pr-qty').value = (it && it.qty) || 1;
+    div.querySelector('.remove-item').addEventListener('click', () => {
+      const box = document.getElementById('pr-items');
+      if (box.children.length > 1) div.remove();
+      else { div.querySelectorAll('input').forEach((i) => { i.value = i.classList.contains('pr-qty') ? 1 : ''; }); }
+    });
+    return div;
+  }
+  function prRadio(name) {
+    const el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : '';
+  }
+  function prSyncForm() {
+    const pickup = prRadio('pr-method') !== 'dropoff';
+    document.getElementById('pr-pickup-fields').classList.toggle('hidden', !pickup);
+    const disp = prRadio('pr-disp');
+    document.getElementById('pr-disp-order-wrap').classList.toggle('hidden', disp !== 'fulfill_order');
+    document.getElementById('pr-notes-req').textContent = disp === 'other' ? '(required)' : '(optional)';
+  }
+  function prClearErrors() {
+    prError.classList.add('hidden'); prError.textContent = '';
+    prModal.querySelectorAll('.field-err').forEach((el) => { el.textContent = ''; });
+    prModal.querySelectorAll('.input-err').forEach((el) => el.classList.remove('input-err'));
+  }
+  function prShowErrors(errors) {
+    let first = null;
+    Object.keys(errors || {}).forEach((k) => {
+      const box = prModal.querySelector('[data-err="' + k + '"]');
+      if (box) box.textContent = errors[k];
+      const input = PR_FIELDS[k] ? document.getElementById(PR_FIELDS[k]) : null;
+      if (input) input.classList.add('input-err');
+      if (k === 'package.dims') prModal.querySelectorAll('#pr-dims input').forEach((i) => i.classList.add('input-err'));
+      if (k === 'window') ['pr-start', 'pr-end'].forEach((i) => document.getElementById(i).classList.add('input-err'));
+      if (!first) first = box || input;
+    });
+    if (first && first.scrollIntoView) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // Instant check of the date against the calendar the server will apply.
+  function prCheckDate() {
+    const rules = prCache && prCache.rules;
+    const input = document.getElementById('pr-date');
+    const box = prModal.querySelector('[data-err="pickup_date"]');
+    input.classList.remove('input-err'); box.textContent = '';
+    if (!rules || !input.value) return;
+    const v = input.value;
+    const p = v.split('-').map(Number);
+    const wd = new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay();
+    let msg = '';
+    if (v < rules.earliest_date) msg = 'The earliest pickup date is ' + prDay(rules.earliest_date) + '.';
+    else if (v > rules.latest_date) msg = 'Choose a date up to ' + prDay(rules.latest_date) + '.';
+    else if (wd === 0 || wd === 6) msg = 'UPS does not pick up on weekends. Choose a business day.';
+    else if ((rules.holidays || []).includes(v)) msg = 'That day is a UPS holiday. Choose another business day.';
+    if (msg) { box.textContent = msg; input.classList.add('input-err'); }
+  }
+
+  function prOpen() {
+    if (isPortalAdmin() && !asClient) {
+      prFlash('Pick a client in the “Viewing as” selector first — the warehouse account is not a client itself.', true);
+      return;
+    }
+    const rules = (prCache && prCache.rules) || null;
+    prToken = prNewToken();
+    prClearErrors();
+    ['pr-reference', 'pr-order_ref', 'pr-name', 'pr-company', 'pr-line1', 'pr-line2', 'pr-city', 'pr-state', 'pr-zip',
+      'pr-phone', 'pr-email', 'pr-weight', 'pr-l', 'pr-w', 'pr-h', 'pr-disp-order', 'pr-notes', 'pr-notify']
+      .forEach((id) => { document.getElementById(id).value = ''; });
+    document.getElementById('pr-email_customer').checked = true;
+    const items = document.getElementById('pr-items');
+    items.innerHTML = '';
+    items.appendChild(prItemLine());
+    document.querySelector('input[name="pr-method"][value="pickup"]').checked = true;
+    document.querySelector('input[name="pr-disp"][value="restock"]').checked = true;
+    const date = document.getElementById('pr-date');
+    if (rules) {
+      date.min = rules.earliest_date; date.max = rules.latest_date; date.value = rules.earliest_date;
+      const hol = (rules.holidays || []).map(prDay);
+      document.getElementById('pr-date-hint').textContent =
+        'Next business day at the earliest (' + prDay(rules.earliest_date) + '). No weekends or UPS holidays' +
+        (hol.length ? ' (' + hol.join(', ') + ')' : '') + '. The window must end at 12:00 PM or later and be at least 2 hours long.';
+    }
+    document.getElementById('pr-start').value = '09:00';
+    document.getElementById('pr-end').value = '17:00';
+    document.getElementById('pr-notify-hint').textContent = asClient
+      ? 'Internal view: confirmations go to the client\'s main email and to these addresses.'
+      : 'Confirmations always go to ' + portalUser + ' and to these addresses.';
+    prSyncForm();
+    prModal.classList.remove('hidden');
+    document.getElementById('pr-reference').focus();
+  }
+  function prClose() { prModal.classList.add('hidden'); }
+
+  function prCollect() {
+    const val = (id) => document.getElementById(id).value.trim();
+    const items = [...document.querySelectorAll('#pr-items .pr-item')].map((row) => ({
+      sku: row.querySelector('.pr-sku').value.trim(),
+      description: row.querySelector('.pr-desc').value.trim(),
+      qty: row.querySelector('.pr-qty').value === '' ? '' : Number(row.querySelector('.pr-qty').value),
+    }));
+    const method = prRadio('pr-method') || 'pickup';
+    return {
+      reference: val('pr-reference'),
+      order_ref: val('pr-order_ref'),
+      customer: {
+        name: val('pr-name'), company: val('pr-company'), line1: val('pr-line1'), line2: val('pr-line2'),
+        city: val('pr-city'), state: val('pr-state').toUpperCase(), zip: val('pr-zip'),
+        phone: val('pr-phone'), email: val('pr-email'),
+      },
+      email_customer: document.getElementById('pr-email_customer').checked,
+      items,
+      package: { weight_lb: val('pr-weight'), length_in: val('pr-l'), width_in: val('pr-w'), height_in: val('pr-h') },
+      method,
+      pickup_date: method === 'pickup' ? val('pr-date') : '',
+      window_start: method === 'pickup' ? val('pr-start') : '',
+      window_end: method === 'pickup' ? val('pr-end') : '',
+      disposition: prRadio('pr-disp'),
+      disposition_order_ref: val('pr-disp-order'),
+      disposition_notes: document.getElementById('pr-notes').value.trim(),
+      notify_emails: val('pr-notify'),
+    };
+  }
+
+  async function prSubmit() {
+    prClearErrors();
+    if (isPortalAdmin() && !asClient) {
+      prError.textContent = 'Pick a client in the “Viewing as” selector first.';
+      prError.classList.remove('hidden');
+      return;
+    }
+    if (!confirmWriteTarget('This return request')) return;
+    const btn = document.getElementById('pr-submit');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const res = await fetch(`${API_BASE}/portal-pickup-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign(
+          { portal_user: portalUser, action: 'create', client_token: prToken },
+          prCollect(),
+          asClientBody()
+        )),
+      });
+      let json = {};
+      try { json = await res.json(); } catch (e) { /* not json */ }
+      if (res.status === 422 && json.errors) {
+        prError.textContent = json.error || 'Please fix the highlighted fields.';
+        prError.classList.remove('hidden');
+        prShowErrors(json.errors);
+        return;
+      }
+      if (!res.ok || !json.ok) throw new Error(json.error || 'Could not submit the request.');
+      const r = json.request;
+      prClose();
+      const code = '<strong>' + esc(r.request_code) + '</strong>';
+      const msg = {
+        scheduled: code + ' confirmed: UPS pickup ' + esc(r.pickup_confirm || '') + ' on ' + esc(prDay(r.pickup_date)) + '. The label was emailed to you.',
+        label_sent: code + ': the return label is ready and was emailed to you.',
+        pickup_failed: code + ': the label is ready and we are booking the UPS pickup. You will get the confirmation by email.',
+        needs_review: code + ' received. Our team will confirm it within 1 business day.',
+        processing: code + ' is being processed. Refresh in a minute to see the confirmation.',
+      }[r.status] || (code + ' submitted.');
+      prFlash(json.duplicate_submit ? code + ' was already submitted — showing its current status.' : msg);
+      await loadPickupRequests();
+    } catch (err) {
+      prError.textContent = err.message + ' If you are not sure it went through, close this form and check the list before sending it again.';
+      prError.classList.remove('hidden');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit request';
+    }
+  }
+
+  if (prNewBtn) prNewBtn.addEventListener('click', async () => {
+    if (!prLoaded) await loadPickupRequests();
+    prOpen();
+  });
+  document.getElementById('pr-refresh-btn').addEventListener('click', () => { loadPickupRequests(); loadReturns(); });
+  document.getElementById('pr-cancel').addEventListener('click', prClose);
+  document.getElementById('pr-submit').addEventListener('click', prSubmit);
+  document.getElementById('pr-add-item').addEventListener('click', () => {
+    const box = document.getElementById('pr-items');
+    if (box.children.length >= 10) return;
+    box.appendChild(prItemLine());
+  });
+  document.getElementById('pr-date').addEventListener('change', prCheckDate);
+  prModal.querySelectorAll('input[name="pr-method"], input[name="pr-disp"]').forEach((el) => el.addEventListener('change', prSyncForm));
+  document.getElementById('pr-email_customer').addEventListener('change', () => {
+    const box = prModal.querySelector('[data-err="customer.email"]');
+    if (box) box.textContent = '';
+    document.getElementById('pr-email').classList.remove('input-err');
+  });
+  // Upper-case the state as it is typed
+  document.getElementById('pr-state').addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
 
 })();
 </script>
